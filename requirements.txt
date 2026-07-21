@@ -1,0 +1,68 @@
+# =========================================================
+# DocMed AI Doctor Appointment System - Requirements
+# =========================================================
+
+# Core Django & Server
+Django>=4.2,<5.0
+gunicorn>=22.0.0
+whitenoise>=6.6.0
+python-dotenv>=1.0.1
+django-environ>=0.11.2
+
+# Database Drivers
+dj-database-url>=2.1.0
+psycopg2-binary>=2.9.9
+mysqlclient>=2.2.4
+
+# Authentication & Security
+django-allauth>=65.0.0
+pyotp>=2.9.0
+django-ratelimit>=4.1.0
+
+# REST Framework & JWT
+djangorestframework>=3.15.0
+djangorestframework-simplejwt>=5.3.1
+
+# OCR, PDF & Image Processing
+Pillow>=10.2.0
+pdf2image>=1.17.0
+pytesseract>=0.3.10
+easyocr>=1.7.0
+opencv-python>=4.9.0
+PyPDF2>=3.0.1
+pdfplumber>=0.11.0
+
+# AI, ML & Data Processing
+google-generativeai>=0.4.1
+numpy>=1.26.4
+pandas>=2.2.0
+scikit-learn>=1.4.0
+joblib>=1.3.2
+
+# Utilities & Networking
+requests>=2.31.0
+pytz>=2024.1
+sqlparse>=0.5.0
+
+# Payment Gateways & Invoicing
+razorpay>=1.4.1
+stripe>=8.9.0
+reportlab>=4.1.0
+qrcode[pil]>=7.4.2
+
+# Geolocation & Maps
+geopy>=2.4.1
+geocoder>=1.38.1
+googlemaps>=4.10.0
+
+# Forms & UI Helpers
+django-bootstrap-form>=3.4
+django-filter>=24.1
+crispy-bootstrap5>=2024.2
+django-widget-tweaks>=1.5.0
+django-qr-code>=3.1.1
+
+# Real-time WebSockets & Caching
+channels>=4.0.0
+channels-redis>=4.2.0
+redis>=5.0.3

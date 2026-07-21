@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>400 — Bad Request | DocMed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,#0a0a1a 0%,#0d0a1a 50%,#0a0a1a 100%);
+      font-family:'Poppins',sans-serif;overflow:hidden;position:relative}
+    body::before{content:'';position:absolute;inset:0;
+      background:radial-gradient(ellipse at 40% 50%,rgba(139,92,246,0.12) 0%,transparent 60%);pointer-events:none}
+    .error-card{text-align:center;padding:60px 50px;
+      background:rgba(255,255,255,0.04);backdrop-filter:blur(20px);
+      border:1px solid rgba(139,92,246,0.15);border-radius:28px;
+      box-shadow:0 25px 60px rgba(0,0,0,0.5);max-width:580px;width:90%;animation:fadeInUp .8s ease}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    .err-code{font-size:120px;font-weight:800;line-height:1;
+      background:linear-gradient(135deg,#8b5cf6,#6366f1);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px}
+    .err-icon{font-size:64px;color:#8b5cf6;margin-bottom:20px;display:block}
+    h2{color:#fff;font-size:28px;font-weight:700;margin-bottom:12px}
+    p{color:rgba(255,255,255,0.55);font-size:16px;margin-bottom:36px;line-height:1.7}
+    .btn-back{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;
+      background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;
+      border-radius:50px;text-decoration:none;font-weight:600;font-size:15px;
+      transition:all .3s;box-shadow:0 8px 24px rgba(139,92,246,0.35)}
+    .btn-back:hover{transform:translateY(-2px);color:#fff}
+  </style>
+</head>
+<body>
+  <div class="error-card">
+    <span class="err-icon"><i class="ri-question-mark"></i></span>
+    <div class="err-code">400</div>
+    <h2>Bad Request</h2>
+    <p>Your request could not be understood by the server.<br>
+       Please check your input and try again.</p>
+    <a href="/" class="btn-back"><i class="ri-arrow-left-line"></i> Back to Home</a>
+  </div>
+</body>
+</html>

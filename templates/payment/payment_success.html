@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} | Payment Successful{% endblock %}
+
+{% block styles %}
+<style>
+    .success-animation {
+        margin: 50px auto;
+    }
+    .checkmark {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: block;
+        stroke-width: 2;
+        stroke: #10b981;
+        stroke-miterlimit: 10;
+        box-shadow: inset 0px 0px 0px #10b981;
+        animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s forwards;
+        position: relative;
+        top: 5px;
+        right: 5px;
+        margin: 0 auto;
+    }
+    .checkmark__circle {
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+        stroke-width: 2;
+        stroke-miterlimit: 10;
+        stroke: #10b981;
+        fill: none;
+        animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    }
+    .checkmark__check {
+        transform-origin: 50% 50%;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+    }
+    @keyframes stroke {
+        100% {
+            stroke-dashoffset: 0;
+        }
+    }
+    @keyframes scale {
+        0%, 100% {
+            transform: none;
+        }
+        50% {
+            transform: scale3d(1.1, 1.1, 1);
+        }
+    }
+    @keyframes fill {
+        100% {
+            box-shadow: inset 0px 0px 0px 50px rgba(16, 185, 129, 0.1);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="glass-panel p-5 text-center shadow-soft border-0" data-aos="zoom-in">
+                <!-- Confetti Canvas -->
+                <canvas id="confetti-canvas" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0;"></canvas>
+
+                <div class="position-relative" style="z-index: 1;">
+                    <div class="success-animation">
+                        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                        </svg>
+                    </div>
+
+                    <h2 class="font-weight-bold text-success mb-2">Payment Successful!</h2>
+                    <p class="text-muted">Thank you. Your payment has been processed and verified successfully.</p>
+
+                    <!-- Receipt Details Card -->
+                    <div class="glass-panel p-4 my-4 bg-light border-0 shadow-sm text-left text-dark">
+                        <h6 class="font-weight-bold border-bottom pb-2 mb-3"><i class="fa fa-file-text-o mr-2 text-primary"></i>Receipt Summary</h6>
+                        <div class="row small mb-2">
+                            <div class="col-6 text-muted">Invoice No:</div>
+                            <div class="col-6 text-right font-weight-bold">{{ payment.invoice_number }}</div>
+                        </div>
+                        <div class="row small mb-2">
+                            <div class="col-6 text-muted">Transaction ID:</div>
+                            <div class="col-6 text-right select-all" style="word-break: break-all;">{{ payment.transaction_id|default:"N/A" }}</div>
+                        </div>
+                        <div class="row small mb-2">
+                            <div class="col-6 text-muted">Paid Amount:</div>
+                            <div class="col-6 text-right font-weight-bold text-primary">{% if payment.gateway == 'razorpay' or payment.gateway == 'upi' %}INR{% else %}USD{% endif %} {{ payment.amount }}</div>
+                        </div>
+                        <div class="row small mb-2">
+                            <div class="col-6 text-muted">Payment Gateway:</div>
+                            <div class="col-6 text-right font-weight-bold text-capitalize">{{ payment.gateway }}</div>
+                        </div>
+                        <div class="row small">
+                            <div class="col-6 text-muted">Paid Date:</div>
+                            <div class="col-6 text-right">{{ payment.created_at|date:"M d, Y h:i A" }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Appointment Meta -->
+                    <p class="text-muted small">An email confirmation along with the invoice PDF has been sent to your registered email address.</p>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex flex-column flex-sm-row justify-content-center" style="gap: 15px;">
+                        <a href="{% url 'appointment:invoice-pdf' payment.id %}" target="_blank" class="btn btn-success px-4 py-2 font-weight-bold hover-scale" style="border-radius: 12px;">
+                            <i class="fa fa-download mr-2"></i>Download Invoice
+                        </a>
+                        <a href="{% url 'appointment:patient-bookings' %}" class="btn btn-primary-gradient btn-premium px-4 py-2 font-weight-bold hover-scale">
+                            Go to Dashboard<i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    // Confetti effect
+    (function () {
+        var canvas = document.getElementById("confetti-canvas");
+        var ctx = canvas.getContext("2d");
+        var particles = [];
+        var colors = ["#06b6d4", "#10b981", "#635bff", "#f59e0b", "#ec4899"];
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.offsetWidth;
+            canvas.height = canvas.parentElement.offsetHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas, false);
+        resizeCanvas();
+
+        function createParticle() {
+            return {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                r: Math.random() * 4 + 2,
+                d: Math.random() * canvas.height,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                tilt: Math.random() * 10 - 5,
+                tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+                tiltAngle: 0
+            };
+        }
+
+        for (var i = 0; i < 80; i++) {
+            particles.push(createParticle());
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (var i = 0; i < particles.length; i++) {
+                var p = particles[i];
+                ctx.beginPath();
+                ctx.lineWidth = p.r;
+                ctx.strokeStyle = p.color;
+                ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+                ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+                ctx.stroke();
+            }
+            update();
+        }
+
+        function update() {
+            for (var i = 0; i < particles.length; i++) {
+                var p = particles[i];
+                p.y += Math.cos(p.d) + 1 + p.r / 2;
+                p.tiltAngle += p.tiltAngleIncremental;
+                p.tilt = Math.sin(p.tiltAngle - i / 3) * 15;
+
+                if (p.y > canvas.height) {
+                    particles[i] = createParticle();
+                }
+            }
+        }
+
+        var animationFrame;
+        function loop() {
+            draw();
+            animationFrame = requestAnimationFrame(loop);
+        }
+        loop();
+
+        // Stop confetti after 5 seconds
+        setTimeout(function() {
+            cancelAnimationFrame(animationFrame);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }, 5000);
+    })();
+</script>
+{% endblock %}

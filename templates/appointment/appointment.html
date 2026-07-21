@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Slots - Premium Healthcare Portal{% endblock %}
+
+{% block content %}
+
+<section class="section-padding-100" style="padding-top: 130px;">
+  <div class="container">
+    <div class="row mb-5">
+      <div class="col-12 text-center">
+        <h2 style="font-weight: 800;">My Operational Slots</h2>
+        <p>Manage and track your posted appointment hours</p>
+        <div class="line"></div>
+      </div>
+    </div>
+
+    <div class="row">
+      {% for apt in appointment %}
+        <div class="col-12 col-sm-6 col-md-4">
+          <div class="doctor-grid-card">
+            <div class="doctor-card-img-wrap">
+              {% if apt.image %}
+                <img src="{{ apt.image.url }}" alt="{{ apt.full_name }}">
+              {% else %}
+                <img src="{% static 'img/123.jpg' %}" alt="Placeholder Image">
+              {% endif %}
+              <span class="doctor-badge-status" style="background: rgba(79, 70, 229, 0.9); box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);"><i class="fa fa-circle text-white"></i> Operational</span>
+            </div>
+            
+            <div class="doctor-card-details">
+              <div class="doctor-card-dept">{{ apt.department }}</div>
+              <h4 class="doctor-card-title">{{ apt.full_name }}</h4>
+              <p class="doctor-card-text text-muted" style="font-size: 13px;">
+                <i class="fa fa-graduation-cap text-cyan"></i> {{ apt.qualification_name }}, {{ apt.institute_name }}<br>
+                <i class="fa fa-hospital-o text-cyan"></i> Clinic: {{ apt.hospital_name }}<br>
+                <i class="fa fa-clock-o text-cyan"></i> Operational: {{ apt.start_time }} to {{ apt.end_time }}
+              </p>
+              
+              <div class="doctor-card-footer" style="justify-content: space-between;">
+                <span class="doctor-card-location"><i class="fa fa-map-marker text-cyan"></i> {{ apt.location }}</span>
+                <a href="{% url 'appointment:delete-appointment' apt.id %}" class="text-danger font-weight-bold" style="font-size: 13px; display: inline-flex; align-items: center; gap: 5px;">
+                  <i class="fa fa-trash-o"></i> Delete Slot
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12 text-center my-5">
+          <div class="glass-panel" style="padding: 60px 30px; max-width: 500px; margin: 0 auto; border-radius: 24px;">
+            <i class="fa fa-calendar-times-o" style="font-size: 64px; color: var(--primary-indigo); margin-bottom: 20px;"></i>
+            <h4 style="font-weight: 700;">No Operational Slots</h4>
+            <p style="font-size: 14px; margin-bottom: 25px;">You have not created any appointment slots yet. Get started by creating your first slot.</p>
+            <a href="{% url 'appointment:doctor-appointment-create' %}" class="btn-gradient btn-cyan text-white"><i class="fa fa-plus-circle"></i> Create First Slot</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

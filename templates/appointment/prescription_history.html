@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Prescription History | DocMed Premium{% endblock %}
+
+{% block content %}
+<!-- Banner / Header -->
+<div class="welcome-area section-padding-100" style="min-height:auto; padding-top:130px; padding-bottom:50px; background:linear-gradient(135deg,rgba(79,70,229,0.08),rgba(6,182,212,0.08));">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-11 text-center">
+                <h2 style="font-size:36px; font-weight:800; margin-bottom:10px;">Prescription History</h2>
+                <p class="text-muted">Search and review all historical prescriptions associated with appointments.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- History Listing section -->
+<section class="section-padding-100-0">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-11">
+                <!-- Search & Filters -->
+                <div class="glass-panel p-4 mb-4 border-0 shadow-soft" data-aos="fade-up">
+                    <form method="GET" action="" class="row align-items-end">
+                        <div class="col-md-5 form-group mb-md-0">
+                            <label for="search" class="small font-weight-bold text-dark"><i class="fa fa-search text-primary mr-1"></i>Search Symptoms, Diagnosis or Medicine</label>
+                            <input type="text" id="search" name="search" class="form-control" placeholder="E.g. Fever, Paracetamol, Amoxicillin..." value="{{ request.GET.search }}" style="border-radius:10px;">
+                        </div>
+                        <div class="col-md-4 form-group mb-md-0">
+                            <label for="date_filter" class="small font-weight-bold text-dark"><i class="fa fa-calendar text-primary mr-1"></i>Filter by Date</label>
+                            <input type="date" id="date_filter" name="date_filter" class="form-control" value="{{ request.GET.date_filter }}" style="border-radius:10px;">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary-gradient btn-block text-white font-weight-bold hover-scale" style="height:48px; border:none; border-radius:12px; background:linear-gradient(135deg,#4f46e5,#06b6d4);">
+                                Apply Filters
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Prescriptions Table -->
+                <div class="glass-panel p-4 border-0 shadow-soft" data-aos="fade-up">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr class="text-muted small">
+                                    <th class="border-0">#</th>
+                                    <th class="border-0">Patient Name</th>
+                                    <th class="border-0">Doctor Name</th>
+                                    <th class="border-0">Diagnosis</th>
+                                    <th class="border-0">Follow-up Date</th>
+                                    <th class="border-0">Prescribed Date</th>
+                                    <th class="border-0 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rx in prescriptions %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="avatar-initials mr-2">{{ rx.booking.full_name|slice:":2"|upper }}</span>
+                                            <strong>{{ rx.booking.full_name }}</strong>
+                                        </div>
+                                    </td>
+                                    <td>Dr. {{ rx.booking.appointment.full_name }}</td>
+                                    <td><span class="badge badge-info px-3 py-1" style="border-radius: 8px;">{{ rx.diagnosis|truncatechars:40|default:"N/A" }}</span></td>
+                                    <td>{{ rx.follow_up_date|date:"d M Y"|default:"—" }}</td>
+                                    <td>{{ rx.created_at|date:"d M Y — h:i A" }}</td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center" style="gap: 10px;">
+                                            <a href="{% url 'appointment:prescription-detail' rx.booking.id %}" class="btn btn-sm btn-outline-primary hover-scale" style="border-radius: 8px;">
+                                                <i class="fa fa-eye mr-1"></i>View
+                                            </a>
+                                            <a href="{% url 'appointment:prescription-pdf' rx.booking.id %}" target="_blank" class="btn btn-sm btn-success hover-scale" style="border-radius:8px; background: #10b981; border:0;">
+                                                <i class="fa fa-download mr-1"></i>PDF
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-5">
+                                        <i class="fa fa-medkit fa-2x mb-3 text-primary d-block"></i>
+                                        <strong>No Prescriptions Found</strong>
+                                        <p class="small text-muted mb-0 mt-1">Try adjusting your filters or verify you have completed consultations.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .avatar-initials {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #4f46e5, #06b6d4);
+        color: white;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 12px;
+    }
+</style>
+{% endblock %}

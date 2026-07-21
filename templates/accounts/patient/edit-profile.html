@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load glass_form %}
+
+{% block title %}Edit Patient Profile - DocMed Premium{% endblock %}
+
+{% block content %}
+<div class="container" style="min-height: 90vh; padding-top: 130px; padding-bottom: 70px; background: var(--color-bg);">
+  <div class="row justify-content-center">
+    <div class="col-lg-10" data-aos="fade-up">
+      <div class="glass-panel p-5 rounded-lg shadow-float border-0">
+        
+        <!-- Header -->
+        <div class="text-center mb-5">
+          <div class="d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background: rgba(124, 58, 237, 0.1); border-radius: 50%;">
+            <i class="fa fa-user-circle fa-2x text-primary" style="color: var(--primary-purple) !important;"></i>
+          </div>
+          <h3 class="font-weight-bold text-dark mb-1">Edit Patient Profile</h3>
+          <p class="text-muted">Update your demographics, contact details, medical records, and preferred language.</p>
+          <div class="line mt-3 mb-1 mx-auto" style="width: 60px; height: 3px; background: var(--gradient-primary);"></div>
+        </div>
+
+        <form action="" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          {% if form.non_field_errors or profile_form.non_field_errors %}
+            <div class="alert alert-danger py-2 px-3 mb-4 rounded-lg small">
+              {% for error in form.non_field_errors %}
+                <p class="mb-0"><i class="fa fa-exclamation-circle mr-1"></i> {{ error }}</p>
+              {% endfor %}
+              {% for error in profile_form.non_field_errors %}
+                <p class="mb-0"><i class="fa fa-exclamation-circle mr-1"></i> {{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="row">
+            
+            <!-- SECTION 1: ACCOUNT DETAILS -->
+            <div class="col-12 mb-4">
+              <h5 class="font-weight-bold text-primary mb-3 border-bottom pb-2"><i class="fa fa-user mr-2"></i> Patient identity info</h5>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">First Name</label>
+                  {{ form.first_name }}
+                  {% if form.first_name.errors %}
+                    <div class="text-danger small">{{ form.first_name.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Last Name</label>
+                  {{ form.last_name }}
+                  {% if form.last_name.errors %}
+                    <div class="text-danger small">{{ form.last_name.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Email Address</label>
+                  {{ form.email }}
+                  {% if form.email.errors %}
+                    <div class="text-danger small">{{ form.email.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Phone Number</label>
+                  {{ form.phone_number }}
+                  {% if form.phone_number.errors %}
+                    <div class="text-danger small">{{ form.phone_number.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Gender</label>
+                  {{ form.gender }}
+                  {% if form.gender.errors %}
+                    <div class="text-danger small">{{ form.gender.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Upload Patient Photo</label>
+                  {{ profile_form.photo }}
+                  {% if profile_form.photo.errors %}
+                    <div class="text-danger small">{{ profile_form.photo.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 2: DEMOGRAPHICS -->
+            <div class="col-12 mb-4 mt-2">
+              <h5 class="font-weight-bold text-primary mb-3 border-bottom pb-2"><i class="fa fa-info-circle mr-2"></i> Demographic details</h5>
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label class="small font-weight-bold">Age</label>
+                  {{ profile_form.age }}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="small font-weight-bold">Date of Birth</label>
+                  {{ profile_form.date_of_birth }}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="small font-weight-bold">Blood Group</label>
+                  {{ profile_form.blood_group }}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="small font-weight-bold">Height</label>
+                  {{ profile_form.height }}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="small font-weight-bold">Weight</label>
+                  {{ profile_form.weight }}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="small font-weight-bold">Preferred Language</label>
+                  {{ profile_form.preferred_language }}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="small font-weight-bold">City</label>
+                  {{ profile_form.city }}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="small font-weight-bold">State / Division</label>
+                  {{ profile_form.state }}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="small font-weight-bold">Country</label>
+                  {{ profile_form.country }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Emergency Contact</label>
+                  {{ profile_form.emergency_contact }}
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 3: CLINICAL RECORDS -->
+            <div class="col-12 mb-4 mt-2">
+              <h5 class="font-weight-bold text-primary mb-3 border-bottom pb-2"><i class="fa fa-stethoscope mr-2"></i> Medical history &amp; records</h5>
+              <div class="row">
+                <div class="col-md-12 mb-3">
+                  <label class="small font-weight-bold">Medical History (Chronic Conditions, Surgeries...)</label>
+                  {{ profile_form.medical_history }}
+                </div>
+                <div class="col-md-12 mb-3">
+                  <label class="small font-weight-bold">Past Diseases / Conditions</label>
+                  {{ profile_form.past_diseases }}
+                </div>
+                <div class="col-md-12 mb-3">
+                  <label class="small font-weight-bold">Allergies (Food, Drug, Environment...)</label>
+                  {{ profile_form.allergies }}
+                </div>
+                <div class="col-md-12 mb-3">
+                  <label class="small font-weight-bold">Current Medications</label>
+                  {{ profile_form.current_medications }}
+                </div>
+                <div class="col-md-12 mb-3">
+                  <label class="small font-weight-bold">Insurance details (Provider, ID, Plan...)</label>
+                  {{ profile_form.insurance_details }}
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <button type="submit" class="btn-premium btn-primary-gradient w-100 py-3 mt-4 shadow-glow" id="saveBtn">
+            <i class="fa fa-check-circle mr-2"></i> Save Patient Profile changes
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

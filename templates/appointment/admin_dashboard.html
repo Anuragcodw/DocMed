@@ -1,0 +1,1053 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - DocMed Premium{% endblock %}
+
+{% block styles %}
+<style>
+  :root {
+    --dash-bg: rgba(255, 255, 255, 0.75);
+    --dash-border: rgba(255, 255, 255, 0.45);
+    --dash-shadow: 0 10px 40px rgba(99, 102, 241, 0.12);
+  }
+  
+  body {
+    background: #f1f5f9;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Glassmorphism Panel */
+  .dash-panel {
+    background: var(--dash-bg) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid var(--dash-border) !important;
+    box-shadow: var(--dash-shadow) !important;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+    position: relative;
+    z-index: 2;
+  }
+  .dash-panel:hover {
+    transform: translateY(-6px) scale(1.005);
+    box-shadow: 0 15px 45px rgba(99, 102, 241, 0.18) !important;
+    border-color: rgba(99, 102, 241, 0.35) !important;
+  }
+  
+  /* Gradient Border/Bar Accents for Stat Cards */
+  .stat-card-gradient {
+    position: relative;
+    overflow: hidden;
+    padding-top: 28px !important;
+  }
+  .stat-card-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    border-radius: 20px 20px 0 0;
+    z-index: 3;
+  }
+  .card-blue::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+  .card-orange::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .card-purple::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+  .card-green::before { background: linear-gradient(90deg, #10b981, #34d399); }
+  .card-pink::before { background: linear-gradient(90deg, #ec4899, #f472b6); }
+  .card-cyan::before { background: linear-gradient(90deg, #14b8a6, #2dd4bf); }
+
+  .stat-value {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    display: inline-block;
+  }
+  .val-blue { color: #3b82f6; }
+  .val-orange { color: #f59e0b; }
+  .val-purple { color: #8b5cf6; }
+  .val-green { color: #10b981; }
+  .val-pink { color: #ec4899; }
+  .val-cyan { color: #14b8a6; }
+  
+  .stat-label {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.5px;
+    display: block;
+  }
+
+  .stat-icon {
+    font-size: 26px;
+    margin-bottom: 8px;
+    opacity: 0.85;
+    transition: transform 0.3s ease;
+  }
+  .dash-panel:hover .stat-icon {
+    transform: scale(1.18) rotate(5deg);
+  }
+
+  /* Floating Header & Filters */
+  .floating-header {
+    position: sticky;
+    top: 90px;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 15px 24px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(255,255,255,0.4);
+    transition: all 0.3s ease;
+  }
+
+  /* Custom styled selects and buttons in header */
+  .header-filter-select {
+    height: 48px !important;
+    width: 180px !important;
+    border-radius: 16px !important;
+    padding: 12px 18px !important;
+    font-size: 15px !important;
+    border: 1px solid rgba(79, 70, 229, 0.15) !important;
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02) !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+  }
+  .header-filter-select:hover, .header-filter-select:focus {
+    border-color: #4f46e5 !important;
+    outline: none !important;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.1) !important;
+  }
+
+  .header-btn {
+    height: 48px !important;
+    border-radius: 16px !important;
+    padding: 12px 18px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease !important;
+    border: none !important;
+    cursor: pointer !important;
+  }
+  .header-btn-csv {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+  }
+  .header-btn-csv:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3) !important;
+  }
+  .header-btn-print {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2) !important;
+  }
+  .header-btn-print:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.3) !important;
+  }
+
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(0,0,0,0.1);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+  }
+  .timeline-icon {
+    position: absolute;
+    left: -38px;
+    top: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 12px;
+    color: white;
+  }
+
+  .progress-thin {
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(0,0,0,0.05);
+  }
+
+  /* Graph Layout Controls */
+  .chart-card-container {
+    height: 350px !important;
+    max-height: 400px !important;
+    overflow: hidden !important;
+    padding: 20px !important;
+  }
+  .chart-canvas-wrapper {
+    height: 270px !important;
+    position: relative !important;
+    width: 100% !important;
+  }
+  .chart-canvas-wrapper canvas {
+    width: 100% !important;
+    height: 270px !important;
+  }
+
+  /* Floating Background Circles styling */
+  .floating-blobs {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .f-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.12;
+    animation: floatBlob 20s infinite ease-in-out alternate;
+  }
+  .f-blob-blue {
+    width: 300px;
+    height: 300px;
+    background: #3b82f6;
+    top: 15%;
+    left: 10%;
+  }
+  .f-blob-purple {
+    width: 400px;
+    height: 400px;
+    background: #8b5cf6;
+    bottom: 10%;
+    right: 15%;
+    animation-delay: -5s;
+  }
+  .f-blob-cyan {
+    width: 350px;
+    height: 350px;
+    background: #06b6d4;
+    top: 60%;
+    left: 45%;
+    animation-delay: -10s;
+  }
+  @keyframes floatBlob {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(60px, 40px) scale(1.15); }
+    100% { transform: translate(-40px, 60px) scale(0.9); }
+  }
+
+  /* Print Styles - hide unnecessary overlays, print ONLY dashboard contents */
+  @media print {
+    sidebar,
+    navbar,
+    chatbot,
+    buttons,
+    .navbar,
+    .glass-nav,
+    .header-area,
+    footer,
+    .footer-area,
+    .ai-chat-widget,
+    .ai-chat-toggle,
+    #aiChatToggle,
+    #aiChatWindow,
+    .btn,
+    button,
+    form,
+    a[href],
+    .floating-header {
+      display: none !important;
+    }
+    body, html, section {
+      background: white !important;
+      padding-top: 0 !important;
+      margin: 0 !important;
+    }
+    .dash-panel {
+      break-inside: avoid;
+      box-shadow: none !important;
+      border: 1px solid #cbd5e1 !important;
+      background: white !important;
+      backdrop-filter: none !important;
+    }
+  }
+</style>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<section style="padding-top: 130px; min-height: 90vh; background: #f8fafc; position: relative;">
+  
+  <!-- Floating Background Blobs -->
+  <div class="floating-blobs">
+    <div class="f-blob f-blob-blue"></div>
+    <div class="f-blob f-blob-purple"></div>
+    <div class="f-blob f-blob-cyan"></div>
+  </div>
+
+  <div class="container-fluid px-4 px-lg-5" style="position: relative; z-index: 2;">
+    
+    <!-- Floating Header & Filters -->
+    <div class="floating-header" data-aos="fade-down">
+      <div>
+        <h4 style="font-weight: 800; margin: 0; color: var(--color-text-main);">Analytics Dashboard</h4>
+        <small class="text-muted">Real-time system insights & performance</small>
+      </div>
+      
+      <div class="d-flex align-items-center" style="gap: 15px;">
+        <form method="GET" class="d-flex align-items-center m-0" style="gap: 10px;" id="filterForm">
+          <select name="range" class="form-control header-filter-select" onchange="document.getElementById('filterForm').submit();">
+            <option value="today" {% if current_range == 'today' %}selected{% endif %}>Today</option>
+            <option value="yesterday" {% if current_range == 'yesterday' %}selected{% endif %}>Yesterday</option>
+            <option value="7d" {% if current_range == '7d' %}selected{% endif %}>Last 7 Days</option>
+            <option value="30d" {% if current_range == '30d' %}selected{% endif %}>Last 30 Days</option>
+            <option value="3m" {% if current_range == '3m' %}selected{% endif %}>Last 3 Months</option>
+            <option value="1y" {% if current_range == '1y' %}selected{% endif %}>Last 1 Year</option>
+          </select>
+        </form>
+        
+        <a href="{% url 'appointment:admin-export-csv' %}" class="btn header-btn header-btn-csv">
+          <i class="fa fa-download"></i> Export CSV
+        </a>
+        <button onclick="window.print()" class="btn header-btn header-btn-print">
+          <i class="fa fa-print"></i> Print
+        </button>
+      </div>
+    </div>
+
+    <!-- Top Statistics Grid -->
+    <div class="row mb-4">
+      <!-- Patients Card -->
+      <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="50">
+        <div class="dash-panel stat-card-gradient card-blue text-center p-4">
+          <div class="stat-icon"><i class="fa fa-users val-blue"></i></div>
+          <div class="stat-value val-blue" id="stat-total-patients" data-val="{{ stats.total_patients }}">0</div>
+          <div class="stat-label">Total Patients</div>
+        </div>
+      </div>
+      <!-- Registered Doctors Card -->
+      <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="dash-panel stat-card-gradient card-orange text-center p-4">
+          <div class="stat-icon"><i class="fa fa-user-md val-orange"></i></div>
+          <div class="stat-value val-orange" id="stat-total-doctors" data-val="{{ stats.total_doctors }}">0</div>
+          <div class="stat-label">Registered Doctors</div>
+        </div>
+      </div>
+      <!-- Active Doctors Card -->
+      <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="150">
+        <div class="dash-panel stat-card-gradient card-green text-center p-4">
+          <div class="stat-icon"><i class="fa fa-check-circle val-green"></i></div>
+          <div class="stat-value val-green" id="stat-active-doctors" data-val="{{ stats.active_doctors }}">0</div>
+          <div class="stat-label">Active Doctors</div>
+        </div>
+      </div>
+      <!-- Online Doctors Card -->
+      <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="dash-panel stat-card-gradient card-cyan text-center p-4">
+          <div class="stat-icon"><i class="fa fa-globe val-cyan"></i></div>
+          <div class="stat-value val-cyan" id="stat-online-doctors" data-val="{{ stats.online_doctors }}">0</div>
+          <div class="stat-label">Online Doctors</div>
+        </div>
+      </div>
+      
+      <!-- Sub-Appointment Counts row (Col-xl-2 col-md-4 col-6) -->
+      <div class="col-xl-2 col-md-4 col-6 mb-4" data-aos="fade-up" data-aos-delay="250">
+        <div class="dash-panel stat-card-gradient card-purple text-center p-3">
+          <div class="stat-icon"><i class="fa fa-calendar val-purple"></i></div>
+          <div class="stat-value val-purple" style="font-size: 24px;" id="stat-total-appointments" data-val="{{ stats.total_appointments }}">0</div>
+          <div class="stat-label" style="font-size: 11px;">Total Appts</div>
+        </div>
+      </div>
+      <div class="col-xl-2 col-md-4 col-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+        <div class="dash-panel stat-card-gradient card-purple text-center p-3">
+          <div class="stat-icon"><i class="fa fa-clock-o val-purple"></i></div>
+          <div class="stat-value val-purple" style="font-size: 24px;" id="stat-todays-appointments" data-val="{{ stats.todays_appointments }}">0</div>
+          <div class="stat-label" style="font-size: 11px;">Today's Appts</div>
+        </div>
+      </div>
+      <div class="col-xl-2 col-md-4 col-6 mb-4" data-aos="fade-up" data-aos-delay="350">
+        <div class="dash-panel stat-card-gradient card-green text-center p-3">
+          <div class="stat-icon"><i class="fa fa-check val-green"></i></div>
+          <div class="stat-value val-green" style="font-size: 24px;" id="stat-completed-appointments" data-val="{{ stats.completed_appointments }}">0</div>
+          <div class="stat-label" style="font-size: 11px;">Completed</div>
+        </div>
+      </div>
+      <div class="col-xl-2 col-md-4 col-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+        <div class="dash-panel stat-card-gradient card-pink text-center p-3">
+          <div class="stat-icon"><i class="fa fa-times val-pink"></i></div>
+          <div class="stat-value val-pink" style="font-size: 24px;" id="stat-cancelled-appointments" data-val="{{ stats.cancelled_appointments }}">0</div>
+          <div class="stat-label" style="font-size: 11px;">Cancelled</div>
+        </div>
+      </div>
+      <div class="col-xl-2 col-md-4 col-6 mb-4" data-aos="fade-up" data-aos-delay="450">
+        <div class="dash-panel stat-card-gradient card-orange text-center p-3">
+          <div class="stat-icon"><i class="fa fa-hourglass-half val-orange"></i></div>
+          <div class="stat-value val-orange" style="font-size: 24px;" id="stat-pending-appointments" data-val="{{ stats.pending_appointments }}">0</div>
+          <div class="stat-label" style="font-size: 11px;">Pending</div>
+        </div>
+      </div>
+      <div class="col-xl-2 col-md-4 col-6 mb-4" data-aos="fade-up" data-aos-delay="500">
+        <div class="dash-panel stat-card-gradient card-blue text-center p-3">
+          <div class="stat-icon"><i class="fa fa-arrow-right val-blue"></i></div>
+          <div class="stat-value val-blue" style="font-size: 24px;" id="stat-upcoming-appointments" data-val="{{ stats.upcoming_appointments }}">0</div>
+          <div class="stat-label" style="font-size: 11px;">Upcoming</div>
+        </div>
+      </div>
+      
+      <!-- Bottom stat row -->
+      <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="550">
+        <div class="dash-panel stat-card-gradient card-green text-center p-4">
+          <div class="stat-icon"><i class="fa fa-money val-green"></i></div>
+          <div class="stat-value val-green" id="stat-total-revenue" data-is-currency="true" data-val="{{ stats.total_revenue }}">₹0</div>
+          <div class="stat-label">Total Revenue</div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="600">
+        <div class="dash-panel stat-card-gradient card-purple text-center p-4">
+          <div class="stat-icon"><i class="fa fa-line-chart val-purple"></i></div>
+          <div class="stat-value val-purple" id="stat-monthly-revenue" data-is-currency="true" data-val="{{ stats.monthly_revenue }}">₹0</div>
+          <div class="stat-label">Monthly Revenue</div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="650">
+        <div class="dash-panel stat-card-gradient card-pink text-center p-4">
+          <div class="stat-icon"><i class="fa fa-star val-pink"></i></div>
+          <div class="stat-value val-pink"><span id="stat-avg-rating" data-val="{{ stats.avg_rating }}">{{ stats.avg_rating }}</span> <i class="fa fa-star text-warning" style="font-size:20px;"></i></div>
+          <div class="stat-label">Avg Rating (<span id="stat-total-reviews">{{ stats.total_reviews }}</span> Reviews)</div>
+        </div>
+      </div>
+      <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="700">
+        <div class="dash-panel stat-card-gradient card-cyan text-center p-4">
+          <div class="stat-icon"><i class="fa fa-hospital-o val-cyan"></i></div>
+          <div class="stat-value val-cyan" id="stat-total-departments" data-val="{{ stats.total_departments }}">0</div>
+          <div class="stat-label">Departments ({{ stats.hospitals_registered }} Hosps)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="row">
+      <div class="col-lg-8 mb-4" data-aos="fade-up">
+        <div class="dash-panel chart-card-container">
+          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Daily Appointment Trend</h6>
+          <div class="chart-canvas-wrapper">
+            <canvas id="dailyApptChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="dash-panel chart-card-container">
+          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Appointment Status</h6>
+          <div class="chart-canvas-wrapper">
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="row">
+      <div class="col-lg-6 mb-4" data-aos="fade-up">
+        <div class="dash-panel chart-card-container">
+          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Revenue Trend (Daily)</h6>
+          <div class="chart-canvas-wrapper">
+            <canvas id="dailyRevChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="dash-panel chart-card-container">
+          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Monthly Revenue</h6>
+          <div class="chart-canvas-wrapper">
+            <canvas id="monthlyRevChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 3 -->
+    <div class="row">
+      <div class="col-lg-4 mb-4" data-aos="fade-up">
+        <div class="dash-panel chart-card-container">
+          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Most Popular Departments</h6>
+          <div class="chart-canvas-wrapper">
+            <canvas id="popDeptChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="dash-panel chart-card-container">
+          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Doctor Specializations</h6>
+          <div class="chart-canvas-wrapper">
+            <canvas id="docSpecChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="dash-panel chart-card-container">
+          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Monthly Appointments</h6>
+          <div class="chart-canvas-wrapper">
+            <canvas id="monthlyApptChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 4 -->
+    <div class="row">
+      <div class="col-lg-6 mb-4" data-aos="fade-up">
+        <div class="dash-panel chart-card-container">
+          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Patient Registration Trend</h6>
+          <div class="chart-canvas-wrapper">
+            <canvas id="patientRegChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="dash-panel chart-card-container">
+          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Top Doctors by Revenue</h6>
+          <div class="chart-canvas-wrapper">
+            <canvas id="topDocsChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Tables & Lists Row -->
+    <div class="row">
+      
+      <!-- Top Doctors Table -->
+      <div class="col-lg-8 mb-4" data-aos="fade-up">
+        <div class="dash-panel" style="overflow-x: auto;">
+          <h5 class="font-weight-bold mb-4"><i class="fa fa-user-md text-primary mr-2"></i> Top Performing Doctors</h5>
+          <table class="table table-hover align-middle mb-0" style="min-width: 700px;">
+            <thead class="text-muted" style="font-size: 12px; text-transform: uppercase;">
+              <tr>
+                <th>Doctor</th>
+                <th>Department & Hospital</th>
+                <th>Rating</th>
+                <th>Completed</th>
+                <th>Revenue Generated</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for doc in top_doctors %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    {% if doc.photo %}
+                      <img src="{{ doc.photo.url }}" class="rounded-circle mr-3" width="40" height="40" style="object-fit: cover;">
+                    {% else %}
+                      <div class="rounded-circle mr-3 bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-weight: bold;">
+                        {{ doc.user.first_name|make_list|first }}
+                      </div>
+                    {% endif %}
+                    <div>
+                      <div style="font-weight: 700; color: var(--color-text-main);">Dr. {{ doc.user.first_name }} {{ doc.user.last_name }} 
+                        {% if doc.is_verified %}<i class="fa fa-check-circle text-primary" title="Verified"></i>{% endif %}
+                      </div>
+                      <span class="small text-muted">{{ doc.experience_years }} Yrs Exp</span>
+                    </div>
+                  </div>
+                </td>
+                <td style="font-size: 13px;">
+                  <div class="font-weight-bold">{{ doc.specialization }}</div>
+                  <span class="text-muted">{{ doc.hospital|default:"Private Clinic" }}</span>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <span class="font-weight-bold mr-1">{{ doc.rating }}</span>
+                    <i class="fa fa-star text-warning" style="font-size: 12px;"></i>
+                    <span class="small text-muted ml-1">({{ doc.review_count }})</span>
+                  </div>
+                </td>
+                <td class="font-weight-bold text-success">{{ doc.completed_appts }}</td>
+                <td class="font-weight-bold" style="color: var(--color-primary);">₹{{ doc.total_rev|default:"0.00" }}</td>
+                <td>
+                  {% if doc.is_available_now %}
+                    <span class="badge badge-success px-2 py-1" style="border-radius: 4px;">Available</span>
+                  {% else %}
+                    <span class="badge badge-secondary px-2 py-1" style="border-radius: 4px;">Offline</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6" class="text-center py-4 text-muted">No doctor data available in this range.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Most Popular Departments -->
+      <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="dash-panel">
+          <h5 class="font-weight-bold mb-4"><i class="fa fa-stethoscope text-primary mr-2"></i> Popular Departments</h5>
+          <div class="d-flex flex-column" style="gap: 16px;">
+            {% for dept in popular_departments|slice:":6" %}
+            <div>
+              <div class="d-flex justify-content-between mb-1">
+                <span style="font-size: 14px; font-weight: 700;">{{ dept.name }}</span>
+                <span style="font-size: 13px; font-weight: 700; color: var(--color-primary);">{{ dept.booking_count }} Appts</span>
+              </div>
+              <div class="progress progress-thin mb-1">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ dept.completion_rate }}%;"></div>
+              </div>
+              <div class="d-flex justify-content-between text-muted" style="font-size: 11px;">
+                <span>{{ dept.doctor_count }} Doctors | {{ dept.avg_rating }}★</span>
+                <span>₹{{ dept.revenue }} Rev ({{ dept.completion_rate }}% Comp)</span>
+              </div>
+            </div>
+            {% empty %}
+            <p class="text-muted text-center">No department data.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      
+    </div>
+
+    <!-- Bottom Row: Verification, Recent Activities & Advanced Analytics -->
+    <div class="row">
+      <!-- Verifications & Approvals -->
+      <div class="col-lg-4 mb-4" data-aos="fade-up">
+        <div class="dash-panel" style="max-height: 500px; overflow-y: auto;">
+          <h6 class="font-weight-bold mb-3 text-warning"><i class="fa fa-exclamation-circle mr-1"></i> Pending Approvals</h6>
+          
+          {% if unverified_doctor_profiles %}
+            <h7 class="font-weight-bold small text-muted text-uppercase d-block mb-2 mt-3">Doctor Profiles</h7>
+            <div class="d-flex flex-column" style="gap: 10px;">
+            {% for profile in unverified_doctor_profiles %}
+              <div class="p-2 border rounded d-flex justify-content-between align-items-center bg-white">
+                <div>
+                  <div class="small font-weight-bold">Dr. {{ profile.user.first_name }}</div>
+                  <div style="font-size:10px;" class="text-muted">{{ profile.specialization }}</div>
+                </div>
+                <form action="{% url 'appointment:admin-verify-doctor' profile.id %}" method="post" class="m-0">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-success py-0 px-2" style="font-size:10px;">Verify</button>
+                </form>
+              </div>
+            {% endfor %}
+            </div>
+          {% endif %}
+          
+          {% if pending_review_list %}
+            <h7 class="font-weight-bold small text-muted text-uppercase d-block mb-2 mt-4">Patient Reviews</h7>
+            <div class="d-flex flex-column" style="gap: 10px;">
+            {% for review in pending_review_list %}
+              <div class="p-2 border rounded bg-white">
+                <div class="small font-weight-bold mb-1">{{ review.patient_name }} ({{ review.rating }}★)</div>
+                <div style="font-size:10px;" class="text-muted mb-2">"{{ review.text|truncatechars:40 }}"</div>
+                <div class="d-flex" style="gap:5px;">
+                  <form action="{% url 'appointment:admin-approve-review' review.id %}" method="post" class="m-0">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-success py-0 px-2" style="font-size:10px;">Approve</button>
+                  </form>
+                  <form action="{% url 'appointment:admin-reject-review' review.id %}" method="post" class="m-0">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:10px;">Reject</button>
+                  </form>
+                </div>
+              </div>
+            {% endfor %}
+            </div>
+          {% endif %}
+          
+          {% if not unverified_doctor_profiles and not pending_review_list %}
+            <div class="text-center py-5">
+              <i class="fa fa-check-circle text-success mb-2" style="font-size: 30px;"></i>
+              <p class="text-muted small">All caught up! No pending approvals.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- Recent Activities Timeline -->
+      <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="dash-panel" style="max-height: 500px; overflow-y: auto;">
+          <h6 class="font-weight-bold mb-4"><i class="fa fa-history text-primary mr-2"></i> Recent Activities</h6>
+          <div class="timeline">
+            {% for activity in recent_activities %}
+            <div class="timeline-item">
+              <div class="timeline-icon bg-{{ activity.color }}">
+                <i class="fa fa-{{ activity.icon }}"></i>
+              </div>
+              <div style="font-size: 13px; font-weight: 700; color: #333;">{{ activity.title }}</div>
+              <div style="font-size: 11px; color: #888;">{{ activity.time|timesince }} ago</div>
+            </div>
+            {% empty %}
+            <p class="text-muted small">No recent activities.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Appointment & Revenue Analytics Box -->
+      <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="dash-panel" style="max-height: 500px; overflow-y: auto;">
+          <h6 class="font-weight-bold mb-3"><i class="fa fa-line-chart text-primary mr-2"></i> Deep Analytics</h6>
+          
+          <div class="bg-light p-3 rounded mb-3">
+            <h7 class="font-weight-bold small text-muted text-uppercase d-block mb-2">Appointments</h7>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Today's Bookings:</span> <strong>{{ appt_analytics.today }}</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Weekly Bookings:</span> <strong>{{ appt_analytics.weekly }}</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Monthly Bookings:</span> <strong>{{ appt_analytics.monthly }}</strong></div>
+            <hr class="my-2">
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Completed:</span> <strong class="text-success">{{ appt_analytics.completed_pct }}%</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Cancelled:</span> <strong class="text-danger">{{ appt_analytics.cancelled_pct }}%</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Rescheduled:</span> <strong class="text-warning">{{ appt_analytics.rescheduled_pct }}%</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Avg Consult Time:</span> <strong>{{ appt_analytics.avg_time }} min</strong></div>
+          </div>
+          
+          <div class="bg-light p-3 rounded">
+            <h7 class="font-weight-bold small text-muted text-uppercase d-block mb-2">Revenue</h7>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Today's Revenue:</span> <strong>₹{{ rev_analytics.today }}</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Weekly Revenue:</span> <strong>₹{{ rev_analytics.weekly }}</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Yearly Revenue:</span> <strong>₹{{ rev_analytics.yearly }}</strong></div>
+            <hr class="my-2">
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Pending Payments:</span> <strong class="text-warning">₹{{ rev_analytics.pending }}</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Refunds:</span> <strong class="text-danger">₹{{ rev_analytics.refunds }}</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Avg Transaction:</span> <strong>₹{{ rev_analytics.avg_txn }}</strong></div>
+            <hr class="my-2">
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Top Dept:</span> <strong class="text-primary text-truncate" style="max-width:120px;">{{ rev_analytics.top_dept }}</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Top Doctor:</span> <strong class="text-primary text-truncate" style="max-width:120px;">{{ rev_analytics.top_doc }}</strong></div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+  // Animated Number Counter Function
+  function animateValue(elementId, start, end, duration) {
+    const obj = document.getElementById(elementId);
+    if (!obj) return;
+    
+    // Check if the element represents currency
+    const isCurrency = obj.getAttribute('data-is-currency') === 'true';
+    
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const val = Math.floor(progress * (end - start) + start);
+      
+      if (isCurrency) {
+        obj.innerHTML = '₹' + val.toLocaleString('en-IN');
+      } else if (elementId === 'stat-avg-rating') {
+        // Average rating formatting (float)
+        const valFloat = (progress * (end - start) + start).toFixed(1);
+        obj.innerHTML = valFloat;
+      } else {
+        obj.innerHTML = val.toLocaleString('en-IN');
+      }
+      
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      } else {
+        if (isCurrency) {
+          obj.innerHTML = '₹' + end.toLocaleString('en-IN');
+        } else if (elementId === 'stat-avg-rating') {
+          obj.innerHTML = end.toFixed(1);
+        } else {
+          obj.innerHTML = end.toLocaleString('en-IN');
+        }
+      }
+    };
+    window.requestAnimationFrame(step);
+  }
+
+  // Auto-scroll prevention on load
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+  window.scrollTo(0, 0);
+
+  document.addEventListener("DOMContentLoaded", function() {
+    // Scroll to top
+    window.scrollTo(0, 0);
+    setTimeout(function() {
+      window.scrollTo(0, 0);
+    }, 100);
+
+    // Initial counter animations
+    const counters = document.querySelectorAll('.stat-value[data-val], span[data-val]');
+    counters.forEach(counter => {
+      const target = +counter.getAttribute('data-val') || 0;
+      const id = counter.id;
+      if (id) {
+        animateValue(id, 0, target, 1500);
+      }
+    });
+
+    // Setup AJAX auto-refresh every 30 seconds
+    setInterval(refreshStatistics, 30000);
+  });
+
+  // Fetch updated statistics from our new AJAX endpoint
+  function refreshStatistics() {
+    fetch('/admin-dashboard/stats-api/')
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          console.error("AJAX refresh unauthorized:", data.error);
+          return;
+        }
+        
+        // Update stats with smooth counting from old value to new value
+        updateStatCard('stat-total-patients', data.total_patients);
+        updateStatCard('stat-total-doctors', data.total_doctors);
+        updateStatCard('stat-active-doctors', data.active_doctors);
+        updateStatCard('stat-online-doctors', data.online_doctors);
+        updateStatCard('stat-total-appointments', data.total_appointments);
+        updateStatCard('stat-todays-appointments', data.todays_appointments);
+        updateStatCard('stat-completed-appointments', data.completed_appointments);
+        updateStatCard('stat-cancelled-appointments', data.cancelled_appointments);
+        updateStatCard('stat-pending-appointments', data.pending_appointments);
+        updateStatCard('stat-upcoming-appointments', data.upcoming_appointments);
+        updateStatCard('stat-total-revenue', data.total_revenue);
+        updateStatCard('stat-monthly-revenue', data.monthly_revenue);
+        updateStatCard('stat-avg-rating', data.avg_rating);
+        updateStatCard('stat-total-departments', data.total_departments);
+        
+        // Update text labels that don't need counter animation
+        const totalReviewsEl = document.getElementById('stat-total-reviews');
+        if (totalReviewsEl && data.total_reviews !== undefined) {
+          totalReviewsEl.innerText = data.total_reviews;
+        }
+      })
+      .catch(error => console.error("Error fetching real-time statistics:", error));
+  }
+
+  // Helper to trigger animation for stat update
+  function updateStatCard(elementId, newValue) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const oldValue = +el.getAttribute('data-val') || 0;
+    if (oldValue !== newValue) {
+      el.setAttribute('data-val', newValue);
+      animateValue(elementId, oldValue, newValue, 1000);
+    }
+  }
+
+  // Chart Configuration
+  Chart.defaults.font.family = "'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+  Chart.defaults.color = '#64748b';
+  
+  const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' } },
+      x: { grid: { display: false } }
+    }
+  };
+
+  window.onload = function() {
+    // Reset scroll position again on absolute load
+    setTimeout(function() {
+      window.scrollTo(0, 0);
+    }, 50);
+
+    // 1. Daily Appointments Line Chart
+    new Chart(document.getElementById('dailyApptChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: {{ chart_daily_appointments_labels|safe }},
+        datasets: [{
+          label: 'Appointments',
+          data: {{ chart_daily_appointments_data|safe }},
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderWidth: 2,
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: commonOptions
+    });
+
+    // 2. Monthly Appointments Bar Chart
+    new Chart(document.getElementById('monthlyApptChart').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: {{ chart_monthly_appointments_labels|safe }},
+        datasets: [{
+          label: 'Appointments',
+          data: {{ chart_monthly_appointments_data|safe }},
+          backgroundColor: '#8b5cf6',
+          borderRadius: 4
+        }]
+      },
+      options: commonOptions
+    });
+
+    // 3. Revenue Trend Line
+    new Chart(document.getElementById('dailyRevChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: {{ chart_revenue_trend_labels|safe }},
+        datasets: [{
+          label: 'Revenue',
+          data: {{ chart_revenue_trend_data|safe }},
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          borderWidth: 2,
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: commonOptions
+    });
+
+    // 4. Monthly Revenue Bar
+    new Chart(document.getElementById('monthlyRevChart').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: {{ chart_revenue_month_labels|safe }},
+        datasets: [{
+          label: 'Revenue',
+          data: {{ chart_revenue_month_data|safe }},
+          backgroundColor: '#14b8a6',
+          borderRadius: 4
+        }]
+      },
+      options: commonOptions
+    });
+
+    // 5. Popular Department Pie Chart
+    new Chart(document.getElementById('popDeptChart').getContext('2d'), {
+      type: 'pie',
+      data: {
+        labels: {{ chart_pop_dept_labels|safe }},
+        datasets: [{
+          data: {{ chart_pop_dept_data|safe }},
+          backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#64748b']
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+    });
+
+    // 6. Doctor Specialization Pie Chart
+    new Chart(document.getElementById('docSpecChart').getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: {{ chart_doc_spec_labels|safe }},
+        datasets: [{
+          data: {{ chart_doc_spec_data|safe }},
+          backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ec4899', '#8b5cf6', '#64748b']
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } }, cutout: '60%' }
+    });
+
+    // 7. Status Doughnut Chart
+    new Chart(document.getElementById('statusChart').getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: {{ chart_status_labels|safe }},
+        datasets: [{
+          data: {{ chart_status_data|safe }},
+          backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#64748b', '#3b82f6']
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '70%' }
+    });
+
+    // 8. Top Doctors Bar Chart
+    new Chart(document.getElementById('topDocsChart').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: {{ chart_top_docs_labels|safe }},
+        datasets: [{
+          label: 'Revenue',
+          data: {{ chart_top_docs_data|safe }},
+          backgroundColor: '#3b82f6',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: { x: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' } }, y: { grid: { display: false } } }
+      }
+    });
+
+    // 9. Patient Registration Trend & Doctor Registration Trend Overlaid
+    new Chart(document.getElementById('patientRegChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: {{ chart_patient_reg_labels|safe }},
+        datasets: [
+          {
+            label: 'Patients Registered',
+            data: {{ chart_patient_reg_data|safe }},
+            borderColor: '#ec4899',
+            backgroundColor: 'rgba(236, 72, 153, 0.05)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true
+          },
+          {
+            label: 'Doctors Registered',
+            data: {{ chart_doctor_reg_data|safe }},
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.05)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true, position: 'top' } },
+        scales: {
+          y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  };
+</script>
+{% endblock %}

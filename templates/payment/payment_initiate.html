@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} | Initiate Payment{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb bg-transparent p-0">
+                    <li class="breadcrumb-item"><a href="{% url 'appointment:home' %}" class="text-primary font-weight-bold">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'appointment:patient-bookings' %}" class="text-primary font-weight-bold">Bookings</a></li>
+                    <li class="breadcrumb-item active text-muted" aria-current="page">Initiate Payment</li>
+                </ol>
+            </nav>
+
+            <!-- Main Panel -->
+            <div class="glass-panel p-4 p-md-5 mb-5 shadow-soft border-0" data-aos="fade-up">
+                <div class="row align-items-center mb-4 pb-3 border-bottom" style="border-color: rgba(0,0,0,0.05) !important;">
+                    <div class="col-md-7">
+                        <span class="badge badge-primary px-3 py-2 mb-2 font-weight-bold" style="border-radius: 12px;">Booking ID: #{{ booking.id }}</span>
+                        <h2 class="font-weight-bold text-gradient mb-0"><i class="fa fa-credit-card mr-2"></i>Choose Payment Method</h2>
+                        <p class="text-muted mb-0 mt-1">Please select your preferred gateway to pay the consultation fee.</p>
+                    </div>
+                    <div class="col-md-5 text-md-right mt-3 mt-md-0">
+                        <div class="d-inline-block p-3 rounded bg-light border shadow-sm">
+                            <span class="text-muted small d-block">Consultation Fee</span>
+                            <span class="h3 font-weight-bold text-primary mb-0">{% if booking.appointment.fee %}INR {{ booking.appointment.fee }}{% else %}INR 500{% endif %}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Summary -->
+                <div class="row mb-5">
+                    <div class="col-12">
+                        <div class="glass-panel p-3 bg-light border-0 shadow-sm">
+                            <h5 class="font-weight-bold mb-3"><i class="fa fa-info-circle text-primary mr-2"></i>Appointment Summary</h5>
+                            <div class="row text-dark">
+                                <div class="col-sm-6 col-md-3 mb-2">
+                                    <span class="text-muted small d-block">Doctor</span>
+                                    <strong>Dr. {{ booking.appointment.full_name }}</strong>
+                                    <span class="d-block text-muted small">({{ booking.appointment.department }})</span>
+                                </div>
+                                <div class="col-sm-6 col-md-3 mb-2">
+                                    <span class="text-muted small d-block">Hospital / Clinic</span>
+                                    <strong>{{ booking.appointment.hospital_name }}</strong>
+                                </div>
+                                <div class="col-sm-6 col-md-3 mb-2">
+                                    <span class="text-muted small d-block">Date</span>
+                                    <strong>{{ booking.date|date:"F d, Y" }}</strong>
+                                </div>
+                                <div class="col-sm-6 col-md-3 mb-2">
+                                    <span class="text-muted small d-block">Time Slot</span>
+                                    <strong>{{ booking.appointment.start_time }} - {{ booking.appointment.end_time }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gateways Grid -->
+                <div class="row">
+                    <!-- Razorpay (INR) -->
+                    <div class="col-md-4 mb-4">
+                        <div class="glass-panel h-100 p-4 border border-info hover-scale transition-all d-flex flex-column justify-content-between shadow-soft text-center">
+                            <div>
+                                <div class="text-info mb-3">
+                                    <i class="fa fa-paypal fa-3x"></i>
+                                </div>
+                                <h4 class="font-weight-bold text-dark mb-2">Razorpay</h4>
+                                <p class="text-muted small">Pay securely via Credit/Debit Cards, Net Banking, Wallets, or UPI.</p>
+                            </div>
+                            <div class="mt-4">
+                                <button id="rzp-button" class="btn btn-info btn-block py-2 font-weight-bold hover-scale" style="border-radius: 12px;">
+                                    Pay with Razorpay
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stripe (USD) -->
+                    <div class="col-md-4 mb-4">
+                        <div class="glass-panel h-100 p-4 border border-primary hover-scale transition-all d-flex flex-column justify-content-between shadow-soft text-center" style="border-color: #635bff !important;">
+                            <div>
+                                <div class="mb-3" style="color: #635bff;">
+                                    <i class="fa fa-cc-stripe fa-3x"></i>
+                                </div>
+                                <h4 class="font-weight-bold text-dark mb-2">Stripe</h4>
+                                <p class="text-muted small">Pay with global credit/debit card. Amount will be converted to USD equivalents.</p>
+                            </div>
+                            <div class="mt-4">
+                                <form action="{% url 'appointment:stripe-checkout' booking.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary btn-block py-2 font-weight-bold hover-scale" style="background: #635bff; border-color: #635bff; border-radius: 12px;">
+                                        Pay with Stripe
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- UPI QR Scan & Pay -->
+                    <div class="col-md-4 mb-4">
+                        <div class="glass-panel h-100 p-4 border border-success hover-scale transition-all d-flex flex-column justify-content-between shadow-soft text-center">
+                            <div>
+                                <div class="text-success mb-3">
+                                    <i class="fa fa-qrcode fa-3x"></i>
+                                </div>
+                                <h4 class="font-weight-bold text-dark mb-2">UPI / QR Code</h4>
+                                <p class="text-muted small">Scan QR code using any UPI app (GPay, PhonePe, Paytm) and upload transaction reference.</p>
+                            </div>
+                            <div class="mt-4">
+                                <button class="btn btn-success btn-block py-2 font-weight-bold hover-scale" data-toggle="modal" data-target="#upiModal" style="border-radius: 12px;">
+                                    Scan QR Code
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="{% url 'appointment:patient-bookings' %}" class="btn btn-link text-muted font-weight-bold"><i class="fa fa-arrow-left mr-2"></i>Back to My Bookings</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- UPI QR Modal -->
+<div class="modal fade" id="upiModal" tabindex="-1" role="dialog" aria-labelledby="upiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content glass-panel border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0 bg-success text-white py-3" style="border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title font-weight-bold" id="upiModalLabel"><i class="fa fa-qrcode mr-2"></i>UPI Scan & Pay</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <p class="text-muted">Scan the QR code below using any UPI app to pay <strong>INR {{ booking.appointment.fee|default:500 }}</strong>.</p>
+                
+                <div class="my-3 p-3 bg-white d-inline-block rounded shadow-sm border">
+                    {% if qr_code_base64 %}
+                        <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="UPI QR Code" class="img-fluid" style="max-height: 250px;">
+                    {% else %}
+                        <div class="py-5 px-4 text-muted"><i class="fa fa-warning fa-2x d-block text-warning mb-2"></i>QR Code generation failed.</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4">
+                    <span class="text-muted d-block small">UPI ID</span>
+                    <code class="h6 font-weight-bold text-dark select-all">{{ upi_id }}</code>
+                </div>
+
+                <form action="{% url 'appointment:upi-confirm' booking.id %}" method="POST">
+                    {% csrf_token %}
+                    <div class="form-group text-left">
+                        <label for="transaction_ref" class="font-weight-bold small text-dark">Transaction ID / Reference Number</label>
+                        <input type="text" class="form-control" id="transaction_ref" name="transaction_ref" required placeholder="Enter the 12-digit UPI transaction reference" style="border-radius: 10px;">
+                    </div>
+                    <button type="submit" class="btn btn-success btn-block py-2 font-weight-bold hover-scale" style="border-radius: 12px;">
+                        Submit Transaction Ref
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Razorpay Integration Scripts -->
+<form id="razorpay-form" action="{% url 'appointment:razorpay-callback' %}" method="POST" style="display: none;">
+    {% csrf_token %}
+    <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+    <input type="hidden" name="razorpay_order_id" id="razorpay_order_id" value="{{ razorpay_order_id }}">
+    <input type="hidden" name="razorpay_signature" id="razorpay_signature">
+    <input type="hidden" name="booking_id" value="{{ booking.id }}">
+</form>
+
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    var options = {
+        "key": "{{ razorpay_key_id }}",
+        "amount": "{{ booking.appointment.fee|default:500 }}00", // in paise
+        "currency": "INR",
+        "name": "DocMed Healthcare",
+        "description": "Consultation Fee for Dr. {{ booking.appointment.full_name }}",
+        "image": "https://cdn-icons-png.flaticon.com/512/809/809957.png",
+        "order_id": "{{ razorpay_order_id }}",
+        "handler": function (response){
+            document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+            document.getElementById('razorpay_order_id').value = response.razorpay_order_id;
+            document.getElementById('razorpay_signature').value = response.razorpay_signature;
+            document.getElementById('razorpay-form').submit();
+        },
+        "prefill": {
+            "name": "{{ booking.patient_name }}",
+            "email": "{{ booking.user.email }}",
+            "contact": "{{ booking.phone_number }}"
+        },
+        "theme": {
+            "color": "#06b6d4"
+        }
+    };
+    var rzp1 = new Razorpay(options);
+    document.getElementById('rzp-button').onclick = function(e){
+        rzp1.open();
+        e.preventDefault();
+    }
+</script>
+{% endblock %}

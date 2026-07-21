@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load glass_form %}
+
+{% block title %}Edit Doctor Profile - DocMed Premium{% endblock %}
+
+{% block content %}
+<div class="container" style="min-height: 90vh; padding-top: 130px; padding-bottom: 70px; background: var(--color-bg);">
+  <div class="row justify-content-center">
+    <div class="col-lg-10" data-aos="fade-up">
+      <div class="glass-panel p-5 rounded-lg shadow-float border-0">
+        
+        <!-- Header -->
+        <div class="text-center mb-5">
+          <div class="d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background: rgba(6, 182, 212, 0.1); border-radius: 50%;">
+            <i class="fa fa-user-md fa-2x text-primary" style="color: var(--primary-cyan) !important;"></i>
+          </div>
+          <h3 class="font-weight-bold text-dark mb-1">Edit Professional Profile</h3>
+          <p class="text-muted">Update your medical credentials, specialization, availability settings, and account details.</p>
+          <div class="line mt-3 mb-1 mx-auto" style="width: 60px; height: 3px; background: var(--gradient-primary);"></div>
+        </div>
+
+        <form action="" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          {% if form.non_field_errors or profile_form.non_field_errors %}
+            <div class="alert alert-danger py-2 px-3 mb-4 rounded-lg small">
+              {% for error in form.non_field_errors %}
+                <p class="mb-0"><i class="fa fa-exclamation-circle mr-1"></i> {{ error }}</p>
+              {% endfor %}
+              {% for error in profile_form.non_field_errors %}
+                <p class="mb-0"><i class="fa fa-exclamation-circle mr-1"></i> {{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="row">
+            
+            <!-- SECTION 1: ACCOUNT DETAILS -->
+            <div class="col-12 mb-4">
+              <h5 class="font-weight-bold text-primary mb-3 border-bottom pb-2"><i class="fa fa-user mr-2"></i> Account details</h5>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">First Name</label>
+                  {{ form.first_name }}
+                  {% if form.first_name.errors %}
+                    <div class="text-danger small">{{ form.first_name.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Last Name</label>
+                  {{ form.last_name }}
+                  {% if form.last_name.errors %}
+                    <div class="text-danger small">{{ form.last_name.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Email Address</label>
+                  {{ form.email }}
+                  {% if form.email.errors %}
+                    <div class="text-danger small">{{ form.email.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Phone Number</label>
+                  {{ form.phone_number }}
+                  {% if form.phone_number.errors %}
+                    <div class="text-danger small">{{ form.phone_number.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Gender</label>
+                  {{ form.gender }}
+                  {% if form.gender.errors %}
+                    <div class="text-danger small">{{ form.gender.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 2: PROFESSIONAL SETTINGS -->
+            <div class="col-12 mb-4 mt-2">
+              <h5 class="font-weight-bold text-primary mb-3 border-bottom pb-2"><i class="fa fa-graduation-cap mr-2"></i> Professional details &amp; credentials</h5>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Medical License Registration Number</label>
+                  {{ profile_form.license_number }}
+                  {% if profile_form.license_number.errors %}
+                    <div class="text-danger small">{{ profile_form.license_number.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Qualifications (MBBS, BDS, MD...)</label>
+                  {{ profile_form.qualification }}
+                  {% if profile_form.qualification.errors %}
+                    <div class="text-danger small">{{ profile_form.qualification.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Specialization Department</label>
+                  {{ profile_form.specialization }}
+                  {% if profile_form.specialization.errors %}
+                    <div class="text-danger small">{{ profile_form.specialization.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Hospital or Affiliation Name</label>
+                  {{ profile_form.hospital }}
+                  {% if profile_form.hospital.errors %}
+                    <div class="text-danger small">{{ profile_form.hospital.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="small font-weight-bold">Years of Experience</label>
+                  {{ profile_form.experience_years }}
+                  {% if profile_form.experience_years.errors %}
+                    <div class="text-danger small">{{ profile_form.experience_years.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="small font-weight-bold">Consultation Fee ($)</label>
+                  {{ profile_form.consultation_fee }}
+                  {% if profile_form.consultation_fee.errors %}
+                    <div class="text-danger small">{{ profile_form.consultation_fee.errors }}</div>
+                  {% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="small font-weight-bold">Upload Profile Photo</label>
+                  {{ profile_form.photo }}
+                  {% if profile_form.photo.errors %}
+                    <div class="text-danger small">{{ profile_form.photo.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 3: PRACTICE SETTINGS -->
+            <div class="col-12 mb-4 mt-2">
+              <h5 class="font-weight-bold text-primary mb-3 border-bottom pb-2"><i class="fa fa-hospital-o mr-2"></i> Location &amp; practice hours</h5>
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label class="small font-weight-bold">City</label>
+                  {{ profile_form.city }}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="small font-weight-bold">State / Division</label>
+                  {{ profile_form.state }}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="small font-weight-bold">Country</label>
+                  {{ profile_form.country }}
+                </div>
+                <div class="col-md-12 mb-3">
+                  <label class="small font-weight-bold">Full Address</label>
+                  {{ profile_form.full_address }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Opening Consultation Hours</label>
+                  {{ profile_form.opening_time }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Closing Consultation Hours</label>
+                  {{ profile_form.closing_time }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Working Operational Days (Comma-separated)</label>
+                  {{ profile_form.working_days }}
+                  <span class="text-muted small" style="font-size:10px;">e.g. Monday, Wednesday, Friday</span>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="small font-weight-bold">Languages Spoken (Comma-separated)</label>
+                  {{ profile_form.languages }}
+                  <span class="text-muted small" style="font-size:10px;">e.g. English, Spanish</span>
+                </div>
+                <div class="col-md-12 mb-3">
+                  <label class="small font-weight-bold">Biography (Description)</label>
+                  {{ profile_form.bio }}
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 4: CONSULTATION MODES -->
+            <div class="col-12 mt-2">
+              <h5 class="font-weight-bold text-primary mb-3 border-bottom pb-2"><i class="fa fa-cogs mr-2"></i> Consultation modes</h5>
+              <div class="row align-items-center">
+                <div class="col-md-6 mb-2">
+                  <label class="d-flex align-items-center" style="gap: 8px;">
+                    {{ profile_form.online_consultation }}
+                    <span class="font-weight-bold small text-dark">Support Online Consultation</span>
+                  </label>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label class="d-flex align-items-center" style="gap: 8px;">
+                    {{ profile_form.offline_consultation }}
+                    <span class="font-weight-bold small text-dark">Support In-Clinic Consultation</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <button type="submit" class="btn-premium btn-primary-gradient w-100 py-3 mt-5 shadow-glow" id="saveBtn">
+            <i class="fa fa-check-circle mr-2"></i> Save Doctor Profile changes
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} | Payment Verification Pending{% endblock %}
+
+{% block styles %}
+<style>
+    .pending-animation {
+        margin: 50px auto;
+        position: relative;
+        width: 100px;
+        height: 100px;
+    }
+    .clock-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: block;
+        stroke-width: 2;
+        stroke: #f59e0b;
+        stroke-miterlimit: 10;
+        box-shadow: inset 0px 0px 0px #f59e0b;
+        animation: fill-amber .4s ease-in-out .4s forwards;
+        position: relative;
+        margin: 0 auto;
+    }
+    .clock__circle {
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+        stroke-width: 2;
+        stroke-miterlimit: 10;
+        stroke: #f59e0b;
+        fill: none;
+        animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    }
+    .clock__hand {
+        transform-origin: 26px 26px;
+        stroke-width: 2;
+        stroke: #f59e0b;
+        stroke-linecap: round;
+        animation: rotate-hands 6s linear infinite;
+    }
+    .clock__hand-min {
+        animation: rotate-hands 1s linear infinite;
+    }
+    @keyframes stroke {
+        100% {
+            stroke-dashoffset: 0;
+        }
+    }
+    @keyframes fill-amber {
+        100% {
+            box-shadow: inset 0px 0px 0px 50px rgba(245, 158, 11, 0.1);
+        }
+    }
+    @keyframes rotate-hands {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="glass-panel p-5 text-center shadow-soft border-0" data-aos="zoom-in">
+                
+                <div class="pending-animation">
+                    <svg class="clock-circle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                        <circle class="clock__circle" cx="26" cy="26" r="25" fill="none"/>
+                        <!-- Clock hands -->
+                        <line class="clock__hand" x1="26" y1="26" x2="26" y2="12"/>
+                        <line class="clock__hand clock__hand-min" x1="26" y1="26" x2="35" y2="26"/>
+                    </svg>
+                </div>
+
+                <h2 class="font-weight-bold text-warning mb-2">Verification Pending</h2>
+                <p class="text-muted">Thank you. Your transaction reference has been submitted. Our administrative team is currently verifying the payment manually.</p>
+
+                <!-- Booking Summary Card -->
+                <div class="glass-panel p-4 my-4 bg-light border-0 shadow-sm text-left text-dark">
+                    <h6 class="font-weight-bold border-bottom pb-2 mb-3"><i class="fa fa-info-circle mr-2 text-primary"></i>Booking & Payment Summary</h6>
+                    <div class="row small mb-2">
+                        <div class="col-6 text-muted">Booking ID:</div>
+                        <div class="col-6 text-right font-weight-bold">#{{ booking.id }}</div>
+                    </div>
+                    <div class="row small mb-2">
+                        <div class="col-6 text-muted">Doctor:</div>
+                        <div class="col-6 text-right font-weight-bold">Dr. {{ booking.appointment.full_name }}</div>
+                    </div>
+                    <div class="row small mb-2">
+                        <div class="col-6 text-muted">Amount:</div>
+                        <div class="col-6 text-right font-weight-bold text-primary">INR {{ booking.appointment.fee|default:500 }}</div>
+                    </div>
+                    <div class="row small">
+                        <div class="col-6 text-muted">Method:</div>
+                        <div class="col-6 text-right font-weight-bold text-capitalize">UPI / QR Code</div>
+                    </div>
+                </div>
+
+                <p class="text-muted small mb-4">You will receive an email confirmation as soon as the administrator completes the verification. This usually takes 10 to 30 minutes during business hours.</p>
+
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-center">
+                    <a href="{% url 'appointment:patient-bookings' %}" class="btn btn-primary-gradient btn-premium px-4 py-2 font-weight-bold hover-scale">
+                        Back to My Bookings<i class="fa fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

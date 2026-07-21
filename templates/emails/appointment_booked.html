@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appointment Booked - DocMed</title>
+</head>
+<body style="margin:0;padding:0;background:#f0f4f8;font-family:'Segoe UI',Arial,sans-serif;">
+  <div style="max-width:600px;margin:40px auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+    
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#4f46e5,#06b6d4);padding:36px 40px;text-align:center;">
+      <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:50%;padding:14px;margin-bottom:12px;">
+        <img src="https://cdni.iconscout.com/illustration/premium/thumb/doctor-online-consultation-4315993-3598602.png" alt="DocMed" width="60" style="display:block;">
+      </div>
+      <h1 style="color:#fff;margin:0;font-size:26px;font-weight:700;letter-spacing:-0.5px;">Appointment Booked!</h1>
+      <p style="color:rgba(255,255,255,0.85);margin:8px 0 0;font-size:14px;">Your booking request has been received</p>
+    </div>
+
+    <!-- Body -->
+    <div style="padding:40px;">
+      <p style="color:#334155;font-size:16px;margin:0 0 24px;">Hi <strong>{{ booking.full_name }}</strong>,</p>
+      <p style="color:#475569;font-size:14px;line-height:1.7;margin:0 0 24px;">
+        We have received your appointment booking request at <strong>DocMed</strong>. 
+        The doctor will review your request and confirm the appointment shortly.
+      </p>
+
+      <!-- Booking Details Card -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:24px;margin-bottom:24px;">
+        <h3 style="color:#0f172a;font-size:16px;font-weight:700;margin:0 0 16px;padding-bottom:12px;border-bottom:1px solid #e2e8f0;">
+          📋 Booking Details
+        </h3>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="padding:8px 0;color:#64748b;font-size:13px;width:40%;">Booking ID</td>
+            <td style="padding:8px 0;color:#0f172a;font-size:13px;font-weight:600;">#{{ booking_id }}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:#64748b;font-size:13px;">Doctor</td>
+            <td style="padding:8px 0;color:#0f172a;font-size:13px;font-weight:600;">Dr. {{ doctor_name }}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:#64748b;font-size:13px;">Hospital</td>
+            <td style="padding:8px 0;color:#0f172a;font-size:13px;font-weight:600;">{{ hospital_name }}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:#64748b;font-size:13px;">Date</td>
+            <td style="padding:8px 0;color:#0f172a;font-size:13px;font-weight:600;">{{ date }}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:#64748b;font-size:13px;">Time Slot</td>
+            <td style="padding:8px 0;color:#0f172a;font-size:13px;font-weight:600;">{{ time }}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:#64748b;font-size:13px;">Status</td>
+            <td style="padding:8px 0;">
+              <span style="background:#fef3c7;color:#92400e;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;">⏳ {{ status }}</span>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Notice -->
+      <div style="background:#eff6ff;border-left:4px solid #3b82f6;border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:24px;">
+        <p style="margin:0;color:#1e40af;font-size:13px;line-height:1.6;">
+          <strong>📢 What's next?</strong> The doctor will approve or reschedule your appointment. 
+          You'll receive an email notification once your booking status is updated.
+        </p>
+      </div>
+
+      <p style="color:#475569;font-size:13px;line-height:1.7;margin:0;">
+        If you have any questions, feel free to contact us at 
+        <a href="mailto:support@docmed.com" style="color:#4f46e5;text-decoration:none;font-weight:600;">support@docmed.com</a>
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:24px 40px;text-align:center;">
+      <p style="margin:0;color:#94a3b8;font-size:12px;">
+        © 2025 DocMed — Premium Healthcare Platform<br>
+        <a href="#" style="color:#4f46e5;text-decoration:none;">Unsubscribe</a> · 
+        <a href="#" style="color:#4f46e5;text-decoration:none;">Privacy Policy</a>
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>

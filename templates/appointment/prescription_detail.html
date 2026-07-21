@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Prescription Details | DocMed{% endblock %}
+
+{% block styles %}
+<style>
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        .printable-area, .printable-area * {
+            visibility: visible;
+        }
+        .printable-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+        .no-print {
+            display: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4 no-print">
+                <ol class="breadcrumb bg-transparent p-0">
+                    <li class="breadcrumb-item"><a href="{% url 'appointment:home' %}" class="text-primary font-weight-bold">Home</a></li>
+                    <li class="breadcrumb-item">
+                        {% if is_doctor %}
+                            <a href="{% url 'appointment:doctor-appointment' %}" class="text-primary font-weight-bold">Dashboard</a>
+                        {% else %}
+                            <a href="{% url 'appointment:patient-bookings' %}" class="text-primary font-weight-bold">Bookings</a>
+                        {% endif %}
+                    </li>
+                    <li class="breadcrumb-item active text-muted" aria-current="page">Prescription Details</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+                <a href="{% if is_doctor %}{% url 'appointment:doctor-appointment' %}{% else %}{% url 'appointment:patient-bookings' %}{% endif %}" class="btn btn-outline-primary hover-scale" style="border-radius: 12px;">
+                    <i class="fa fa-arrow-left mr-2"></i>Back
+                </a>
+                <div class="d-flex" style="gap: 10px;">
+                    <button onclick="window.print();" class="btn btn-outline-dark font-weight-bold hover-scale" style="border-radius: 12px;">
+                        <i class="fa fa-print mr-2"></i>Print
+                    </button>
+                    <a href="{% url 'appointment:prescription-pdf' prescription.booking.id %}" target="_blank" class="btn btn-success font-weight-bold hover-scale shadow-sm" style="border-radius: 12px; background: #10b981; border:0;">
+                        <i class="fa fa-download mr-2"></i>Download PDF
+                    </a>
+                </div>
+            </div>
+
+            <!-- Prescription Document Card -->
+            <div class="glass-panel p-5 shadow-soft border-0 printable-area text-dark" style="background: #ffffff !important; border-radius: 24px;">
+                <!-- Prescription Header -->
+                <div class="row border-bottom pb-4 mb-4" style="border-color: rgba(0,0,0,0.1) !important;">
+                    <div class="col-sm-7">
+                        <div class="d-flex align-items-center">
+                            <div class="p-3 mr-3 rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(79,70,229,0.05) !important;">
+                                <i class="fa fa-heartbeat fa-lg text-primary"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-weight-bold text-primary mb-0">DocMed Clinic</h3>
+                                <p class="text-muted small mb-0">{{ prescription.booking.appointment.hospital_name }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-5 text-sm-right mt-3 mt-sm-0">
+                        <h5 class="font-weight-bold text-dark mb-0">Dr. {{ prescription.booking.appointment.full_name }}</h5>
+                        <p class="text-muted small mb-0">{{ prescription.booking.appointment.department }} Specialist</p>
+                        <p class="text-muted small mb-0">License No: {{ prescription.booking.appointment.user.doctor_profile.license_number|default:"N/A" }}</p>
+                    </div>
+                </div>
+
+                <!-- Patient & Meta Info -->
+                <div class="row border-bottom pb-3 mb-4 text-dark" style="border-color: rgba(0,0,0,0.05) !important;">
+                    <div class="col-sm-4 mb-2 mb-sm-0">
+                        <span class="text-muted small d-block">Patient Name:</span>
+                        <strong>{{ prescription.booking.patient_name }}</strong>
+                    </div>
+                    <div class="col-sm-4 mb-2 mb-sm-0">
+                        <span class="text-muted small d-block">Prescribed Date:</span>
+                        <strong>{{ prescription.created_at|date:"M d, Y — h:i A" }}</strong>
+                    </div>
+                    <div class="col-sm-4 text-sm-right">
+                        <span class="text-muted small d-block">Prescription Code:</span>
+                        <strong>#RX-{{ prescription.id }}</strong>
+                    </div>
+                </div>
+
+                <!-- Diagnosis & Symptoms -->
+                <div class="row mb-4">
+                    {% if prescription.symptoms %}
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <h6 class="font-weight-bold text-dark"><i class="fa fa-heartbeat text-danger mr-2"></i>Symptoms Reported:</h6>
+                        <p class="text-muted bg-light p-3 rounded" style="border-radius: 12px; white-space: pre-line;">{{ prescription.symptoms }}</p>
+                    </div>
+                    {% endif %}
+                    {% if prescription.diagnosis %}
+                    <div class="col-md-6">
+                        <h6 class="font-weight-bold text-dark"><i class="fa fa-stethoscope text-primary mr-2"></i>Medical Diagnosis:</h6>
+                        <p class="text-muted bg-light p-3 rounded" style="border-radius: 12px; white-space: pre-line;">{{ prescription.diagnosis }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Rx Details -->
+                <div class="mb-5">
+                    <h4 class="font-weight-bold text-dark border-bottom pb-2 mb-3" style="border-color: rgba(0,0,0,0.05) !important;"><i class="fa fa-medkit mr-2 text-primary"></i>Rx (Medications prescribed)</h4>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr class="text-muted small">
+                                    <th class="border-0">#</th>
+                                    <th class="border-0">Medicine Name</th>
+                                    <th class="border-0">Dosage</th>
+                                    <th class="border-0 text-center">Timings (M-A-N)</th>
+                                    <th class="border-0">Meal Timing</th>
+                                    <th class="border-0">Duration</th>
+                                    <th class="border-0">Instructions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in prescription.items.all %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td class="font-weight-bold text-dark">{{ item.medicine_name }}</td>
+                                    <td>{{ item.dosage }}</td>
+                                    <td class="text-center">
+                                        <div class="d-inline-flex gap-2">
+                                            <span class="badge {% if item.morning %}badge-primary{% else %}badge-light text-muted{% endif %}" style="border-radius: 4px; padding: 4px 8px;">Morning</span>
+                                            <span class="badge {% if item.afternoon %}badge-primary{% else %}badge-light text-muted{% endif %}" style="border-radius: 4px; padding: 4px 8px;">Afternoon</span>
+                                            <span class="badge {% if item.night %}badge-primary{% else %}badge-light text-muted{% endif %}" style="border-radius: 4px; padding: 4px 8px;">Night</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if item.before_food %}
+                                            <span class="badge badge-warning text-dark" style="border-radius: 6px;">Before Meal</span>
+                                        {% else %}
+                                            <span class="badge badge-info" style="border-radius: 6px;">After Meal</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.number_of_days }} Days</td>
+                                    <td class="small text-muted">{{ item.notes|default:"—" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">No medications listed in this prescription.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Advice & Recommendations -->
+                <div class="row mb-5">
+                    {% if prescription.advice %}
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <div class="p-3 rounded bg-light border" style="border-radius: 12px !important;">
+                            <h6 class="font-weight-bold text-dark mb-2"><i class="fa fa-info-circle mr-2 text-primary"></i>Medical Advice:</h6>
+                            <p class="text-muted mb-0" style="white-space: pre-line;">{{ prescription.advice }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if prescription.lab_tests %}
+                    <div class="col-md-6">
+                        <div class="p-3 rounded bg-light border" style="border-radius: 12px !important;">
+                            <h6 class="font-weight-bold text-dark mb-2"><i class="fa fa-flask mr-2 text-primary"></i>Recommended Lab Tests:</h6>
+                            <p class="text-muted mb-0" style="white-space: pre-line;">{{ prescription.lab_tests }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Footer Blocks (Signature & QR Code) -->
+                <div class="row pt-4 mt-5 align-items-center">
+                    <div class="col-sm-6 text-center text-sm-left mb-4 mb-sm-0">
+                        {% if prescription.qr_code %}
+                            <div class="d-inline-block text-center bg-light p-2 rounded" style="border: 1px solid rgba(0,0,0,0.05);">
+                                <img src="{{ prescription.qr_code.url }}" alt="Prescription Verification QR Code" style="width: 100px; height: 100px;">
+                                <span class="text-muted d-block small mt-1" style="font-size: 10px;">Scan to Verify RX</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-sm-6 text-center text-sm-right">
+                        <div class="d-inline-block text-center">
+                            {% if prescription.booking.appointment.user.doctor_profile.digital_signature %}
+                                <img src="{{ prescription.booking.appointment.user.doctor_profile.digital_signature.url }}" alt="Doctor Signature" style="max-height: 60px; max-width: 180px; display: block; margin: 0 auto 5px;">
+                            {% else %}
+                                <div class="border-bottom mb-2" style="width: 200px; height: 40px; border-color: rgba(0,0,0,0.15) !important; margin: 0 auto;"></div>
+                            {% endif %}
+                            <span class="text-dark font-weight-bold d-block">Dr. {{ prescription.booking.appointment.full_name }}</span>
+                            <span class="text-muted small d-block">Authorized Electronic Signature</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}| My Health Profile{% endblock %}
+
+{% block styles %}
+<style>
+  body { background: linear-gradient(180deg, #0f0c29 0%, #1a1a3e 100%); }
+
+  .profile-cover {
+    height: 220px;
+    background: linear-gradient(135deg, #10b981 0%, #0f766e 50%, #0f0c29 100%);
+    position: relative; overflow: hidden;
+  }
+  .profile-cover-overlay { position:absolute; inset:0; background: linear-gradient(to bottom, transparent 40%, rgba(15,12,41,0.95) 100%); }
+  .avatar-wrap { position: absolute; bottom: -50px; left: 40px; }
+  .profile-avatar { width:100px; height:100px; border-radius:50%; object-fit:cover; border:4px solid #10b981; box-shadow:0 0 0 4px rgba(16,185,129,0.2); }
+  .profile-avatar-placeholder { width:100px; height:100px; border-radius:50%; background:linear-gradient(135deg,#10b981,#059669); display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#fff; font-weight:800; border:4px solid #10b981; }
+
+  .glass-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:24px; backdrop-filter:blur(12px); margin-bottom:20px; }
+  .glass-card h5 { color:#6ee7b7; font-weight:700; font-size:0.82rem; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:18px; display:flex; align-items:center; gap:8px; }
+
+  .stat-box { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:16px; text-align:center; }
+  .stat-box .val { color:#fff; font-weight:800; font-size:1.5rem; display:block; }
+  .stat-box .lbl { color:rgba(255,255,255,0.5); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; }
+  .stat-box i { font-size:1.3rem; margin-bottom:6px; display:block; }
+
+  .info-row { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .info-row:last-child { border-bottom:none; }
+  .info-row i { color:#6ee7b7; font-size:1rem; margin-top:2px; flex-shrink:0; }
+  .info-label { color:rgba(255,255,255,0.45); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; }
+  .info-value { color:#fff; font-size:0.9rem; font-weight:500; margin-top:1px; }
+
+  .booking-item { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 16px; margin-bottom:10px; transition:all 0.3s; }
+  .booking-item:hover { border-color:rgba(16,185,129,0.3); background:rgba(255,255,255,0.07); }
+  .booking-doctor { color:#fff; font-weight:600; font-size:0.9rem; }
+  .booking-date { color:rgba(255,255,255,0.5); font-size:0.8rem; }
+  .status-badge { font-size:0.72rem; padding:3px 10px; border-radius:50px; font-weight:600; }
+  .status-pending { background:rgba(251,191,36,0.15); color:#fcd34d; border:1px solid rgba(251,191,36,0.3); }
+  .status-approved { background:rgba(16,185,129,0.15); color:#6ee7b7; border:1px solid rgba(16,185,129,0.3); }
+  .status-completed { background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3); }
+  .status-cancelled { background:rgba(239,68,68,0.15); color:#fca5a5; border:1px solid rgba(239,68,68,0.3); }
+
+  .health-tag { display:inline-block; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.7); border-radius:50px; padding:4px 12px; font-size:0.78rem; margin:3px; }
+  .bmi-bar { height:8px; border-radius:50px; background:rgba(255,255,255,0.08); overflow:hidden; }
+  .bmi-fill { height:100%; border-radius:50px; background:linear-gradient(90deg,#10b981,#059669); }
+
+  .btn-edit-profile { background:linear-gradient(135deg,#10b981,#059669); border:none; border-radius:12px; color:#fff; font-weight:700; padding:10px 24px; text-decoration:none; transition:all 0.3s; display:inline-block; }
+  .btn-edit-profile:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(16,185,129,0.4); color:#fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="min-height:100vh; padding-top:80px;">
+
+  <!-- Cover -->
+  <div class="profile-cover">
+    {% if profile.cover_image %}<img src="{{ profile.cover_image.url }}" alt="cover" style="width:100%;height:100%;object-fit:cover;">{% endif %}
+    <div class="profile-cover-overlay"></div>
+    <div class="avatar-wrap">
+      {% if profile.photo %}
+      <img src="{{ profile.photo.url }}" alt="avatar" class="profile-avatar">
+      {% else %}
+      <div class="profile-avatar-placeholder">{{ request.user.get_full_name|slice:":1"|upper }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="container" style="padding-top:70px;">
+    <div class="row g-4">
+
+      <!-- Left: Patient Info -->
+      <div class="col-lg-4">
+        <div class="glass-card" data-aos="fade-right">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+            <div>
+              <h2 style="color:#fff; font-weight:800; font-size:1.3rem; margin-bottom:2px;">{{ request.user.get_full_name }}</h2>
+              <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; margin:0;">{{ request.user.email }}</p>
+            </div>
+            <a href="{% url 'appointment:patient-profile-edit' %}" class="btn-edit-profile" style="padding:7px 14px; font-size:0.82rem;"><i class="ri-edit-line me-1"></i>Edit</a>
+          </div>
+
+          <div class="info-row"><i class="ri-calendar-line"></i><div><div class="info-label">Age / DOB</div><div class="info-value">{% if calculated_age %}{{ calculated_age }} years{% else %}—{% endif %} {% if profile.date_of_birth %}· {{ profile.date_of_birth|date:"d M Y" }}{% endif %}</div></div></div>
+          <div class="info-row"><i class="ri-heart-pulse-line" style="color:#f87171;"></i><div><div class="info-label">Blood Group</div><div class="info-value">{{ profile.blood_group|default:"—" }}</div></div></div>
+          <div class="info-row"><i class="ri-user-line"></i><div><div class="info-label">Gender</div><div class="info-value">{{ profile.gender|default:"—"|title }}</div></div></div>
+          <div class="info-row"><i class="ri-phone-line"></i><div><div class="info-label">Phone</div><div class="info-value">{{ request.user.phone_number|default:"—" }}</div></div></div>
+          <div class="info-row"><i class="ri-map-pin-line"></i><div><div class="info-label">Location</div><div class="info-value">{{ profile.city|default:"—" }}{% if profile.state %}, {{ profile.state }}{% endif %}</div></div></div>
+
+          {% if profile.height and profile.weight %}
+          <div class="info-row"><i class="ri-scale-line"></i><div><div class="info-label">Height / Weight</div><div class="info-value">{{ profile.height }} · {{ profile.weight }}</div></div></div>
+          {% endif %}
+        </div>
+
+        <!-- Lifestyle -->
+        {% if profile.smoking or profile.alcohol or profile.exercise %}
+        <div class="glass-card" data-aos="fade-right">
+          <h5><i class="ri-leaf-line"></i> Lifestyle</h5>
+          {% if profile.smoking %}<div class="info-row"><i class="ri-smoke-line"></i><div><div class="info-label">Smoking</div><div class="info-value">{{ profile.get_smoking_display|default:"—" }}</div></div></div>{% endif %}
+          {% if profile.alcohol %}<div class="info-row"><i class="ri-goblet-line"></i><div><div class="info-label">Alcohol</div><div class="info-value">{{ profile.get_alcohol_display|default:"—" }}</div></div></div>{% endif %}
+          {% if profile.exercise %}<div class="info-row"><i class="ri-run-line"></i><div><div class="info-label">Exercise</div><div class="info-value">{{ profile.get_exercise_display|default:"—" }}</div></div></div>{% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Emergency Contacts -->
+        {% if emergency_contacts %}
+        <div class="glass-card" data-aos="fade-right">
+          <h5><i class="ri-alarm-warning-line"></i> Emergency Contacts</h5>
+          {% for contact in emergency_contacts %}
+          <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.15); border-radius:10px; padding:12px; margin-bottom:8px;">
+            <p style="color:#fff; font-weight:600; margin:0;">{{ contact.name }} {% if contact.is_primary %}<span style="font-size:0.7rem; background:rgba(239,68,68,0.2); color:#fca5a5; border-radius:4px; padding:1px 6px;">Primary</span>{% endif %}</p>
+            <p style="color:rgba(255,255,255,0.5); font-size:0.82rem; margin:0;">{{ contact.get_relation_display }} · {{ contact.phone }}</p>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Right: Stats + Medical History + Bookings -->
+      <div class="col-lg-8">
+
+        <!-- Stats -->
+        <div class="row g-3 mb-4" data-aos="fade-up">
+          <div class="col-6 col-md-3">
+            <div class="stat-box"><i class="ri-calendar-check-line" style="color:#6ee7b7;"></i><span class="val">{{ stats.total }}</span><span class="lbl">Total Visits</span></div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-box"><i class="ri-calendar-event-line" style="color:#a5b4fc;"></i><span class="val">{{ stats.upcoming }}</span><span class="lbl">Upcoming</span></div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-box"><i class="ri-checkbox-circle-line" style="color:#6ee7b7;"></i><span class="val">{{ stats.completed }}</span><span class="lbl">Completed</span></div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-box"><i class="ri-close-circle-line" style="color:#fca5a5;"></i><span class="val">{{ stats.cancelled }}</span><span class="lbl">Cancelled</span></div>
+          </div>
+        </div>
+
+        <!-- Medical History -->
+        {% if profile.allergies or profile.current_medications or profile.chronic_diseases or profile.surgeries %}
+        <div class="glass-card" data-aos="fade-up">
+          <h5><i class="ri-heart-pulse-line"></i> Medical Summary</h5>
+          <div class="row g-3">
+            {% if profile.allergies %}
+            <div class="col-md-6">
+              <p style="color:#fca5a5; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;"><i class="ri-alert-line me-1"></i>Allergies</p>
+              <p style="color:rgba(255,255,255,0.75); font-size:0.88rem;">{{ profile.allergies }}</p>
+            </div>
+            {% endif %}
+            {% if profile.current_medications %}
+            <div class="col-md-6">
+              <p style="color:#6ee7b7; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;"><i class="ri-capsule-line me-1"></i>Current Medications</p>
+              <p style="color:rgba(255,255,255,0.75); font-size:0.88rem;">{{ profile.current_medications }}</p>
+            </div>
+            {% endif %}
+            {% if profile.chronic_diseases %}
+            <div class="col-md-6">
+              <p style="color:#fcd34d; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;"><i class="ri-health-book-line me-1"></i>Chronic Conditions</p>
+              <p style="color:rgba(255,255,255,0.75); font-size:0.88rem;">{{ profile.chronic_diseases }}</p>
+            </div>
+            {% endif %}
+            {% if profile.surgeries %}
+            <div class="col-md-6">
+              <p style="color:#c4b5fd; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;"><i class="ri-surgical-mask-line me-1"></i>Previous Surgeries</p>
+              <p style="color:rgba(255,255,255,0.75); font-size:0.88rem;">{{ profile.surgeries }}</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Insurance -->
+        {% if insurance_policies %}
+        <div class="glass-card" data-aos="fade-up">
+          <h5><i class="ri-shield-cross-line"></i> Insurance Policies</h5>
+          {% for ins in insurance_policies %}
+          <div style="background:rgba(99,102,241,0.06); border:1px solid rgba(99,102,241,0.15); border-radius:10px; padding:14px; margin-bottom:8px;">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <p style="color:#fff; font-weight:700; margin:0;">{{ ins.company_name }}</p>
+                <p style="color:rgba(255,255,255,0.5); font-size:0.82rem; margin:2px 0;">Policy: {{ ins.policy_number }}</p>
+                {% if ins.expiry_date %}<p style="color:rgba(255,255,255,0.4); font-size:0.78rem; margin:0;">Expires: {{ ins.expiry_date|date:"d M Y" }}</p>{% endif %}
+              </div>
+              {% if ins.coverage_amount %}
+              <div style="text-align:right;">
+                <p style="color:#a5b4fc; font-weight:800; font-size:1rem; margin:0;">₹{{ ins.coverage_amount|floatformat:0 }}</p>
+                <p style="color:rgba(255,255,255,0.4); font-size:0.75rem; margin:0;">Coverage</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Upcoming Bookings -->
+        {% if upcoming_bookings %}
+        <div class="glass-card" data-aos="fade-up">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="mb-0"><i class="ri-calendar-event-line"></i> Upcoming Appointments</h5>
+            <a href="{% url 'appointment:patient-bookings' %}" style="color:#6ee7b7; font-size:0.82rem; text-decoration:none;">View All →</a>
+          </div>
+          {% for booking in upcoming_bookings %}
+          <div class="booking-item">
+            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+              <div>
+                <p class="booking-doctor mb-0"><i class="ri-stethoscope-line me-1"></i>Dr. {{ booking.appointment.user.get_full_name }}</p>
+                <p class="booking-date">{{ booking.date|date:"d M Y, H:i" }}</p>
+              </div>
+              <span class="status-badge status-{{ booking.status }}">{{ booking.get_status_display }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Book CTA -->
+        <div class="text-center" data-aos="fade-up">
+          <a href="{% url 'appointment:booking-wizard' %}" class="btn-edit-profile">
+            <i class="ri-calendar-check-line me-2"></i> Book New Appointment
+          </a>
+          <a href="{% url 'appointment:patient-profile-edit' %}" class="btn-edit-profile ms-3" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);">
+            <i class="ri-edit-line me-2"></i> Edit Profile
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

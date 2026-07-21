@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Phone OTP Login - DocMed Premium{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper" style="min-height: 100vh; background: linear-gradient(135deg, #F8FBFF 0%, #E1EBFF 100%); display: flex; align-items: center; justify-content: center; padding: 40px 0;">
+  
+  <!-- Floating Medical Shapes in Background -->
+  <div class="medical-shapes">
+    <div class="medical-shape shape-1"><i class="fa fa-plus-circle"></i></div>
+    <div class="medical-shape shape-2"><i class="fa fa-heartbeat"></i></div>
+    <div class="medical-shape shape-3"><i class="fa fa-user-md"></i></div>
+    <div class="medical-shape shape-4"><i class="fa fa-plus"></i></div>
+  </div>
+
+  <div class="login-card-container" data-aos="zoom-in" data-aos-duration="1000" style="width: 100%; max-width: 520px; z-index: 10;">
+    <div class="premium-login-card p-5" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.08);">
+      
+      <!-- Card Header -->
+      <div class="text-center mb-5">
+        <div class="d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background: rgba(6, 182, 212, 0.1); border-radius: 50%;">
+          <i class="fa fa-mobile fa-2x text-primary" style="color: #06b6d4 !important; font-size: 3rem;"></i>
+        </div>
+        <h3 class="font-weight-bold text-dark mb-1">Phone OTP Login</h3>
+        <p class="text-muted">Enter your registered phone number to receive a one-time verification code.</p>
+      </div>
+
+      <!-- OTP Login Form -->
+      <form method="POST" action="{% url 'accounts:otp-login' %}" data-loading>
+        {% csrf_token %}
+
+        <div class="form-floating-custom mb-4 position-relative">
+          <input type="text" name="phone_number" id="id_phone_number" placeholder=" " required value="{{ phone_number|default:'' }}">
+          <i class="fa fa-phone input-icon"></i>
+          <label for="id_phone_number">Phone Number (e.g. +1234567890)</label>
+        </div>
+
+        <button type="submit" class="btn-premium btn-primary-gradient w-100 py-3 mb-3 shadow-glow" style="background: linear-gradient(135deg, #06b6d4, #4f46e5); color: white; border: 0; border-radius: 12px; font-weight: 700;">
+          <span class="btn-text">Send Verification Code <i class="fa fa-paper-plane ml-2"></i></span>
+          <span class="btn-spinner spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+        </button>
+      </form>
+
+      <div class="text-center mt-4">
+        <p class="text-muted small mb-0">Remember password? <a href="{% url 'accounts:login' %}" class="text-primary font-weight-bold" style="color: #4f46e5;">Sign In Here</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

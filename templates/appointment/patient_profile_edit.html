@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}| Edit Health Profile{% endblock %}
+
+{% block styles %}
+<style>
+  body { background: linear-gradient(180deg, #0f0c29 0%, #1a1a3e 100%); }
+  .profile-tabs { display:flex; gap:6px; flex-wrap:wrap; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:8px; margin-bottom:28px; }
+  .tab-btn { flex:1; min-width:130px; background:transparent; border:1px solid transparent; border-radius:12px; color:rgba(255,255,255,0.55); font-size:0.85rem; font-weight:600; padding:10px 14px; cursor:pointer; transition:all 0.25s; display:flex; align-items:center; gap:6px; justify-content:center; text-decoration:none; }
+  .tab-btn:hover { color:#6ee7b7; background:rgba(16,185,129,0.1); }
+  .tab-btn.active { background:linear-gradient(135deg,#10b981,#059669); color:#fff; box-shadow:0 4px 14px rgba(16,185,129,0.35); }
+  .tab-btn i { font-size:1rem; }
+  .edit-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:28px; backdrop-filter:blur(12px); margin-bottom:24px; }
+  .edit-card h5 { color:#6ee7b7; font-weight:700; font-size:0.82rem; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+  .form-label { color:rgba(255,255,255,0.65); font-size:0.82rem; font-weight:600; margin-bottom:5px; }
+  .form-control, .form-select { background:rgba(255,255,255,0.08)!important; border:1px solid rgba(255,255,255,0.15)!important; color:#fff!important; border-radius:12px!important; padding:10px 14px!important; font-size:0.9rem!important; }
+  .form-control::placeholder { color:rgba(255,255,255,0.35)!important; }
+  .form-control:focus, .form-select:focus { background:rgba(255,255,255,0.12)!important; border-color:rgba(16,185,129,0.5)!important; box-shadow:0 0 0 3px rgba(16,185,129,0.2)!important; color:#fff!important; }
+  .form-select option { background:#1a1a3e; color:#fff; }
+  .form-check-input:checked { background-color:#10b981; border-color:#10b981; }
+  .form-check-label { color:rgba(255,255,255,0.75); font-size:0.88rem; }
+  textarea.form-control { resize:vertical; min-height:90px; }
+  .btn-save { background:linear-gradient(135deg,#10b981,#059669); border:none; border-radius:12px; color:#fff; font-weight:700; padding:12px 28px; transition:all 0.3s; cursor:pointer; }
+  .btn-save:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(16,185,129,0.4); color:#fff; }
+  .btn-add { background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); border-radius:10px; color:#6ee7b7; font-size:0.85rem; font-weight:600; padding:8px 16px; cursor:pointer; transition:all 0.2s; }
+  .btn-add:hover { background:rgba(16,185,129,0.3); color:#fff; }
+  .btn-del { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:8px; color:#fca5a5; font-size:0.78rem; padding:4px 10px; cursor:pointer; transition:all 0.2s; }
+  .btn-del:hover { background:rgba(239,68,68,0.3); color:#fff; }
+  .list-item { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 16px; margin-bottom:10px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .list-item-title { color:#fff; font-weight:600; font-size:0.9rem; margin-bottom:2px; }
+  .list-item-sub { color:rgba(255,255,255,0.5); font-size:0.8rem; }
+  .photo-upload-wrap { display:flex; align-items:center; gap:20px; margin-bottom:24px; padding:20px; background:rgba(255,255,255,0.04); border:1px dashed rgba(255,255,255,0.15); border-radius:14px; }
+  .photo-preview { width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid rgba(16,185,129,0.4); }
+  .photo-placeholder { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#10b981,#059669); display:flex; align-items:center; justify-content:center; font-size:1.8rem; color:#fff; font-weight:700; border:3px solid rgba(16,185,129,0.4); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="min-height:100vh; padding-top:100px; padding-bottom:60px;">
+  <div class="container">
+
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3" data-aos="fade-down">
+      <div>
+        <h1 style="color:#fff; font-weight:800; font-size:1.8rem;">Edit Health Profile</h1>
+        <p style="color:rgba(255,255,255,0.5); margin:0;">Keep your health information up to date</p>
+      </div>
+      <a href="{% url 'appointment:patient-profile' %}" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:rgba(255,255,255,0.7); padding:8px 16px; text-decoration:none; font-size:0.85rem;">
+        <i class="ri-eye-line me-1"></i> View Profile
+      </a>
+    </div>
+
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="alert alert-dismissible fade show" style="border-radius:12px; border:none; background:rgba({% if 'success' in msg.tags %}16,185,129{% elif 'error' in msg.tags or 'danger' in msg.tags %}239,68,68{% else %}16,185,129{% endif %},0.15); color:#fff;" role="alert">
+      {{ msg }}<button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Tabs -->
+    <div class="profile-tabs" data-aos="fade-up">
+      <a href="#tab-basic" class="tab-btn active" data-tab="tab-basic"><i class="ri-user-line"></i> Basic Info</a>
+      <a href="#tab-medical" class="tab-btn" data-tab="tab-medical"><i class="ri-heart-pulse-line"></i> Medical</a>
+      <a href="#tab-lifestyle" class="tab-btn" data-tab="tab-lifestyle"><i class="ri-leaf-line"></i> Lifestyle</a>
+      <a href="#tab-contacts" class="tab-btn" data-tab="tab-contacts"><i class="ri-alarm-warning-line"></i> Emergency</a>
+      <a href="#tab-insurance" class="tab-btn" data-tab="tab-insurance"><i class="ri-shield-cross-line"></i> Insurance</a>
+    </div>
+
+    <!-- ── TAB: Basic Info ── -->
+    <div class="tab-pane" id="tab-basic">
+      <form method="POST" enctype="multipart/form-data" action="{% url 'appointment:patient-profile-edit' %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="profile">
+
+        <div class="edit-card mb-4">
+          <h5><i class="ri-camera-line"></i> Profile Photo</h5>
+          <div class="photo-upload-wrap">
+            {% if profile.photo %}
+            <img src="{{ profile.photo.url }}" alt="avatar" class="photo-preview" id="avatarPreview">
+            {% else %}
+            <div class="photo-placeholder" id="avatarPlaceholder">{{ request.user.get_full_name|slice:":1"|upper }}</div>
+            {% endif %}
+            <div>
+              <p class="text-white-50 small mb-2">Upload a clear, professional photo</p>
+              <input type="file" name="photo" accept="image/*" class="form-control" style="max-width:280px;" id="photoInput">
+            </div>
+          </div>
+        </div>
+
+        <div class="edit-card mb-4">
+          <h5><i class="ri-user-line"></i> Personal Details</h5>
+          <div class="row g-3">
+            <div class="col-md-4"><label class="form-label">Gender</label>{{ profile_form.gender }}</div>
+            <div class="col-md-4"><label class="form-label">Date of Birth</label>{{ profile_form.date_of_birth }}</div>
+            <div class="col-md-4"><label class="form-label">Blood Group</label>{{ profile_form.blood_group }}</div>
+            <div class="col-md-3"><label class="form-label">Height</label>{{ profile_form.height }}</div>
+            <div class="col-md-3"><label class="form-label">Weight</label>{{ profile_form.weight }}</div>
+            <div class="col-md-6"><label class="form-label">Preferred Language</label>{{ profile_form.preferred_language }}</div>
+            <div class="col-md-4"><label class="form-label">City</label>{{ profile_form.city }}</div>
+            <div class="col-md-4"><label class="form-label">State</label>{{ profile_form.state }}</div>
+            <div class="col-md-4"><label class="form-label">Country</label>{{ profile_form.country }}</div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-save"><i class="ri-save-line me-2"></i> Save Basic Info</button>
+      </form>
+    </div>
+
+    <!-- ── TAB: Medical ── -->
+    <div class="tab-pane d-none" id="tab-medical">
+      <form method="POST" enctype="multipart/form-data" action="{% url 'appointment:patient-profile-edit' %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="profile">
+
+        <div class="edit-card mb-4">
+          <h5><i class="ri-heart-pulse-line"></i> Medical History</h5>
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Medical History</label>{{ profile_form.medical_history }}</div>
+            <div class="col-md-6"><label class="form-label">Past Diseases</label>{{ profile_form.past_diseases }}</div>
+            <div class="col-md-6"><label class="form-label">Allergies</label>{{ profile_form.allergies }}</div>
+            <div class="col-md-6"><label class="form-label">Current Medications</label>{{ profile_form.current_medications }}</div>
+            <div class="col-md-6"><label class="form-label">Chronic Conditions</label>{{ profile_form.chronic_diseases }}</div>
+            <div class="col-md-6"><label class="form-label">Previous Surgeries</label>{{ profile_form.surgeries }}</div>
+            <div class="col-12"><label class="form-label">Family History</label>{{ profile_form.family_history }}</div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-save"><i class="ri-save-line me-2"></i> Save Medical Info</button>
+      </form>
+    </div>
+
+    <!-- ── TAB: Lifestyle ── -->
+    <div class="tab-pane d-none" id="tab-lifestyle">
+      <form method="POST" action="{% url 'appointment:patient-profile-edit' %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="profile">
+
+        <div class="edit-card mb-4">
+          <h5><i class="ri-leaf-line"></i> Lifestyle Indicators</h5>
+          <div class="row g-3">
+            <div class="col-md-4"><label class="form-label">Smoking</label>{{ profile_form.smoking }}</div>
+            <div class="col-md-4"><label class="form-label">Alcohol</label>{{ profile_form.alcohol }}</div>
+            <div class="col-md-4"><label class="form-label">Exercise</label>{{ profile_form.exercise }}</div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-save"><i class="ri-save-line me-2"></i> Save Lifestyle</button>
+      </form>
+    </div>
+
+    <!-- ── TAB: Emergency Contacts ── -->
+    <div class="tab-pane d-none" id="tab-contacts">
+      <div class="edit-card mb-4">
+        <h5><i class="ri-alarm-warning-line"></i> Emergency Contacts</h5>
+        {% for contact in emergency_contacts %}
+        <div class="list-item">
+          <div>
+            <p class="list-item-title">{{ contact.name }} {% if contact.is_primary %}<span style="font-size:0.7rem; background:rgba(239,68,68,0.2); color:#fca5a5; border-radius:4px; padding:1px 6px;">Primary</span>{% endif %}</p>
+            <p class="list-item-sub">{{ contact.get_relation_display }} · {{ contact.phone }}</p>
+            {% if contact.email %}<p class="list-item-sub">{{ contact.email }}</p>{% endif %}
+          </div>
+          <form method="POST" action="{% url 'appointment:patient-contact-delete' contact.pk %}" style="flex-shrink:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn-del" onclick="return confirm('Remove?')"><i class="ri-delete-bin-line me-1"></i>Remove</button>
+          </form>
+        </div>
+        {% empty %}
+        <p class="text-white-50 text-center py-3">No emergency contacts added yet.</p>
+        {% endfor %}
+      </div>
+
+      <div class="edit-card">
+        <h5><i class="ri-add-circle-line"></i> Add Emergency Contact</h5>
+        <form method="POST" action="{% url 'appointment:patient-profile-edit' %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_contact">
+          <div class="row g-3">
+            <div class="col-md-4"><label class="form-label">Full Name</label>{{ contact_form.name }}</div>
+            <div class="col-md-4"><label class="form-label">Relation</label>{{ contact_form.relation }}</div>
+            <div class="col-md-4"><label class="form-label">Phone</label>{{ contact_form.phone }}</div>
+            <div class="col-md-6"><label class="form-label">Email</label>{{ contact_form.email }}</div>
+            <div class="col-md-6"><label class="form-label">Address</label>{{ contact_form.address }}</div>
+            <div class="col-12">
+              <div class="form-check">{{ contact_form.is_primary }}<label class="form-check-label">Set as primary contact</label></div>
+            </div>
+            <div class="col-12"><button type="submit" class="btn-save"><i class="ri-add-line me-2"></i>Add Contact</button></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── TAB: Insurance ── -->
+    <div class="tab-pane d-none" id="tab-insurance">
+      <div class="edit-card mb-4">
+        <h5><i class="ri-shield-cross-line"></i> Insurance Policies</h5>
+        {% for ins in insurance_policies %}
+        <div class="list-item">
+          <div>
+            <p class="list-item-title">{{ ins.company_name }}</p>
+            <p class="list-item-sub">Policy: {{ ins.policy_number }}{% if ins.coverage_amount %} · Coverage: ₹{{ ins.coverage_amount|floatformat:0 }}{% endif %}</p>
+            {% if ins.expiry_date %}<p class="list-item-sub">Expires: {{ ins.expiry_date|date:"d M Y" }}</p>{% endif %}
+          </div>
+          <form method="POST" action="{% url 'appointment:patient-insurance-delete' ins.pk %}" style="flex-shrink:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn-del" onclick="return confirm('Remove?')"><i class="ri-delete-bin-line me-1"></i>Remove</button>
+          </form>
+        </div>
+        {% empty %}
+        <p class="text-white-50 text-center py-3">No insurance policies added yet.</p>
+        {% endfor %}
+      </div>
+
+      <div class="edit-card">
+        <h5><i class="ri-add-circle-line"></i> Add Insurance Policy</h5>
+        <form method="POST" enctype="multipart/form-data" action="{% url 'appointment:patient-profile-edit' %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_insurance">
+          <div class="row g-3">
+            <div class="col-md-4"><label class="form-label">Insurance Company</label>{{ insurance_form.company_name }}</div>
+            <div class="col-md-4"><label class="form-label">Policy Number</label>{{ insurance_form.policy_number }}</div>
+            <div class="col-md-4"><label class="form-label">Coverage Amount (₹)</label>{{ insurance_form.coverage_amount }}</div>
+            <div class="col-md-4"><label class="form-label">Expiry Date</label>{{ insurance_form.expiry_date }}</div>
+            <div class="col-md-4"><label class="form-label">Insurance Card (optional)</label>{{ insurance_form.insurance_card }}</div>
+            <div class="col-md-4"><label class="form-label">Notes</label>{{ insurance_form.notes }}</div>
+            <div class="col-12"><button type="submit" class="btn-save"><i class="ri-add-line me-2"></i>Add Policy</button></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+AOS.init({ duration: 600, once: true });
+const tabBtns = document.querySelectorAll('.tab-btn');
+const tabPanes = document.querySelectorAll('.tab-pane');
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = this.getAttribute('data-tab');
+    tabBtns.forEach(b => b.classList.remove('active'));
+    tabPanes.forEach(p => p.classList.add('d-none'));
+    this.classList.add('active');
+    document.getElementById(target).classList.remove('d-none');
+    sessionStorage.setItem('patientProfileTab', target);
+  });
+});
+const saved = sessionStorage.getItem('patientProfileTab');
+if (saved) { const btn = document.querySelector(`[data-tab="${saved}"]`); if (btn) btn.click(); }
+
+const photoInput = document.getElementById('photoInput');
+if (photoInput) {
+  photoInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      let preview = document.getElementById('avatarPreview');
+      const placeholder = document.getElementById('avatarPlaceholder');
+      if (!preview) {
+        preview = document.createElement('img');
+        preview.id = 'avatarPreview'; preview.className = 'photo-preview'; preview.alt = 'Preview';
+        if (placeholder) placeholder.replaceWith(preview);
+      }
+      preview.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+</script>
+{% endblock %}

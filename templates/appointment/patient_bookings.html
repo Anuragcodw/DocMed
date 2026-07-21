@@ -1,0 +1,393 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Patient Portal - DocMed Premium{% endblock %}
+
+{% block content %}
+<section class="section-padding-100" style="padding-top: 130px; min-height: 90vh; background: var(--color-bg);">
+  <div class="container">
+    
+    <!-- Top Greeting Header -->
+    <div class="row align-items-center mb-5" data-aos="fade-up">
+      <div class="col-md-8">
+        <h2 style="font-weight: 800; color: var(--color-text-main);" class="mb-1">
+          Welcome back, {{ request.user.first_name }}!
+        </h2>
+        <p class="text-muted mb-0">Manage your consultations, track status, and view clinical notes.</p>
+      </div>
+      <div class="col-md-4 text-md-right mt-3 mt-md-0">
+        <a href="{% url 'appointment:search' %}" class="btn-premium btn-primary-gradient px-4 py-2 hover-scale shadow-glow" style="display: inline-flex; align-items: center; gap: 8px;">
+          <i class="fa fa-plus-circle"></i> Find a Doctor
+        </a>
+      </div>
+    </div>
+
+    <!-- Analytics Stats Strip -->
+    <div class="row mb-5" data-aos="fade-up" data-aos-delay="100">
+      <div class="col-6 col-md-3 mb-3">
+        <div class="glass-panel text-center p-3" style="border-radius: var(--radius-md); border-left: 4px solid var(--color-primary);">
+          <div style="font-size: 24px; font-weight: 800; color: var(--color-primary);">{{ stats.total }}</div>
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">Total Booked</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 mb-3">
+        <div class="glass-panel text-center p-3" style="border-radius: var(--radius-md); border-left: 4px solid var(--color-warning);">
+          <div style="font-size: 24px; font-weight: 800; color: var(--color-warning);">{{ stats.pending }}</div>
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">Pending</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 mb-3">
+        <div class="glass-panel text-center p-3" style="border-radius: var(--radius-md); border-left: 4px solid var(--color-success);">
+          <div style="font-size: 24px; font-weight: 800; color: var(--color-success);">{{ stats.approved }}</div>
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">Confirmed</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 mb-3">
+        <div class="glass-panel text-center p-3" style="border-radius: var(--radius-md); border-left: 4px solid var(--color-accent);">
+          <div style="font-size: 24px; font-weight: 800; color: var(--color-accent);">{{ stats.completed }}</div>
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">Completed</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking Content Grid -->
+    <div class="row">
+      <!-- Left Column: Appointments List -->
+      <div class="col-lg-8 mb-4">
+        <div class="glass-panel p-4" style="border-radius: var(--radius-lg); height: 100%;">
+          
+          <!-- Navigation Tabs -->
+          <ul class="nav nav-pills mb-4" id="dashboardTabs" role="tablist" style="gap: 10px;">
+            <li class="nav-item">
+              <a class="nav-link active px-4 py-2 font-weight-bold" id="upcoming-tab" data-toggle="pill" href="#upcoming" role="tab" style="border-radius: var(--radius-pill); font-size: 13px;">
+                <i class="fa fa-calendar-check-o mr-1"></i> Upcoming Appointments ({{ upcoming_bookings|length }})
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link px-4 py-2 font-weight-bold" id="past-tab" data-toggle="pill" href="#past" role="tab" style="border-radius: var(--radius-pill); font-size: 13px;">
+                <i class="fa fa-history mr-1"></i> Consultation History ({{ past_bookings|length }})
+              </a>
+            </li>
+          </ul>
+
+          <div class="tab-content" id="dashboardTabsContent">
+            
+            <!-- Tab 1: Upcoming Appointments -->
+            <div class="tab-pane fade show active" id="upcoming" role="tabpanel">
+              {% if upcoming_bookings %}
+                <div class="row">
+                  {% for booking in upcoming_bookings %}
+                    <div class="col-12 col-lg-6 mb-4">
+                      <div class="glass-panel p-4 hover-scale border-0 position-relative" style="border-radius: var(--radius-md); background: rgba(255,255,255,0.45);">
+                        
+                        <!-- Doctor info header -->
+                        <div class="d-flex align-items-center mb-3">
+                          {% if booking.appointment.user.doctor_profile.photo %}
+                            <img src="{{ booking.appointment.user.doctor_profile.photo.url }}" alt="Doctor" class="rounded-circle mr-3" width="55" height="55" style="object-fit: cover; border: 2px solid var(--color-primary);">
+                          {% else %}
+                            <img src="{% static 'img/default-doctor.svg' %}" alt="Doctor" class="rounded-circle mr-3" width="55" height="55" style="border: 2px solid var(--color-primary);">
+                          {% endif %}
+                          <div>
+                            <h5 style="font-weight: 700; margin-bottom: 2px;">Dr. {{ booking.appointment.full_name }}</h5>
+                            <span class="badge badge-info" style="border-radius: 4px; font-size: 10px; font-weight: 600;">{{ booking.appointment.department }}</span>
+                          </div>
+                        </div>
+
+                        <!-- Details list -->
+                        <div class="mb-3 small text-muted">
+                          <div class="mb-1"><i class="fa fa-hospital-o text-primary mr-1"></i> {{ booking.appointment.hospital_name }} ({{ booking.appointment.location }})</div>
+                          <div class="mb-1"><i class="fa fa-calendar text-primary mr-1"></i> {{ booking.date|date:"l, F d, Y" }}</div>
+                          <div class="mb-1"><i class="fa fa-clock-o text-primary mr-1"></i> {{ booking.appointment.start_time }} to {{ booking.appointment.end_time }}</div>
+                          {% if booking.message %}
+                            <div class="mt-2 bg-light p-2 rounded small" style="font-style: italic; border-left: 2px solid var(--color-accent);">
+                              "{{ booking.message }}"
+                            </div>
+                          {% endif %}
+                        </div>
+
+                        <!-- Status Timeline -->
+                        <div class="timeline-stepper mb-4 d-flex align-items-center justify-content-between p-2 rounded small bg-white" style="border: 1px solid rgba(0,0,0,0.03);">
+                          <div class="step-point text-center" style="flex:1;">
+                            <i class="fa fa-check-circle text-success"></i><br>
+                            <span style="font-size: 10px; font-weight:600;">Booked</span>
+                          </div>
+                          <div style="height:2px; background:#e2e8f0; flex:1;" class="step-line"></div>
+                          <div class="step-point text-center" style="flex:1;">
+                            {% if booking.status == 'approved' or booking.status == 'rescheduled' %}
+                              <i class="fa fa-check-circle text-success"></i><br>
+                              <span style="font-size: 10px; font-weight:600;" class="text-success">Confirmed</span>
+                            {% else %}
+                              <i class="fa fa-circle-o text-muted"></i><br>
+                              <span style="font-size: 10px; font-weight:600;" class="text-muted">Wait Approve</span>
+                            {% endif %}
+                          </div>
+                          <div style="height:2px; background:#e2e8f0; flex:1;" class="step-line"></div>
+                          <div class="step-point text-center" style="flex:1;">
+                            <i class="fa fa-stethoscope text-muted"></i><br>
+                            <span style="font-size: 10px; font-weight:600;" class="text-muted">Consultation</span>
+                          </div>
+                        </div>
+
+                        <!-- Action controls -->
+                        <div class="d-flex align-items-center justify-content-between">
+                          <div>
+                            {% if booking.status == 'pending' %}
+                              <span class="badge badge-warning text-white px-2 py-1" style="border-radius: 6px; font-size: 11px;"><i class="fa fa-clock-o mr-1"></i> Pending Approval</span>
+                            {% elif booking.status == 'approved' %}
+                              <span class="badge badge-success px-2 py-1" style="border-radius: 6px; font-size: 11px;"><i class="fa fa-check mr-1"></i> Approved</span>
+                            {% elif booking.status == 'rescheduled' %}
+                              <span class="badge badge-info px-2 py-1" style="border-radius: 6px; font-size: 11px;"><i class="fa fa-calendar mr-1"></i> Rescheduled</span>
+                            {% endif %}
+                          </div>
+
+                          <div class="d-flex align-items-center" style="gap: 8px;">
+                            <!-- Jitsi Meet Integration -->
+                            {% if booking.meeting_url %}
+                              <a href="{% url 'appointment:join-meeting' booking.id %}" class="btn btn-sm btn-info text-white font-weight-bold" style="border-radius: var(--radius-sm); font-size: 12px;">
+                                <i class="fa fa-video-camera"></i> Join Call
+                              </a>
+                            {% endif %}
+
+                            <!-- Payment integration -->
+                            {% if booking.is_paid %}
+                              <span class="badge badge-success px-2 py-1 font-weight-bold" style="border-radius: var(--radius-sm); font-size: 11px;">
+                                <i class="fa fa-check-circle"></i> Paid
+                              </span>
+                            {% elif booking.payment_required %}
+                              {% if booking.payment and booking.payment.status == 'pending' %}
+                                <a href="{% url 'appointment:payment-pending' booking.id %}" class="badge badge-warning text-dark px-2 py-1 font-weight-bold" style="border-radius: var(--radius-sm); font-size: 11px;">
+                                  <i class="fa fa-clock-o"></i> Verification Pending
+                                </a>
+                              {% else %}
+                                <a href="{% url 'appointment:initiate-payment' booking.id %}" class="btn btn-sm btn-success font-weight-bold" style="border-radius: var(--radius-sm); font-size: 12px;">
+                                  <i class="fa fa-credit-card"></i> Pay Now
+                                </a>
+                              {% endif %}
+                            {% endif %}
+
+                            <!-- Reschedule Trigger -->
+                            <div class="dropdown d-inline-block">
+                              <button class="btn btn-sm btn-outline-info dropdown-toggle font-weight-bold" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: var(--radius-sm); font-size: 12px;">
+                                <i class="fa fa-calendar"></i> Reschedule
+                              </button>
+                              <div class="dropdown-menu p-3 glass-panel border-0 shadow-soft dropdown-menu-right" style="min-width: 250px; border-radius: var(--radius-md); margin-top: 5px;">
+                                <form action="{% url 'appointment:patient-reschedule-booking' booking.id %}" method="post" class="m-0">
+                                  {% csrf_token %}
+                                  <label style="font-size: 11px; font-weight: 700; color: var(--color-text-main);" class="mb-1">Request New Date & Time</label>
+                                  <input type="datetime-local" name="new_date" class="form-control form-control-sm mb-2" required value="{{ booking.date|date:'Y-m-d\TH:i' }}">
+                                  <button type="submit" class="btn btn-sm btn-primary btn-block text-white" style="font-size: 11px; border-radius: 6px;">
+                                    <i class="fa fa-check"></i> Request Update
+                                  </button>
+                                </form>
+                              </div>
+                            </div>
+
+                            <!-- Cancel Form -->
+                            <form action="{% url 'appointment:patient-cancel-booking' booking.id %}" method="post" class="m-0" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                              {% csrf_token %}
+                              <button type="submit" class="btn btn-sm btn-outline-danger font-weight-bold" style="border-radius: var(--radius-sm); font-size: 12px;">
+                                <i class="fa fa-times"></i> Cancel
+                              </button>
+                            </form>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="text-center py-5">
+                  <i class="fa fa-calendar-times-o text-muted mb-3" style="font-size: 48px;"></i>
+                  <h5 class="text-dark font-weight-bold">No Upcoming Consultations</h5>
+                  <p class="text-muted mb-4 small">Book a slot with our clinical experts to start receiving care.</p>
+                  <a href="{% url 'appointment:search' %}" class="btn-premium btn-primary-gradient px-4 py-2 hover-scale shadow-glow">
+                    <i class="fa fa-search"></i> Book an Appointment
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- Tab 2: Consultation History -->
+            <div class="tab-pane fade" id="past" role="tabpanel">
+              {% if past_bookings %}
+                <div class="glass-table-container">
+                  <table class="glass-table">
+                    <thead>
+                      <tr>
+                        <th>Doctor</th>
+                        <th>Location</th>
+                        <th>Scheduled Date</th>
+                        <th>Status</th>
+                        <th>Clinical Notes / Message</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for booking in past_bookings %}
+                        <tr>
+                          <td>
+                            <div class="d-flex align-items-center">
+                              {% if booking.appointment.user.doctor_profile.photo %}
+                                <img src="{{ booking.appointment.user.doctor_profile.photo.url }}" alt="Doctor" class="rounded-circle mr-2" width="35" height="35" style="object-fit: cover;">
+                              {% else %}
+                                <img src="{% static 'img/default-doctor.svg' %}" alt="Doctor" class="rounded-circle mr-2" width="35" height="35">
+                              {% endif %}
+                              <div>
+                                <div style="font-weight: 700; font-size:13px; color: var(--color-text-main);">Dr. {{ booking.appointment.full_name }}</div>
+                                <div style="font-size: 10px; color: var(--color-text-muted);">{{ booking.appointment.department }}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td style="font-size: 12px;">
+                            <div>{{ booking.appointment.hospital_name }}</div>
+                            <span class="text-muted"><i class="fa fa-map-marker"></i> {{ booking.appointment.location }}</span>
+                          </td>
+                          <td style="font-size: 12px; font-weight: 600;">
+                            {{ booking.date|date:"M d, Y" }}
+                            <div class="text-muted font-weight-normal" style="font-size: 11px;">{{ booking.appointment.start_time }} - {{ booking.appointment.end_time }}</div>
+                          </td>
+                          <td>
+                            {% if booking.status == 'completed' %}
+                              <span class="badge badge-success px-2 py-1" style="border-radius: 4px; font-size:10px;"><i class="fa fa-check-circle"></i> Completed</span>
+                            {% elif booking.status == 'cancelled' %}
+                              <span class="badge badge-danger px-2 py-1" style="border-radius: 4px; font-size:10px;"><i class="fa fa-times-circle"></i> Cancelled</span>
+                            {% elif booking.status == 'rejected' %}
+                              <span class="badge badge-secondary px-2 py-1" style="border-radius: 4px; font-size:10px;"><i class="fa fa-ban"></i> Rejected</span>
+                            {% elif booking.status == 'missed' %}
+                              <span class="badge badge-dark px-2 py-1" style="border-radius: 4px; font-size:10px;"><i class="fa fa-exclamation-triangle"></i> Missed</span>
+                            {% else %}
+                              <span class="badge badge-light px-2 py-1" style="border-radius: 4px; font-size:10px;">{{ booking.status|title }}</span>
+                            {% endif %}
+                          </td>
+                          <td style="font-size: 12px; max-width: 250px;">
+                            {% if booking.doctor_notes %}
+                              <div class="p-2 rounded bg-light mb-2" style="border-left: 3px solid var(--color-success);">
+                                <strong>Clinical Notes:</strong><br>
+                                <span class="text-dark font-weight-500">"{{ booking.doctor_notes }}"</span>
+                              </div>
+                            {% endif %}
+                            
+                            {% if booking.status == 'completed' %}
+                              {% if booking.prescription %}
+                                <div class="mt-1">
+                                  <a href="{% url 'appointment:prescription-detail' booking.id %}" class="btn btn-sm btn-outline-primary py-1 px-2 font-weight-bold" style="border-radius: var(--radius-sm); font-size: 10px;">
+                                    <i class="fa fa-file-text-o"></i> View Prescription
+                                  </a>
+                                </div>
+                              {% endif %}
+                            {% elif not booking.doctor_notes %}
+                              <span class="text-muted italic">"{{ booking.message|truncatechars:50 }}"</span>
+                            {% endif %}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <div class="text-center py-5">
+                  <i class="fa fa-history text-muted mb-3" style="font-size: 48px;"></i>
+                  <h5 class="text-dark font-weight-bold">No Past Consultation Records</h5>
+                  <p class="text-muted mb-0 small">Your completed or cancelled appointment history will be listed here.</p>
+                </div>
+              {% endif %}
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Right Column: Sidebar Stats & Quick Actions -->
+      <div class="col-lg-4">
+        <div class="glass-panel p-4 mb-4" style="border-radius: var(--radius-lg); background: rgba(255, 255, 255, 0.45);">
+          <h5 style="font-weight: 700; color: var(--color-text-main);" class="mb-3"><i class="fa fa-heartbeat text-danger"></i> Health Statistics</h5>
+          <div style="position: relative; height: 180px;">
+            <canvas id="healthStatsChart"></canvas>
+          </div>
+          <div class="mt-3 small text-muted">
+            <div class="d-flex justify-content-between mb-1">
+              <span>Average Blood Pressure:</span>
+              <span class="font-weight-bold text-dark">120/80 mmHg</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>Current Weight / BMI:</span>
+              <span class="font-weight-bold text-dark">72 kg / 22.5</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-panel p-4 mb-4" style="border-radius: var(--radius-lg); background: rgba(255, 255, 255, 0.45);">
+          <h5 style="font-weight: 700; color: var(--color-text-main);" class="mb-3"><i class="fa fa-flash text-warning"></i> Quick Actions</h5>
+          <div class="d-grid gap-2">
+            <a href="{% url 'appointment:booking-wizard' %}" class="btn btn-outline-primary btn-block text-left mb-2 py-2 font-weight-bold" style="border-radius: var(--radius-md); font-size:12px;">
+              <i class="fa fa-calendar-plus-o mr-2"></i> Book New Consultation
+            </a>
+            <a href="{% url 'appointment:report-center' %}" class="btn btn-outline-success btn-block text-left mb-2 py-2 font-weight-bold" style="border-radius: var(--radius-md); font-size:12px;">
+              <i class="fa fa-cloud-upload mr-2"></i> Upload Lab Report
+            </a>
+            <a href="{% url 'appointment:patient-profile-edit' %}" class="btn btn-outline-info btn-block text-left py-2 font-weight-bold" style="border-radius: var(--radius-md); font-size:12px;">
+              <i class="fa fa-user-circle-o mr-2"></i> Edit Health Profile
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  AOS.init({ duration: 600, once: true });
+
+  document.addEventListener("DOMContentLoaded", function() {
+    // Health Stats Line Chart
+    const healthCtx = document.getElementById('healthStatsChart').getContext('2d');
+    new Chart(healthCtx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [
+          {
+            label: 'Weight (kg)',
+            data: [75, 74.2, 73.5, 73.0, 72.5, 72.0],
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            fill: true,
+            tension: 0.3,
+            borderWidth: 2
+          },
+          {
+            label: 'Systolic BP',
+            data: [130, 128, 125, 122, 121, 120],
+            borderColor: '#ef4444',
+            backgroundColor: 'transparent',
+            tension: 0.3,
+            borderWidth: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: { color: '#475569', font: { size: 10 } }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#475569', font: { size: 10 } }
+          }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

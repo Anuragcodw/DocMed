@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Write Prescription | DocMed Premium{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-11">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb bg-transparent p-0">
+                    <li class="breadcrumb-item"><a href="{% url 'appointment:home' %}" class="text-primary font-weight-bold">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'appointment:doctor-appointment' %}" class="text-primary font-weight-bold">Dashboard</a></li>
+                    <li class="breadcrumb-item active text-muted" aria-current="page">Write Prescription</li>
+                </ol>
+            </nav>
+
+            <!-- Main Panel -->
+            <div class="glass-panel p-4 p-md-5 mb-5 shadow-soft border-0" data-aos="fade-up">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4" style="border-color: rgba(0,0,0,0.05) !important;">
+                    <div>
+                        <h2 class="font-weight-bold text-gradient mb-1"><i class="fa fa-pencil-square-o mr-2 text-primary"></i>Write Prescription</h2>
+                        <p class="text-muted mb-0">Create a digitally signed prescription for patient: <strong>{{ booking.patient_name }}</strong></p>
+                    </div>
+                </div>
+
+                <!-- Patient Summary Card -->
+                <div class="glass-panel p-3 bg-light border-0 shadow-sm mb-4 text-dark small">
+                    <div class="row">
+                        <div class="col-md-3 mb-2 mb-md-0">
+                            <span class="text-muted d-block">Patient Name</span>
+                            <strong>{{ booking.patient_name }}</strong>
+                        </div>
+                        <div class="col-md-3 mb-2 mb-md-0">
+                            <span class="text-muted d-block">Appointment Date</span>
+                            <strong>{{ booking.date|date:"M d, Y" }}</strong>
+                        </div>
+                        <div class="col-md-3 mb-2 mb-md-0">
+                            <span class="text-muted d-block">Hospital / Clinic</span>
+                            <strong>{{ booking.appointment.hospital_name }}</strong>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="text-muted d-block">Booking ID</span>
+                            <strong>#{{ booking.id }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form -->
+                <form action="{% url 'appointment:create-prescription' booking.id %}" method="POST" id="prescription-form">
+                    {% csrf_token %}
+
+                    <div class="row mb-4">
+                        <!-- Symptoms -->
+                        <div class="col-md-6 form-group">
+                            <label for="symptoms" class="font-weight-bold text-dark"><i class="fa fa-heartbeat mr-1 text-primary"></i>Patient Symptoms</label>
+                            <textarea name="symptoms" id="symptoms" rows="3" class="form-control" placeholder="E.g. Fever, cough, sore throat, fatigue..." style="border-radius: 12px;"></textarea>
+                        </div>
+                        <!-- Diagnosis -->
+                        <div class="col-md-6 form-group">
+                            <label for="diagnosis" class="font-weight-bold text-dark"><i class="fa fa-stethoscope mr-1 text-primary"></i>Diagnosis <span class="text-danger">*</span></label>
+                            <textarea name="diagnosis" id="diagnosis" rows="3" class="form-control" required placeholder="E.g. Acute Viral Upper Respiratory Tract Infection..." style="border-radius: 12px;"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Medications Section -->
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="font-weight-bold text-dark mb-0"><i class="fa fa-medkit text-primary mr-2"></i>Prescribed Medicines</h5>
+                            <button type="button" class="btn btn-sm btn-success px-3 hover-scale" id="add-medication-btn" style="border-radius: 10px; background: #10b981; border:0;">
+                                <i class="fa fa-plus mr-1"></i>Add Medicine
+                            </button>
+                        </div>
+
+                        <div id="medication-container">
+                            <!-- Template Row -->
+                            <div class="row medication-row align-items-end mb-4 border p-3 rounded bg-white shadow-xs position-relative" style="border-radius: 16px !important; border-color: rgba(0,0,0,0.05) !important;">
+                                <!-- Medicine Name -->
+                                <div class="col-md-4 form-group">
+                                    <label class="small font-weight-bold text-dark">Medicine Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="medicine_name[]" class="form-control" required placeholder="E.g. Amoxicillin 500mg" style="border-radius: 8px;">
+                                </div>
+                                <!-- Dosage -->
+                                <div class="col-md-2 form-group">
+                                    <label class="small font-weight-bold text-dark">Dosage <span class="text-danger">*</span></label>
+                                    <input type="text" name="dosage[]" class="form-control" required placeholder="E.g. 1 capsule" style="border-radius: 8px;">
+                                </div>
+                                <!-- Duration / Number of Days -->
+                                <div class="col-md-2 form-group">
+                                    <label class="small font-weight-bold text-dark">Number of Days <span class="text-danger">*</span></label>
+                                    <input type="number" name="number_of_days[]" class="form-control" required min="1" value="5" style="border-radius: 8px;">
+                                </div>
+                                <!-- Timing Selection -->
+                                <div class="col-md-4 form-group">
+                                    <label class="small font-weight-bold text-dark d-block">Timings (Morning - Afternoon - Night)</label>
+                                    <div class="d-flex gap-2">
+                                        <div class="flex-grow-1">
+                                            <span class="small text-muted d-block text-center">M</span>
+                                            <select name="morning[]" class="form-control form-control-sm" style="border-radius: 6px;">
+                                                <option value="0">No</option>
+                                                <option value="1" selected>Yes</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <span class="small text-muted d-block text-center">A</span>
+                                            <select name="afternoon[]" class="form-control form-control-sm" style="border-radius: 6px;">
+                                                <option value="0" selected>No</option>
+                                                <option value="1">Yes</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <span class="small text-muted d-block text-center">N</span>
+                                            <select name="night[]" class="form-control form-control-sm" style="border-radius: 6px;">
+                                                <option value="0">No</option>
+                                                <option value="1" selected>Yes</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Meal Timing -->
+                                <div class="col-md-3 form-group">
+                                    <label class="small font-weight-bold text-dark">Food Intake</label>
+                                    <select name="before_food[]" class="form-control" style="border-radius: 8px;">
+                                        <option value="0" selected>After Meals (Post Prandial)</option>
+                                        <option value="1">Before Meals (Ante Prandial)</option>
+                                    </select>
+                                </div>
+                                <!-- Medicine specific notes -->
+                                <div class="col-md-9 form-group">
+                                    <label class="small font-weight-bold text-dark">Notes / Instructions</label>
+                                    <input type="text" name="med_notes[]" class="form-control" placeholder="E.g. Drink plenty of water, avoid dairy products..." style="border-radius: 8px;">
+                                </div>
+
+                                <button type="button" class="btn btn-sm btn-danger remove-med-btn rounded-circle position-absolute hover-scale" style="top: -10px; right: -10px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; padding: 0; background: #ef4444; border:0;">
+                                    <i class="fa fa-times text-white"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Labs & General Advice -->
+                    <div class="row mt-4">
+                        <div class="col-md-6 form-group">
+                            <label for="lab_tests" class="font-weight-bold text-dark"><i class="fa fa-flask mr-1 text-primary"></i>Recommended Lab Tests</label>
+                            <textarea name="lab_tests" id="lab_tests" rows="3" class="form-control" placeholder="E.g. Complete Blood Count (CBC), Fasting Blood Sugar..." style="border-radius: 12px;"></textarea>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label for="advice" class="font-weight-bold text-dark"><i class="fa fa-commenting-o mr-1 text-primary"></i>General Advice / Diet Plan</label>
+                            <textarea name="advice" id="advice" rows="3" class="form-control" placeholder="E.g. Strict bed rest for 3 days, avoid cold drinks..." style="border-radius: 12px;"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Follow up -->
+                    <div class="row mt-2">
+                        <div class="col-md-4 form-group">
+                            <label for="follow_up_date" class="font-weight-bold text-dark"><i class="fa fa-calendar mr-1 text-primary"></i>Follow-up Date</label>
+                            <input type="date" name="follow_up_date" id="follow_up_date" class="form-control" style="border-radius: 12px;">
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="text-right mt-4 border-top pt-3" style="border-color: rgba(0,0,0,0.05) !important;">
+                        <a href="{% url 'appointment:doctor-appointment' %}" class="btn btn-link text-muted mr-3">Cancel</a>
+                        <button type="submit" class="btn btn-primary-gradient btn-premium px-4 font-weight-bold hover-scale">
+                            Save & Generate Prescription<i class="fa fa-check ml-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('medication-container');
+        const addButton = document.getElementById('add-medication-btn');
+
+        function bindRemoveEvent(button) {
+            button.onclick = function() {
+                const rows = container.getElementsByClassName('medication-row');
+                if (rows.length > 1) {
+                    button.closest('.medication-row').remove();
+                } else {
+                    alert("A prescription must have at least one medication.");
+                }
+            };
+        }
+
+        bindRemoveEvent(container.querySelector('.remove-med-btn'));
+
+        addButton.onclick = function() {
+            const firstRow = container.querySelector('.medication-row');
+            const newRow = firstRow.cloneNode(true);
+
+            // Clear inputs
+            const inputs = newRow.querySelectorAll('input');
+            inputs.forEach(input => input.value = '');
+
+            // Set default selects
+            newRow.querySelector('select[name="morning[]"]').value = "1";
+            newRow.querySelector('select[name="afternoon[]"]').value = "0";
+            newRow.querySelector('select[name="night[]"]').value = "1";
+            newRow.querySelector('select[name="before_food[]"]').value = "0";
+
+            bindRemoveEvent(newRow.querySelector('.remove-med-btn'));
+            container.appendChild(newRow);
+        };
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,934 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Search Results - Premium Healthcare Portal{% endblock %}
+
+{% block styles %}
+<style>
+/* ──────────────────────────────────────────────
+   Search Page Enhancements
+────────────────────────────────────────────── */
+
+/* Voice search button */
+.voice-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 2px solid rgba(99,102,241,0.3);
+    background: rgba(99,102,241,0.08);
+    color: #6366f1;
+    cursor: pointer;
+    transition: all .25s;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+.voice-btn:hover { background: rgba(99,102,241,0.15); border-color: #6366f1; transform: scale(1.05); }
+.voice-btn.listening {
+    background: rgba(239,68,68,0.12);
+    border-color: #ef4444;
+    color: #ef4444;
+    animation: mic-pulse 1s ease-in-out infinite;
+}
+@keyframes mic-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.3); }
+    50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+}
+
+/* GPS Location button */
+.gps-btn {
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 10px;
+    border: 2px solid rgba(6,182,212,0.3);
+    background: rgba(6,182,212,0.08);
+    color: #0891b2;
+    cursor: pointer;
+    transition: all .25s;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.gps-btn:hover { background: rgba(6,182,212,0.15); border-color: #06b6d4; transform: translateY(-1px); }
+.gps-btn.loading { opacity: .7; cursor: not-allowed; }
+
+/* Autocomplete dropdown */
+.search-autocomplete {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    z-index: 9999;
+    background: rgba(255,255,255,0.98);
+    backdrop-filter: blur(12px);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border: 1px solid rgba(99,102,241,0.15);
+    overflow: hidden;
+    display: none;
+}
+.autocomplete-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #1e293b;
+    display: flex; align-items: center; gap: 10px;
+    transition: background .15s;
+}
+.autocomplete-item:hover, .autocomplete-item.highlighted {
+    background: rgba(99,102,241,0.08);
+    color: #4f46e5;
+}
+.autocomplete-item i { color: #6366f1; font-size: 14px; }
+
+/* Distance slider */
+.distance-slider-wrap { position: relative; }
+.distance-slider-wrap input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #4f46e5, #06b6d4);
+    outline: none;
+    cursor: pointer;
+}
+.distance-slider-wrap input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    box-shadow: 0 2px 8px rgba(79,70,229,0.4);
+    cursor: pointer;
+}
+.distance-label {
+    font-size: 11px; font-weight: 700;
+    color: #4f46e5;
+    text-align: center;
+    margin-top: 4px;
+}
+
+/* Google Maps widget */
+#map-container {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    position: relative;
+}
+#doctor-map {
+    width: 100%;
+    height: 360px;
+}
+.map-placeholder {
+    width: 100%;
+    height: 360px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #0e7490 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.7);
+    gap: 12px;
+    border-radius: 16px;
+}
+.map-placeholder i { font-size: 48px; color: rgba(99,102,241,0.6); }
+
+/* GPS Error modal */
+.gps-error-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(6px);
+    align-items: center; justify-content: center;
+}
+.gps-error-modal.show { display: flex; }
+.gps-modal-card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 20px;
+    padding: 36px 32px;
+    max-width: 400px;
+    width: calc(100% - 40px);
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    animation: modal-in .3s ease;
+}
+@keyframes modal-in {
+    from { opacity: 0; transform: scale(0.9); }
+    to   { opacity: 1; transform: scale(1); }
+}
+.gps-modal-card .modal-icon {
+    font-size: 52px;
+    margin-bottom: 16px;
+    display: block;
+}
+
+/* ML Suggestion chip */
+.ml-suggestion-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(99,102,241,0.08);
+    color: #4f46e5;
+    font-size: 12px; font-weight: 700;
+    cursor: pointer;
+    border: 1px solid rgba(99,102,241,0.2);
+    transition: all .2s;
+    margin: 2px;
+}
+.ml-suggestion-chip:hover { background: rgba(99,102,241,0.15); transform: translateY(-1px); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- GPS Error Modal -->
+<div class="gps-error-modal" id="gps-error-modal" role="dialog" aria-modal="true" aria-labelledby="gps-modal-title">
+    <div class="gps-modal-card">
+        <span class="modal-icon">📍</span>
+        <h5 id="gps-modal-title" style="font-weight:800;margin-bottom:8px;">Location Access Denied</h5>
+        <p style="font-size:13px;color:#64748b;margin-bottom:24px;" id="gps-modal-message">
+            Please allow location access in your browser settings to use GPS search.
+        </p>
+        <button class="btn text-white px-4 py-2"
+                style="background:linear-gradient(135deg,#4f46e5,#06b6d4);border-radius:10px;border:none;font-weight:700;"
+                onclick="document.getElementById('gps-error-modal').classList.remove('show')">
+            Got it
+        </button>
+    </div>
+</div>
+
+<!-- ── Hero / Breadcrumb Search Banner ── -->
+<div class="welcome-area section-padding-100"
+     style="min-height:auto;padding-top:130px;padding-bottom:60px;background:linear-gradient(135deg,rgba(79,70,229,0.08),rgba(6,182,212,0.08));">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 text-center">
+        <h2 style="font-size:36px;font-weight:800;margin-bottom:8px;">Find Your Specialist</h2>
+        <p style="font-size:14px;color:#64748b;margin-bottom:25px;">
+            <i class="fa fa-magic mr-1" style="color:#6366f1;"></i>
+            Smart AI-powered search — try voice, GPS, or type below
+        </p>
+
+        <div class="glass-panel" style="padding:25px;border-radius:24px;text-align:left;">
+
+          <!-- Search form -->
+          <form id="search-form" method="get" action="" class="row align-items-end" onsubmit="showSearchSpinner()">
+
+            <!-- Location + GPS -->
+            <div class="col-12 col-md-4 mb-3 mb-md-0">
+              <label for="location" style="font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.5px;">
+                <i class="fa fa-map-marker" style="color:var(--primary-cyan);"></i> Location
+              </label>
+              <div style="position:relative;">
+                <div style="display:flex;gap:6px;align-items:center;">
+                  <div style="flex:1;position:relative;">
+                    <input type="text" id="location" name="location" class="form-control"
+                           placeholder="City, State or Country" value="{{ request.GET.location }}"
+                           autocomplete="off" style="border-radius:10px;padding-right:36px;"
+                           oninput="handleLocationInput(this.value)"
+                           onfocus="showAutocompleteSuggestions(this.value)"
+                           onblur="setTimeout(()=>hideAutocomplete(),200)">
+                    <!-- Autocomplete dropdown -->
+                    <div id="location-autocomplete" class="search-autocomplete"></div>
+                  </div>
+                  <button type="button" class="gps-btn" id="gps-btn" onclick="getGPSLocation()" title="Use my location">
+                      <i class="fa fa-crosshairs"></i> GPS
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Specialization -->
+            <div class="col-12 col-md-3 mb-3 mb-md-0">
+              <label for="department" style="font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.5px;">
+                <i class="fa fa-stethoscope" style="color:var(--primary-cyan);"></i> Specialization
+              </label>
+              <select id="department" name="department" class="form-control" style="border-radius:10px;">
+                <option value="">All Specializations</option>
+                {% for dept_val, dept_label in dept_choices %}
+                  <option value="{{ dept_val }}" {% if request.GET.department == dept_val %}selected{% endif %}>{{ dept_label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Doctor Name + Voice -->
+            <div class="col-12 col-md-3 mb-3 mb-md-0">
+              <label for="doctor_name" style="font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.5px;">
+                <i class="fa fa-user-md" style="color:var(--primary-cyan);"></i> Doctor Name
+              </label>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <input type="text" id="doctor_name" name="doctor_name" class="form-control"
+                       placeholder="Name" value="{{ request.GET.doctor_name }}"
+                       style="border-radius:10px;flex:1;">
+                <button type="button" class="voice-btn" id="voice-btn"
+                        onclick="startVoiceSearch()" title="Voice Search">
+                    <i class="fa fa-microphone" id="voice-icon"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Search Button -->
+            <div class="col-12 col-md-2">
+              <button type="submit" id="search-btn"
+                      class="btn btn-block text-white font-weight-700 shadow-sm"
+                      style="height:52px;border-radius:12px;border:none;
+                             background:linear-gradient(135deg,#4f46e5,#06b6d4);
+                             font-size:14px;font-weight:700;letter-spacing:.3px;
+                             transition:all .3s ease;cursor:pointer;"
+                      onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(79,70,229,0.4)';"
+                      onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='';">
+                <span id="search-btn-text"><i class="fa fa-search mr-1"></i> Search</span>
+                <span id="search-btn-spinner" class="spinner-border spinner-border-sm" role="status"
+                      style="display:none;" aria-hidden="true"></span>
+              </button>
+            </div>
+
+          </form>
+
+          <!-- Advanced Filters Row -->
+          <div class="row mt-3">
+            <div class="col-12 col-md-3">
+              <label style="font-weight:600;font-size:12px;text-transform:uppercase;color:#64748b;">Experience</label>
+              <select name="experience" form="search-form" class="form-control form-control-sm" style="border-radius:8px;">
+                <option value="">Any</option>
+                <option value="1-5" {% if request.GET.experience == '1-5' %}selected{% endif %}>1–5 Years</option>
+                <option value="5-10" {% if request.GET.experience == '5-10' %}selected{% endif %}>5–10 Years</option>
+                <option value="10+" {% if request.GET.experience == '10+' %}selected{% endif %}>10+ Years</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-3">
+              <label style="font-weight:600;font-size:12px;text-transform:uppercase;color:#64748b;">Gender</label>
+              <select name="gender" form="search-form" class="form-control form-control-sm" style="border-radius:8px;">
+                <option value="">Any</option>
+                <option value="male" {% if request.GET.gender == 'male' %}selected{% endif %}>Male</option>
+                <option value="female" {% if request.GET.gender == 'female' %}selected{% endif %}>Female</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-3">
+              <label style="font-weight:600;font-size:12px;text-transform:uppercase;color:#64748b;">
+                Max Distance &nbsp;<span id="distance-display" style="color:#4f46e5;">Any</span>
+              </label>
+              <div class="distance-slider-wrap">
+                <input type="range" name="max_distance" form="search-form"
+                       id="distance-slider" min="0" max="100" step="5"
+                       value="{{ request.GET.max_distance|default:0 }}"
+                       oninput="updateDistanceLabel(this.value)">
+              </div>
+            </div>
+            <div class="col-12 col-md-3">
+              <label style="font-weight:600;font-size:12px;text-transform:uppercase;color:#64748b;">Sort By</label>
+              <select name="sort" form="search-form" class="form-control form-control-sm" style="border-radius:8px;">
+                <option value="" {% if not request.GET.sort %}selected{% endif %}>Relevance</option>
+                <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}>Highest Rated</option>
+                <option value="experience" {% if request.GET.sort == 'experience' %}selected{% endif %}>Most Experienced</option>
+                <option value="fee_low" {% if request.GET.sort == 'fee_low' %}selected{% endif %}>Fee: Low to High</option>
+                <option value="distance" {% if request.GET.sort == 'distance' %}selected{% endif %}>Nearest First</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- ML Suggestions Row (dynamic) -->
+          <div id="ml-suggestions" class="mt-3" style="display:none;">
+            <label style="font-weight:600;font-size:11px;text-transform:uppercase;color:#94a3b8;letter-spacing:.5px;">
+                <i class="fa fa-magic mr-1" style="color:#6366f1;"></i> AI Suggestions
+            </label>
+            <div id="ml-chips"></div>
+          </div>
+
+          <!-- Voice status -->
+          <div id="voice-status" style="display:none;font-size:12px;color:#ef4444;margin-top:8px;font-weight:700;">
+              <i class="fa fa-circle mr-1" style="animation:mic-pulse 1s infinite;"></i>
+              <span id="voice-status-text">Listening…</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Search Results Area -->
+<section class="section-padding-100">
+  <div class="container">
+
+    <!-- Results Count + Fallback Notice -->
+    <div class="row mb-4">
+      <div class="col-12 text-center">
+        {% if page_obj %}
+          <h3 style="font-weight:800;">
+            Found <span style="color:var(--primary-cyan);">{{ page_obj.paginator.count }}</span>
+            matching specialist{{ page_obj.paginator.count|pluralize }}.
+          </h3>
+        {% endif %}
+
+        {% if fallback_level and request.GET.location %}
+          <div class="alert alert-info d-inline-block" style="border-radius:12px;font-size:13px;padding:10px 20px;">
+            <i class="fa fa-info-circle mr-1"></i>
+            {% if fallback_level == 'nearby' %}
+              No doctors found in <strong>{{ request.GET.location }}</strong> — showing nearby specialists instead.
+            {% elif fallback_level == 'state' %}
+              Showing specialists from the same state as <strong>{{ request.GET.location }}</strong>.
+            {% elif fallback_level == 'any' %}
+              No local results — showing all available specialists.
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div class="line"></div>
+      </div>
+    </div>
+
+    <!-- Map + Results Layout -->
+    <div class="row">
+
+      <!-- Google Maps Widget (shown when location searched or GPS used) -->
+      <div class="col-12 mb-4" id="map-section"
+           {% if not request.GET.location %}style="display:none;"{% endif %}>
+        <div class="glass-panel p-3" style="border-radius:20px;">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h6 style="font-weight:700;margin:0;color:#1e293b;">
+              <i class="fa fa-map-marker mr-2" style="color:#6366f1;"></i>Map View
+            </h6>
+            <button class="btn btn-sm" style="border-radius:8px;border:1px solid #e2e8f0;font-size:12px;font-weight:600;"
+                    onclick="document.getElementById('map-section').style.display='none'">
+              <i class="fa fa-times mr-1"></i>Hide Map
+            </button>
+          </div>
+          <div id="map-container">
+            <div id="doctor-map"></div>
+            <!-- Fallback placeholder shown until Maps API loads -->
+            <div id="map-placeholder" class="map-placeholder">
+              <i class="fa fa-map-o"></i>
+              <p style="margin:0;font-size:14px;">Interactive map loads after location search</p>
+              <p style="margin:0;font-size:12px;opacity:.6;">Configure GOOGLE_MAPS_API_KEY in settings.py to enable</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doctor Cards Grid -->
+      <div class="col-12">
+        <div class="row">
+          {% for apt in appointment %}
+            <div class="col-12 col-sm-6 col-md-4 mb-4">
+              <div class="doctor-grid-card h-100"
+                   data-lat="{{ apt.user.doctor_profile.latitude|default:'' }}"
+                   data-lng="{{ apt.user.doctor_profile.longitude|default:'' }}"
+                   data-name="{{ apt.full_name }}"
+                   data-dept="{{ apt.department }}">
+                <div class="doctor-card-img-wrap">
+                  {% if apt.image %}
+                    <img src="{{ apt.image.url }}" alt="{{ apt.full_name }}" loading="lazy">
+                  {% else %}
+                    <img src="{% static 'img/default-doctor.svg' %}" alt="Doctor" loading="lazy"
+                         style="object-fit:contain;padding:20px;background:#f0f4f8;">
+                  {% endif %}
+                  <span class="doctor-badge-status"><i class="fa fa-circle text-white"></i> Active</span>
+                </div>
+
+                <div class="doctor-card-details">
+                  <div class="doctor-card-dept">{{ apt.department }} Expert</div>
+                  <h4 class="doctor-card-title">{{ apt.full_name }}</h4>
+
+                  {% if apt.user.doctor_profile %}
+                    {% with dp=apt.user.doctor_profile %}
+                      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+                        {% if dp.rating > 0 %}
+                          <span style="font-size:12px;color:#f59e0b;font-weight:700;">⭐ {{ dp.rating }}</span>
+                        {% endif %}
+                        {% if dp.experience_years > 0 %}
+                          <span style="font-size:12px;color:#64748b;"><i class="fa fa-briefcase" style="color:#06b6d4;"></i> {{ dp.experience_years }} Yrs</span>
+                        {% endif %}
+                        {% if dp.patients_treated > 0 %}
+                          <span style="font-size:12px;color:#64748b;"><i class="fa fa-users" style="color:#10b981;"></i> {{ dp.patients_treated }}+ Patients</span>
+                        {% endif %}
+                        {% if apt.distance_km %}
+                          <span style="font-size:12px;color:#6366f1;font-weight:700;">
+                            <i class="fa fa-map-marker"></i> {{ apt.distance_km|floatformat:1 }} km
+                          </span>
+                        {% endif %}
+                      </div>
+                    {% endwith %}
+                  {% endif %}
+
+                  <p class="doctor-card-text text-muted" style="font-size:13px;">
+                    <i class="fa fa-graduation-cap" style="color:var(--primary-cyan);"></i> {{ apt.qualification_name }} — {{ apt.institute_name }}<br>
+                    <i class="fa fa-hospital-o" style="color:var(--primary-cyan);"></i> {{ apt.hospital_name }}<br>
+                    <i class="fa fa-clock-o" style="color:var(--primary-cyan);"></i> {{ apt.start_time }} – {{ apt.end_time }}
+                  </p>
+
+                  <div class="doctor-card-footer">
+                    <span class="doctor-card-location">
+                      <i class="fa fa-map-marker" style="color:var(--primary-cyan);"></i> {{ apt.location }}
+                    </span>
+                    {% if request.user.is_authenticated and request.user.role == 'patient' %}
+                      <a href="{% url 'appointment:take-appointment' apt.id %}" class="doctor-card-btn">
+                        Book Now <i class="fa fa-chevron-right"></i>
+                      </a>
+                    {% elif request.user.is_authenticated and request.user.role == 'doctor' %}
+                      <span class="text-muted" style="font-size:12px;font-weight:600;">My Slot</span>
+                    {% else %}
+                      <a href="{% url 'accounts:login' %}?next={% url 'appointment:take-appointment' apt.id %}" class="doctor-card-btn">
+                        Login to Book <i class="fa fa-chevron-right"></i>
+                      </a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="col-12 text-center my-5">
+              <div class="glass-panel" style="padding:60px 30px;max-width:500px;margin:0 auto;border-radius:24px;">
+                <i class="fa fa-user-md" style="font-size:64px;color:var(--primary-indigo);margin-bottom:20px;display:block;"></i>
+                <h4 style="font-weight:700;margin-bottom:12px;">No Results Found</h4>
+                <p style="font-size:14px;color:#64748b;margin-bottom:20px;">
+                  We couldn't find any doctors matching your criteria.<br>
+                  Try broadening your search — leave location empty to see all available specialists.
+                </p>
+                <a href="{% url 'appointment:search' %}" class="btn text-white px-4 py-2"
+                   style="background:linear-gradient(135deg,#4f46e5,#06b6d4);border-radius:10px;border:none;font-weight:600;">
+                  <i class="fa fa-refresh mr-1"></i> Show All Doctors
+                </a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+      <div class="row mt-4">
+        <div class="col-12 d-flex justify-content-center">
+          <div class="glass-panel" style="padding:10px 20px;border-radius:50px;display:inline-flex;align-items:center;gap:15px;">
+            {% if page_obj.has_previous %}
+              <a href="?page=1{% if request.GET.location %}&location={{ request.GET.location }}{% endif %}{% if request.GET.department %}&department={{ request.GET.department }}{% endif %}" class="text-cyan font-weight-bold" style="font-size:13px;">
+                <i class="fa fa-angle-double-left"></i> First
+              </a>
+              <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.location %}&location={{ request.GET.location }}{% endif %}{% if request.GET.department %}&department={{ request.GET.department }}{% endif %}" class="text-cyan font-weight-bold" style="font-size:13px;">
+                <i class="fa fa-angle-left"></i> Prev
+              </a>
+            {% endif %}
+            <span style="font-size:13px;font-weight:600;color:var(--theme-text-h);">
+              Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}{% if request.GET.location %}&location={{ request.GET.location }}{% endif %}{% if request.GET.department %}&department={{ request.GET.department }}{% endif %}" class="text-cyan font-weight-bold" style="font-size:13px;">
+                Next <i class="fa fa-angle-right"></i>
+              </a>
+              <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.location %}&location={{ request.GET.location }}{% endif %}{% if request.GET.department %}&department={{ request.GET.department }}{% endif %}" class="text-cyan font-weight-bold" style="font-size:13px;">
+                Last <i class="fa fa-angle-double-right"></i>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+<script>
+/* ──────────────────────────────────────────────
+   Search Spinner
+────────────────────────────────────────────── */
+function showSearchSpinner() {
+  document.getElementById('search-btn-text').style.display = 'none';
+  document.getElementById('search-btn-spinner').style.display = 'inline-block';
+  document.getElementById('search-btn').disabled = true;
+}
+
+/* ──────────────────────────────────────────────
+   Distance Slider
+────────────────────────────────────────────── */
+function updateDistanceLabel(val) {
+    const display = document.getElementById('distance-display');
+    display.textContent = val == 0 ? 'Any' : `${val} km`;
+}
+// Initialize on load
+updateDistanceLabel(document.getElementById('distance-slider').value);
+
+/* ──────────────────────────────────────────────
+   Voice Search (Web Speech API)
+────────────────────────────────────────────── */
+let recognition = null;
+let isListening = false;
+
+function startVoiceSearch() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert('Voice search is not supported in this browser. Try Chrome or Edge.');
+        return;
+    }
+
+    if (isListening) {
+        recognition.stop();
+        return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    const btn = document.getElementById('voice-btn');
+    const icon = document.getElementById('voice-icon');
+    const status = document.getElementById('voice-status');
+    const statusText = document.getElementById('voice-status-text');
+
+    recognition.onstart = () => {
+        isListening = true;
+        btn.classList.add('listening');
+        icon.className = 'fa fa-stop';
+        status.style.display = 'block';
+        statusText.textContent = 'Listening… say a doctor name or specialty';
+    };
+
+    recognition.onresult = (event) => {
+        const transcript = Array.from(event.results)
+            .map(r => r[0].transcript)
+            .join('');
+        document.getElementById('doctor_name').value = transcript;
+        statusText.textContent = `Heard: "${transcript}"`;
+        // Apply ML suggestions
+        mlSuggestFromVoice(transcript);
+    };
+
+    recognition.onend = () => {
+        isListening = false;
+        btn.classList.remove('listening');
+        icon.className = 'fa fa-microphone';
+        setTimeout(() => { status.style.display = 'none'; }, 3000);
+    };
+
+    recognition.onerror = (e) => {
+        isListening = false;
+        btn.classList.remove('listening');
+        icon.className = 'fa fa-microphone';
+        status.style.display = 'none';
+        if (e.error !== 'aborted') {
+            alert(`Voice error: ${e.error}`);
+        }
+    };
+
+    recognition.start();
+}
+
+/* ──────────────────────────────────────────────
+   ML-Based Suggestions (keyword mapping)
+────────────────────────────────────────────── */
+const ML_KEYWORD_MAP = {
+    'heart': 'Cardiology',
+    'chest pain': 'Cardiology',
+    'skin': 'Dermatology',
+    'rash': 'Dermatology',
+    'teeth': 'Dentistry',
+    'dental': 'Dentistry',
+    'tooth': 'Dentistry',
+    'eye': 'Ophthalmology',
+    'vision': 'Ophthalmology',
+    'brain': 'Neurology',
+    'headache': 'Neurology',
+    'migraine': 'Neurology',
+    'bone': 'Orthopedics',
+    'joint': 'Orthopedics',
+    'knee': 'Orthopedics',
+    'child': 'Pediatrics',
+    'baby': 'Pediatrics',
+    'kid': 'Pediatrics',
+    'stomach': 'Gastroenterology',
+    'digestive': 'Gastroenterology',
+    'mental': 'Psychiatry',
+    'anxiety': 'Psychiatry',
+    'depression': 'Psychiatry',
+    'kidney': 'Nephrology',
+    'urology': 'Urology',
+    'women': 'Gynecology',
+    'pregnancy': 'Gynecology',
+    'lung': 'Pulmonology',
+    'breathing': 'Pulmonology',
+    'diabetes': 'Endocrinology',
+    'thyroid': 'Endocrinology',
+    'cancer': 'Oncology',
+    'allergy': 'Allergy & Immunology',
+};
+
+function mlSuggestFromVoice(text) {
+    const lower = text.toLowerCase();
+    const found = new Set();
+    for (const [keyword, dept] of Object.entries(ML_KEYWORD_MAP)) {
+        if (lower.includes(keyword)) found.add(dept);
+    }
+    if (found.size > 0) {
+        showMLSuggestions([...found]);
+    }
+}
+
+function showMLSuggestions(departments) {
+    const container = document.getElementById('ml-suggestions');
+    const chips = document.getElementById('ml-chips');
+    chips.innerHTML = '';
+    departments.forEach(dept => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'ml-suggestion-chip';
+        chip.innerHTML = `<i class="fa fa-magic"></i> ${dept}`;
+        chip.onclick = () => {
+            const sel = document.getElementById('department');
+            // Find matching option
+            for (const opt of sel.options) {
+                if (opt.text.toLowerCase().includes(dept.toLowerCase()) ||
+                    opt.value.toLowerCase().includes(dept.toLowerCase())) {
+                    sel.value = opt.value;
+                    break;
+                }
+            }
+            container.style.display = 'none';
+        };
+        chips.appendChild(chip);
+    });
+    container.style.display = 'block';
+}
+
+/* ──────────────────────────────────────────────
+   Location Autocomplete (simple city list)
+────────────────────────────────────────────── */
+const CITIES = [
+    'Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad',
+    'Surat', 'Jaipur', 'Lucknow', 'Kanpur', 'Nagpur', 'Visakhapatnam', 'Indore', 'Thane',
+    'Bhopal', 'Pimpri-Chinchwad', 'Patna', 'Vadodara', 'Ghaziabad', 'Ludhiana', 'Agra',
+    'Nashik', 'Faridabad', 'Meerut', 'Rajkot', 'Varanasi', 'Srinagar', 'Aurangabad',
+    'New York', 'London', 'Toronto', 'Dubai', 'Singapore', 'Sydney', 'Melbourne'
+];
+
+function handleLocationInput(val) {
+    if (val.length < 2) { hideAutocomplete(); return; }
+    showAutocompleteSuggestions(val);
+}
+
+function showAutocompleteSuggestions(val) {
+    if (!val || val.length < 2) { hideAutocomplete(); return; }
+    const dropdown = document.getElementById('location-autocomplete');
+    const matches = CITIES.filter(c => c.toLowerCase().startsWith(val.toLowerCase())).slice(0, 6);
+    if (matches.length === 0) { hideAutocomplete(); return; }
+    dropdown.innerHTML = matches.map(city =>
+        `<div class="autocomplete-item" onmousedown="selectCity('${city}')">
+            <i class="fa fa-map-marker"></i>${city}
+         </div>`
+    ).join('');
+    dropdown.style.display = 'block';
+}
+
+function hideAutocomplete() {
+    const d = document.getElementById('location-autocomplete');
+    if (d) d.style.display = 'none';
+}
+
+function selectCity(city) {
+    document.getElementById('location').value = city;
+    hideAutocomplete();
+    // Show map section
+    document.getElementById('map-section').style.display = 'block';
+}
+
+/* ──────────────────────────────────────────────
+   GPS Geolocation
+────────────────────────────────────────────── */
+function getGPSLocation() {
+    const btn = document.getElementById('gps-btn');
+    if (!navigator.geolocation) {
+        showGPSError('Your browser does not support geolocation.');
+        return;
+    }
+    btn.classList.add('loading');
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Getting…';
+
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const { latitude, longitude } = pos.coords;
+            reverseGeocode(latitude, longitude);
+            btn.classList.remove('loading');
+            btn.innerHTML = '<i class="fa fa-crosshairs"></i> GPS';
+            // Show map with user location
+            document.getElementById('map-section').style.display = 'block';
+            initMap(latitude, longitude);
+            // Store coords for distance filtering
+            document.querySelector('[name="user_lat"]')?.remove();
+            document.querySelector('[name="user_lng"]')?.remove();
+            const latInput = document.createElement('input');
+            latInput.type = 'hidden'; latInput.name = 'user_lat'; latInput.value = latitude;
+            const lngInput = document.createElement('input');
+            lngInput.type = 'hidden'; lngInput.name = 'user_lng'; lngInput.value = longitude;
+            document.getElementById('search-form').appendChild(latInput);
+            document.getElementById('search-form').appendChild(lngInput);
+        },
+        (err) => {
+            btn.classList.remove('loading');
+            btn.innerHTML = '<i class="fa fa-crosshairs"></i> GPS';
+            const messages = {
+                1: 'Location permission denied. Please allow location access in your browser settings.',
+                2: 'Location unavailable. Please try again.',
+                3: 'Location request timed out. Please try again.'
+            };
+            showGPSError(messages[err.code] || 'Unknown geolocation error.');
+        },
+        { timeout: 8000, maximumAge: 60000, enableHighAccuracy: true }
+    );
+}
+
+function reverseGeocode(lat, lng) {
+    const apiKey = "{{ google_maps_api_key }}";
+
+    if (!apiKey) {
+        // No API key — just use raw coordinates as fallback
+        document.getElementById('location').value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        return;
+    }
+
+    // Use Google Maps Geocoding API
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+
+    fetch(url)
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'OK' && data.results.length > 0) {
+            // Extract city and state from address components
+            let city = '', state = '', country = '';
+            for (const result of data.results) {
+                for (const component of result.address_components) {
+                    const types = component.types;
+                    if (!city && (types.includes('locality') || types.includes('sublocality_level_1'))) {
+                        city = component.long_name;
+                    }
+                    if (!state && types.includes('administrative_area_level_1')) {
+                        state = component.long_name;
+                    }
+                    if (!country && types.includes('country')) {
+                        country = component.long_name;
+                    }
+                }
+                if (city) break; // Found what we need
+            }
+            const location = city ? (state ? `${city}, ${state}` : city) : (state || country || `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+            document.getElementById('location').value = location;
+        } else {
+            document.getElementById('location').value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        }
+    })
+    .catch(() => {
+        document.getElementById('location').value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    });
+}
+
+function showGPSError(message) {
+    document.getElementById('gps-modal-message').textContent = message;
+    document.getElementById('gps-error-modal').classList.add('show');
+}
+
+/* ──────────────────────────────────────────────
+   Google Maps Integration
+────────────────────────────────────────────── */
+let map = null;
+let markers = [];
+
+function initMap(centerLat, centerLng) {
+    const mapEl = document.getElementById('doctor-map');
+    const placeholder = document.getElementById('map-placeholder');
+
+    // Check if Google Maps API is available
+    if (typeof google === 'undefined' || !google.maps) {
+        placeholder.style.display = 'flex';
+        mapEl.style.display = 'none';
+        return;
+    }
+
+    placeholder.style.display = 'none';
+    mapEl.style.display = 'block';
+
+    if (!map) {
+        map = new google.maps.Map(mapEl, {
+            center: { lat: centerLat, lng: centerLng },
+            zoom: 12,
+            styles: [
+                { elementType: 'geometry', stylers: [{ color: '#f5f7fa' }] },
+                { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
+                { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#c8d8e8' }] },
+                { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#d8ecc8' }] }
+            ]
+        });
+    } else {
+        map.setCenter({ lat: centerLat, lng: centerLng });
+    }
+
+    // User location marker
+    new google.maps.Marker({
+        position: { lat: centerLat, lng: centerLng },
+        map,
+        title: 'Your Location',
+        icon: {
+            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" fill="#4f46e5" opacity="0.2"/>
+                    <circle cx="12" cy="12" r="6" fill="#4f46e5"/>
+                    <circle cx="12" cy="12" r="3" fill="white"/>
+                </svg>
+            `),
+            scaledSize: new google.maps.Size(36, 36)
+        }
+    });
+
+    // Doctor markers from cards
+    markers.forEach(m => m.setMap(null));
+    markers = [];
+    document.querySelectorAll('.doctor-grid-card[data-lat]').forEach(card => {
+        const lat = parseFloat(card.dataset.lat);
+        const lng = parseFloat(card.dataset.lng);
+        if (isNaN(lat) || isNaN(lng)) return;
+        const marker = new google.maps.Marker({
+            position: { lat, lng },
+            map,
+            title: card.dataset.name,
+            icon: {
+                url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 32 40">
+                        <path d="M16 0 C7.2 0 0 7.2 0 16 C0 28 16 40 16 40 C16 40 32 28 32 16 C32 7.2 24.8 0 16 0Z" fill="#06b6d4"/>
+                        <text x="16" y="22" text-anchor="middle" font-size="14" fill="white">🩺</text>
+                    </svg>
+                `),
+                scaledSize: new google.maps.Size(32, 40)
+            }
+        });
+        const infoWindow = new google.maps.InfoWindow({
+            content: `<div style="font-family:sans-serif;padding:4px;min-width:140px;">
+                <strong style="color:#1e293b;">${card.dataset.name}</strong><br>
+                <span style="color:#06b6d4;font-size:12px;">${card.dataset.dept}</span>
+            </div>`
+        });
+        marker.addListener('click', () => infoWindow.open(map, marker));
+        markers.push(marker);
+    });
+}
+
+// Auto-init map if location is already set from URL
+document.addEventListener('DOMContentLoaded', () => {
+    const loc = document.getElementById('location').value;
+    if (loc) {
+        document.getElementById('map-section').style.display = 'block';
+    }
+    updateDistanceLabel(document.getElementById('distance-slider').value);
+});
+
+// Called by Google Maps callback
+function initGoogleMap() {
+    // Placeholder — actual init triggered by GPS or search
+    console.log('Google Maps API loaded.');
+}
+</script>
+
+<!-- Google Maps API (configure GOOGLE_MAPS_API_KEY in settings.py) -->
+{% if google_maps_api_key %}
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initGoogleMap">
+</script>
+{% endif %}
+
+{% endblock %}

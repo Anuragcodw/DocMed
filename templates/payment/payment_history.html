@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} | Payment History{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-12">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb bg-transparent p-0">
+                    <li class="breadcrumb-item"><a href="{% url 'appointment:home' %}" class="text-primary font-weight-bold">Home</a></li>
+                    <li class="breadcrumb-item active text-muted" aria-current="page">Payment History</li>
+                </ol>
+            </nav>
+
+            <!-- Main Panel -->
+            <div class="glass-panel p-4 p-md-5 mb-5 shadow-soft border-0" data-aos="fade-up">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom pb-4 mb-4" style="border-color: rgba(0,0,0,0.05) !important;">
+                    <div>
+                        <h2 class="font-weight-bold text-gradient mb-1"><i class="fa fa-history mr-2 text-primary"></i>Payment History</h2>
+                        <p class="text-muted mb-0">Review all payments, invoices, and transaction references for your appointments.</p>
+                    </div>
+                </div>
+
+                <!-- Payments Table -->
+                {% if payments %}
+                <div class="table-responsive">
+                    <table class="table table-hover text-dark mb-0 align-middle">
+                        <thead>
+                            <tr class="text-muted border-0">
+                                <th class="border-0 font-weight-bold">Invoice No</th>
+                                <th class="border-0 font-weight-bold">{% if request.user.role == 'doctor' %}Patient{% else %}Doctor{% endif %}</th>
+                                <th class="border-0 font-weight-bold">Appointment Date</th>
+                                <th class="border-0 font-weight-bold">Gateway</th>
+                                <th class="border-0 font-weight-bold">Amount</th>
+                                <th class="border-0 font-weight-bold">Status</th>
+                                <th class="border-0 font-weight-bold text-center">Invoice</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payments %}
+                            <tr class="border-bottom" style="border-color: rgba(0,0,0,0.03) !important;">
+                                <td class="py-3 align-middle font-weight-bold text-primary">{{ payment.invoice_number }}</td>
+                                <td class="py-3 align-middle">
+                                    {% if request.user.role == 'doctor' %}
+                                        {{ payment.booking.patient_name }}
+                                    {% else %}
+                                        Dr. {{ payment.booking.appointment.full_name }}
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 align-middle">{{ payment.booking.date|date:"M d, Y" }} <span class="text-muted small">({{ payment.booking.appointment.start_time }})</span></td>
+                                <td class="py-3 align-middle text-capitalize">{{ payment.gateway }}</td>
+                                <td class="py-3 align-middle font-weight-bold">
+                                    {% if payment.gateway == 'razorpay' or payment.gateway == 'upi' %}INR{% else %}USD{% endif %} {{ payment.amount }}
+                                </td>
+                                <td class="py-3 align-middle">
+                                    {% if payment.status == 'success' %}
+                                        <span class="badge badge-success px-3 py-2 font-weight-bold" style="border-radius: 8px;"><i class="fa fa-check-circle mr-1"></i>Success</span>
+                                    {% elif payment.status == 'pending' %}
+                                        <span class="badge badge-warning text-dark px-3 py-2 font-weight-bold" style="border-radius: 8px;"><i class="fa fa-clock-o mr-1"></i>Pending</span>
+                                    {% else %}
+                                        <span class="badge badge-danger px-3 py-2 font-weight-bold" style="border-radius: 8px;"><i class="fa fa-times-circle mr-1"></i>Failed</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 align-middle text-center">
+                                    {% if payment.status == 'success' %}
+                                        <a href="{% url 'appointment:invoice-pdf' payment.id %}" target="_blank" class="btn btn-sm btn-outline-success border-0 rounded-circle" title="Download Invoice">
+                                            <i class="fa fa-download fa-lg"></i>
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted small">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="fa fa-credit-card fa-4x mb-3 text-light"></i>
+                    <h4>No Payments Found</h4>
+                    <p class="mb-0">You have not completed any payments yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

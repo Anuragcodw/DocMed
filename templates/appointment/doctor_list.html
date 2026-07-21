@@ -1,0 +1,494 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}| Find Doctors{% endblock %}
+
+{% block styles %}
+<style>
+  .dl-hero {
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    padding: 80px 0 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .dl-hero::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%);
+    top: -200px; right: -100px;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .dl-hero h1 { color: #fff; font-weight: 800; font-size: clamp(1.8rem, 4vw, 2.8rem); }
+  .dl-hero p { color: rgba(255,255,255,0.75); font-size: 1.1rem; }
+
+  /* ── Search Bar ── */
+  .search-glass {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 28px 28px;
+    backdrop-filter: blur(16px);
+  }
+  .search-glass .form-control,
+  .search-glass .form-select {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+  }
+  .search-glass .form-control::placeholder { color: rgba(255,255,255,0.5); }
+  .search-glass .form-control:focus,
+  .search-glass .form-select:focus {
+    background: rgba(255,255,255,0.18);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.35);
+    border-color: rgba(99,102,241,0.6);
+    color: #fff;
+  }
+  .search-glass .form-select option { background: #302b63; color: #fff; }
+  .btn-search-main {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 28px;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #fff;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+  .btn-search-main:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,0.5); color: #fff; }
+
+  /* ── Stat Pills ── */
+  .stat-pill {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 50px;
+    padding: 6px 18px;
+    color: rgba(255,255,255,0.85);
+    font-size: 0.88rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stat-pill i { color: #a78bfa; }
+
+  /* ── Filter Sidebar ── */
+  .filter-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 24px;
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 100px;
+  }
+  .filter-card h6 {
+    color: #a78bfa;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1.5px;
+    margin-bottom: 14px;
+  }
+  .filter-card .form-check-label { color: rgba(255,255,255,0.8); font-size: 0.9rem; cursor: pointer; }
+  .filter-card .form-check-input:checked { background-color: #6366f1; border-color: #6366f1; }
+  .filter-divider { border-color: rgba(255,255,255,0.1); margin: 18px 0; }
+
+  /* ── Doctor Card ── */
+  .doctor-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    height: 100%;
+  }
+  .doctor-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(99,102,241,0.45);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35), 0 0 0 1px rgba(99,102,241,0.2);
+    background: rgba(255,255,255,0.1);
+  }
+  .doctor-card-img {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(99,102,241,0.5);
+    flex-shrink: 0;
+  }
+  .doctor-card-img-placeholder {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; color: #fff; font-weight: 700;
+    border: 3px solid rgba(99,102,241,0.5);
+    flex-shrink: 0;
+  }
+  .doctor-name { color: #fff; font-weight: 700; font-size: 1.05rem; margin-bottom: 2px; }
+  .doctor-spec { color: #a78bfa; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+  .doctor-hospital { color: rgba(255,255,255,0.6); font-size: 0.8rem; }
+  .doctor-stats { border-top: 1px solid rgba(255,255,255,0.08); }
+  .stat-item { text-align: center; padding: 10px 0; }
+  .stat-item .val { color: #fff; font-weight: 700; font-size: 1rem; display: block; }
+  .stat-item .lbl { color: rgba(255,255,255,0.5); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-divider { width: 1px; background: rgba(255,255,255,0.08); }
+
+  .badge-avail {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-weight: 600;
+  }
+  .badge-busy {
+    background: rgba(239,68,68,0.2);
+    color: #fca5a5;
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-weight: 600;
+    border: 1px solid rgba(239,68,68,0.3);
+  }
+  .badge-dept {
+    background: rgba(99,102,241,0.15);
+    color: #a5b4fc;
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 50px;
+    font-size: 0.72rem;
+    padding: 3px 10px;
+  }
+  .star-rating { color: #fbbf24; font-size: 0.85rem; }
+  .btn-view-profile {
+    background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.2));
+    border: 1px solid rgba(99,102,241,0.35);
+    color: #a5b4fc;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-view-profile:hover {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    border-color: transparent;
+    color: #fff;
+    transform: scale(1.04);
+    text-decoration: none;
+  }
+  .btn-book-now {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    color: #fff;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-book-now:hover {
+    transform: scale(1.04);
+    box-shadow: 0 6px 16px rgba(16,185,129,0.4);
+    color: #fff;
+    text-decoration: none;
+  }
+
+  /* ── Sort Bar ── */
+  .sort-bar {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 12px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .sort-bar span { color: rgba(255,255,255,0.5); font-size: 0.85rem; }
+  .sort-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.7);
+    border-radius: 50px;
+    padding: 4px 14px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .sort-btn:hover, .sort-btn.active {
+    background: rgba(99,102,241,0.25);
+    border-color: rgba(99,102,241,0.5);
+    color: #a5b4fc;
+    text-decoration: none;
+  }
+
+  .section-bg {
+    background: linear-gradient(180deg, #0f0c29 0%, #1a1a3e 100%);
+    min-height: 100vh;
+    padding: 40px 0 60px;
+  }
+  .no-results {
+    text-align: center;
+    padding: 80px 20px;
+    color: rgba(255,255,255,0.4);
+  }
+  .no-results i { font-size: 4rem; color: rgba(99,102,241,0.3); margin-bottom: 16px; display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero / Search -->
+<section class="dl-hero">
+  <div class="container">
+    <div class="text-center mb-4" data-aos="fade-down">
+      <h1><i class="ri-stethoscope-line me-2 text-purple-400"></i> Find Your Doctor</h1>
+      <p>Browse {{ total_doctors }} certified specialists — {{ available_count }} available now</p>
+      <div class="d-flex justify-content-center gap-2 flex-wrap mt-2">
+        <span class="stat-pill"><i class="ri-shield-check-fill"></i> Verified Doctors</span>
+        <span class="stat-pill"><i class="ri-time-fill"></i> Real-time Availability</span>
+        <span class="stat-pill"><i class="ri-video-fill"></i> Online Consultations</span>
+      </div>
+    </div>
+
+    <div class="search-glass" data-aos="fade-up">
+      <form method="GET" action="{% url 'appointment:doctor-list' %}">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label class="text-white-50 small mb-1">Search doctor / specialty</label>
+            <div class="input-group">
+              <span class="input-group-text" style="background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.2); color:#a78bfa;">
+                <i class="ri-search-line"></i>
+              </span>
+              <input type="text" name="q" class="form-control" placeholder="Dr. name or specialty…" value="{{ current_filters.q }}">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="text-white-50 small mb-1">Department</label>
+            <select name="department" class="form-select">
+              <option value="">All Departments</option>
+              {% for value, label in dept_choices %}
+              <option value="{{ value }}" {% if current_filters.department == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="text-white-50 small mb-1">City</label>
+            <input type="text" name="city" class="form-control" placeholder="City…" value="{{ current_filters.city }}">
+          </div>
+          <div class="col-md-2">
+            <label class="text-white-50 small mb-1">Experience</label>
+            <select name="experience" class="form-select">
+              <option value="">Any</option>
+              <option value="0-5" {% if current_filters.experience == '0-5' %}selected{% endif %}>0–5 yrs</option>
+              <option value="5-10" {% if current_filters.experience == '5-10' %}selected{% endif %}>5–10 yrs</option>
+              <option value="10+" {% if current_filters.experience == '10+' %}selected{% endif %}>10+ yrs</option>
+            </select>
+          </div>
+          <div class="col-md-1">
+            <button type="submit" class="btn-search-main w-100"><i class="ri-search-line"></i></button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Main Content -->
+<section class="section-bg">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- Sidebar Filters -->
+      <div class="col-lg-3" data-aos="fade-right">
+        <div class="filter-card">
+          <h6><i class="ri-equalizer-line me-1"></i> Filters</h6>
+
+          <form method="GET" action="{% url 'appointment:doctor-list' %}" id="filterForm">
+            <input type="hidden" name="q" value="{{ current_filters.q }}">
+            <input type="hidden" name="department" value="{{ current_filters.department }}">
+            <input type="hidden" name="city" value="{{ current_filters.city }}">
+            <input type="hidden" name="experience" value="{{ current_filters.experience }}">
+
+            <p class="text-white-50 small mb-2">Gender</p>
+            <div class="form-check mb-1">
+              <input class="form-check-input" type="radio" name="gender" id="gAll" value="" {% if not current_filters.gender %}checked{% endif %} onchange="this.form.submit()">
+              <label class="form-check-label" for="gAll">All</label>
+            </div>
+            <div class="form-check mb-1">
+              <input class="form-check-input" type="radio" name="gender" id="gM" value="male" {% if current_filters.gender == 'male' %}checked{% endif %} onchange="this.form.submit()">
+              <label class="form-check-label" for="gM">Male</label>
+            </div>
+            <div class="form-check mb-1">
+              <input class="form-check-input" type="radio" name="gender" id="gF" value="female" {% if current_filters.gender == 'female' %}checked{% endif %} onchange="this.form.submit()">
+              <label class="form-check-label" for="gF">Female</label>
+            </div>
+
+            <hr class="filter-divider">
+            <p class="text-white-50 small mb-2">Availability</p>
+            <div class="form-check mb-1">
+              <input class="form-check-input" type="radio" name="availability" id="avAll" value="" {% if not current_filters.availability %}checked{% endif %} onchange="this.form.submit()">
+              <label class="form-check-label" for="avAll">All Doctors</label>
+            </div>
+            <div class="form-check mb-1">
+              <input class="form-check-input" type="radio" name="availability" id="avNow" value="available" {% if current_filters.availability == 'available' %}checked{% endif %} onchange="this.form.submit()">
+              <label class="form-check-label" for="avNow">Available Now</label>
+            </div>
+          </form>
+
+          <hr class="filter-divider">
+          {% if current_filters.q or current_filters.department or current_filters.city or current_filters.experience or current_filters.gender or current_filters.availability %}
+          <a href="{% url 'appointment:doctor-list' %}" class="btn btn-sm w-100" style="border:1px solid rgba(239,68,68,0.4); color:#fca5a5; border-radius:10px;">
+            <i class="ri-close-circle-line me-1"></i> Clear All Filters
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Doctor Grid -->
+      <div class="col-lg-9">
+        <!-- Sort Bar -->
+        <div class="sort-bar" data-aos="fade-down">
+          <span><i class="ri-sort-asc me-1"></i> Sort by:</span>
+          <a href="?{{ request.GET.urlencode }}&sort=rating" class="sort-btn {% if current_filters.sort == 'rating' %}active{% endif %}">⭐ Rating</a>
+          <a href="?{{ request.GET.urlencode }}&sort=experience" class="sort-btn {% if current_filters.sort == 'experience' %}active{% endif %}">🏆 Experience</a>
+          <a href="?{{ request.GET.urlencode }}&sort=fee_low" class="sort-btn {% if current_filters.sort == 'fee_low' %}active{% endif %}">💰 Fee: Low</a>
+          <a href="?{{ request.GET.urlencode }}&sort=fee_high" class="sort-btn {% if current_filters.sort == 'fee_high' %}active{% endif %}">💰 Fee: High</a>
+          <a href="?{{ request.GET.urlencode }}&sort=patients" class="sort-btn {% if current_filters.sort == 'patients' %}active{% endif %}">👤 Patients</a>
+          <span class="ms-auto text-white-50 small">{{ doctors|length }} of {{ page_obj.paginator.count }} doctors</span>
+        </div>
+
+        {% if doctors %}
+        <div class="row g-4">
+          {% for doctor in doctors %}
+          <div class="col-md-6 col-xl-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1 }}00">
+            <div class="doctor-card p-3 d-flex flex-column h-100">
+              <!-- Header -->
+              <div class="d-flex align-items-start gap-3 mb-3">
+                {% if doctor.photo %}
+                <img src="{{ doctor.photo.url }}" alt="{{ doctor.full_name }}" class="doctor-card-img">
+                {% else %}
+                <div class="doctor-card-img-placeholder">{{ doctor.full_name|slice:":1" }}</div>
+                {% endif %}
+                <div class="flex-grow-1 min-w-0">
+                  <p class="doctor-name text-truncate">{{ doctor.full_name }}</p>
+                  <p class="doctor-spec text-truncate">{{ doctor.specialization|default:"General Physician" }}</p>
+                  <p class="doctor-hospital text-truncate"><i class="ri-hospital-line me-1"></i>{{ doctor.hospital|default:"—" }}</p>
+                  <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
+                    {% if doctor.is_available_today %}
+                    <span class="badge-avail"><i class="ri-checkbox-circle-fill me-1"></i>Available</span>
+                    {% else %}
+                    <span class="badge-busy"><i class="ri-time-line me-1"></i>Busy</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Specialization badge -->
+              <div class="mb-3">
+                <span class="badge-dept">{{ doctor.specialization|default:"General" }}</span>
+                {% if doctor.experience_years %}
+                <span class="ms-1 text-white-50 small">· {{ doctor.experience_years }} yrs exp</span>
+                {% endif %}
+              </div>
+
+              <!-- Rating -->
+              <div class="mb-3 d-flex align-items-center gap-2">
+                <span class="star-rating">
+                  {% for i in "12345" %}
+                  {% if forloop.counter <= doctor.rating|default:0 %}★{% else %}☆{% endif %}
+                  {% endfor %}
+                </span>
+                <span class="text-white-50 small">({{ doctor.rating|default:"0.0" }})</span>
+              </div>
+
+              <!-- Stats -->
+              <div class="doctor-stats d-flex mt-auto">
+                <div class="stat-item flex-fill">
+                  <span class="val">{{ doctor.experience_years|default:"—" }}</span>
+                  <span class="lbl">Years</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item flex-fill">
+                  <span class="val">{{ doctor.patients_treated|default:"—" }}</span>
+                  <span class="lbl">Patients</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item flex-fill">
+                  <span class="val">₹{{ doctor.consultation_fee|default:"—" }}</span>
+                  <span class="lbl">Fee</span>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="d-flex gap-2 mt-3 pt-3" style="border-top: 1px solid rgba(255,255,255,0.08);">
+                <a href="{% url 'appointment:doctor-public-profile' doctor.pk %}" class="btn-view-profile flex-fill text-center">
+                  <i class="ri-eye-line me-1"></i> View
+                </a>
+                {% if can_book or request.user.is_authenticated %}
+                <a href="{% url 'appointment:booking-wizard' %}?step=2&doctor_id={{ doctor.pk }}" class="btn-book-now flex-fill text-center">
+                  <i class="ri-calendar-check-line me-1"></i> Book
+                </a>
+                {% else %}
+                <a href="{% url 'appointment:booking-wizard' %}?step=2&doctor_id={{ doctor.pk }}" class="btn-book-now flex-fill text-center">
+                  <i class="ri-calendar-check-line me-1"></i> Book
+                </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-5 d-flex justify-content-center" data-aos="fade-up">
+          <ul class="pagination" style="gap: 6px;">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" style="background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.15); color:#a5b4fc; border-radius:10px;">‹ Prev</a>
+            </li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+              <a class="page-link" href="?page={{ num }}&{{ request.GET.urlencode }}" style="background:{% if page_obj.number == num %}linear-gradient(135deg,#6366f1,#a855f7){% else %}rgba(255,255,255,0.08){% endif %}; border-color:rgba(255,255,255,0.15); color:#fff; border-radius:10px;">{{ num }}</a>
+            </li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" style="background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.15); color:#a5b4fc; border-radius:10px;">Next ›</a>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="no-results" data-aos="fade-in">
+          <i class="ri-user-search-line"></i>
+          <h5 class="text-white-50 mb-2">No doctors found</h5>
+          <p>Try adjusting your filters or search terms.</p>
+          <a href="{% url 'appointment:doctor-list' %}" class="btn-search-main mt-2">Clear Filters</a>
+        </div>
+        {% endif %}
+      </div><!-- /col -->
+    </div><!-- /row -->
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  AOS.init({ duration: 600, once: true });
+</script>
+{% endblock %}

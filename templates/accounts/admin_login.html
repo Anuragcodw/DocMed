@@ -1,0 +1,325 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin Login — DocMed</title>
+  <link rel="icon" href="{% static 'img/core-img/favicon.ico' %}">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0c1a2e 100%);
+      min-height: 100vh;
+    }
+
+    /* ── Layout ── */
+    .admin-login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Animated background blobs */
+    .admin-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+      animation: blobFloat 8s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+    .admin-blob-1 { width: 460px; height: 460px; background: #4f46e5; top: -120px; left: -100px; }
+    .admin-blob-2 { width: 340px; height: 340px; background: #06b6d4; bottom: -80px; right: -60px; animation-delay: 3s; }
+    .admin-blob-3 { width: 200px; height: 200px; background: #8b5cf6; top: 40%; left: 55%; animation-delay: 1.5s; }
+
+    @keyframes blobFloat {
+      0%   { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(24px, -18px) scale(1.07); }
+    }
+
+    /* ── Card ── */
+    .admin-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 44px 40px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+      position: relative;
+      z-index: 2;
+      animation: cardIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(32px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ── Logo ── */
+    .admin-logo-area { text-align: center; margin-bottom: 28px; }
+
+    .admin-logo-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #f59e0b, #f97316);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: #fff;
+      margin-bottom: 14px;
+      box-shadow: 0 12px 32px rgba(245,158,11,0.45);
+      animation: iconPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes iconPulse {
+      0%, 100% { box-shadow: 0 12px 32px rgba(245,158,11,0.45); }
+      50%       { box-shadow: 0 12px 48px rgba(245,158,11,0.7); }
+    }
+
+    .admin-logo-area h3 { color: #fff; font-size: 22px; font-weight: 800; margin: 0 0 4px; }
+    .admin-logo-area p  { color: rgba(255,255,255,0.5); font-size: 13px; }
+
+    /* ── Badge ── */
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245,158,11,0.15);
+      border: 1px solid rgba(245,158,11,0.35);
+      color: #fbbf24;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 24px;
+    }
+
+    /* ── Form ── */
+    .admin-form-group { margin-bottom: 18px; }
+
+    .admin-label {
+      display: block;
+      color: rgba(255,255,255,0.7);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      margin-bottom: 8px;
+    }
+
+    .admin-input-wrap { position: relative; }
+
+    .admin-input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.35);
+      font-size: 15px;
+      pointer-events: none;
+    }
+
+    .admin-input {
+      width: 100%;
+      background: rgba(255,255,255,0.07);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 13px 14px 13px 42px;
+      color: #fff;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+    }
+
+    .admin-input::placeholder { color: rgba(255,255,255,0.28); }
+
+    .admin-input:focus {
+      border-color: #f59e0b;
+      background: rgba(255,255,255,0.1);
+      box-shadow: 0 0 0 3px rgba(245,158,11,0.2);
+    }
+
+    /* ── Submit ── */
+    .admin-submit-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f59e0b, #f97316);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 24px rgba(245,158,11,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .admin-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(245,158,11,0.55); }
+    .admin-submit-btn:active { transform: scale(0.98); }
+    .admin-submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    /* ── Back link ── */
+    .admin-back-link { text-align: center; margin-top: 22px; }
+    .admin-back-link a { color: rgba(255,255,255,0.45); font-size: 13px; text-decoration: none; transition: color 0.2s; }
+    .admin-back-link a:hover { color: rgba(255,255,255,0.75); }
+
+    /* ── Alert ── */
+    .admin-alert {
+      border-radius: 12px;
+      padding: 11px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .admin-alert.error   { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); color: #fca5a5; }
+    .admin-alert.success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35); color: #6ee7b7; }
+    .admin-alert.warning { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d; }
+
+    /* ── Divider ── */
+    .admin-divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin: 24px 0;
+    }
+
+    /* ── FA spin ── */
+    .fa-spin { animation: fa-spin 1s linear infinite; }
+    @keyframes fa-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .admin-card { padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="admin-login-wrapper">
+
+  <!-- Background blobs -->
+  <div class="admin-blob admin-blob-1"></div>
+  <div class="admin-blob admin-blob-2"></div>
+  <div class="admin-blob admin-blob-3"></div>
+
+  <div class="admin-card">
+
+    <!-- Logo -->
+    <div class="admin-logo-area">
+      <div class="admin-logo-icon">
+        <i class="fa fa-shield"></i>
+      </div>
+      <h3>DocMed Admin</h3>
+      <p>Secure Administrator Portal</p>
+    </div>
+
+    <div style="text-align:center;">
+      <span class="admin-badge">
+        <i class="fa fa-lock"></i>&nbsp; Restricted Access
+      </span>
+    </div>
+
+    <!-- Django Messages -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="admin-alert {% if 'error' in message.tags %}error{% elif 'success' in message.tags %}success{% else %}warning{% endif %}">
+          <i class="fa fa-{% if 'error' in message.tags %}exclamation-circle{% elif 'success' in message.tags %}check-circle{% else %}info-circle{% endif %}"></i>
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Login Form -->
+    <form method="POST" action="{% url 'accounts:admin-login' %}" novalidate id="adminLoginForm">
+      {% csrf_token %}
+
+      <div class="admin-form-group">
+        <label class="admin-label" for="id_admin_username">Username</label>
+        <div class="admin-input-wrap">
+          <i class="fa fa-user admin-input-icon"></i>
+          <input
+            type="text"
+            id="id_admin_username"
+            name="username"
+            class="admin-input"
+            placeholder="Enter admin username"
+            value="{{ username|default:'' }}"
+            autocomplete="username"
+            autofocus
+            required
+          >
+        </div>
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-label" for="id_admin_password">Password</label>
+        <div class="admin-input-wrap">
+          <i class="fa fa-lock admin-input-icon"></i>
+          <input
+            type="password"
+            id="id_admin_password"
+            name="password"
+            class="admin-input"
+            placeholder="Enter admin password"
+            autocomplete="current-password"
+            required
+          >
+        </div>
+      </div>
+
+      <button type="submit" class="admin-submit-btn" id="adminLoginBtn">
+        <i class="fa fa-sign-in"></i>
+        Access Admin Dashboard
+      </button>
+    </form>
+
+    <hr class="admin-divider">
+
+    <div class="admin-back-link">
+      <a href="{% url 'accounts:login' %}">
+        <i class="fa fa-arrow-left"></i>&nbsp; Back to User Login
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  document.getElementById('adminLoginForm').addEventListener('submit', function() {
+    var btn = document.getElementById('adminLoginBtn');
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>&nbsp; Authenticating...';
+    btn.disabled = true;
+  });
+</script>
+
+</body>
+</html>

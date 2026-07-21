@@ -1,0 +1,2846 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - Premium Healthcare Portal{% endblock title %}
+
+{% block styles %}
+<style>
+/* ============================================================
+   HOME PAGE SCOPED STYLES — LIGHT THEME & PREMIUM SAAS UI
+   ============================================================ */
+
+/* ── CSS Variables (home-only overrides) ─────────────────── */
+.home-page {
+  --hp-primary: #4f46e5;
+  --hp-primary-light: #818cf8;
+  --hp-accent: #06b6d4;
+  --hp-success: #10b981;
+  --hp-warning: #f59e0b;
+  --hp-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #06b6d4 100%);
+  --hp-gradient-soft: linear-gradient(135deg, #f8fbff 0%, #f0f9ff 50%, #faf5ff 100%);
+  --hp-glass: rgba(255,255,255,0.85);
+  --hp-glass-border: rgba(255,255,255,0.6);
+  --hp-shadow: 0 20px 60px rgba(79,70,229,0.08);
+  --hp-shadow-hover: 0 30px 80px rgba(79,70,229,0.18);
+  --hp-radius: 20px;
+  --hp-radius-sm: 12px;
+}
+
+/* ── Global Section and Layout Constraints ───────────────── */
+.hp-section {
+  padding-top: 100px;
+  padding-bottom: 100px;
+  position: relative;
+  overflow: hidden;
+}
+.hp-section-gap {
+  margin-bottom: 120px;
+}
+.hp-card-grid {
+  display: grid;
+  gap: 32px;
+}
+
+/* ── Section Gradient Backgrounds ─────────────────────────── */
+.hp-bg-hero {
+  background: linear-gradient(135deg, #f8fbff 0%, #e0f2fe 50%, #f5f3ff 100%);
+  background-size: 200% 200%;
+  animation: hp-bg-move 10s ease infinite;
+}
+.hp-bg-stats {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #faf5ff 100%);
+}
+.hp-bg-search {
+  background: linear-gradient(135deg, #f8fbff 0%, #ecfeff 50%, #e0f2fe 100%);
+}
+.hp-bg-timeline {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #eff6ff 100%);
+}
+.hp-bg-spec {
+  background: linear-gradient(135deg, #eff6ff 0%, #faf5ff 50%, #f5f3ff 100%);
+}
+.hp-bg-doctors {
+  background: linear-gradient(135deg, #ecfeff 0%, #e0f2fe 50%, #eff6ff 100%);
+}
+.hp-bg-appointments {
+  background: linear-gradient(135deg, #f0f9ff 0%, #ecfeff 50%, #eff6ff 100%);
+}
+.hp-bg-reviews {
+  background: linear-gradient(135deg, #faf5ff 0%, #ecfeff 50%, #f5f3ff 100%);
+}
+.hp-bg-faq {
+  background: linear-gradient(135deg, #f5f3ff 0%, #f8fafc 50%, #faf5ff 100%);
+}
+.hp-bg-info {
+  background: linear-gradient(135deg, #f8faff 0%, #f0f4ff 50%, #eff6ff 100%);
+}
+
+@keyframes hp-bg-move {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Keyframes ─────────────────────────────────────────────── */
+@keyframes hp-float {
+  0%,100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-12px) rotate(1deg); }
+  66% { transform: translateY(-6px) rotate(-1deg); }
+}
+@keyframes hp-pulse-glow {
+  0%,100% { box-shadow: 0 0 20px rgba(79,70,229,0.2); }
+  50% { box-shadow: 0 0 45px rgba(79,70,229,0.45), 0 0 80px rgba(6,182,212,0.2); }
+}
+@keyframes hp-badge-pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
+}
+@keyframes hp-ripple {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(4); opacity: 0; }
+}
+@keyframes hp-slide-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes hp-heartbeat {
+  0%,100% { transform: scale(1); }
+  14% { transform: scale(1.08); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.05); }
+  70% { transform: scale(1); }
+}
+
+/* ── Hero Section ─────────────────────────────────────────── */
+.hp-hero {
+  padding: 120px 0 100px;
+  position: relative;
+}
+.hp-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(79,70,229,0.08);
+  border: 1px solid rgba(79,70,229,0.18);
+  color: var(--hp-primary);
+  padding: 8px 18px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  animation: hp-heartbeat 2.5s ease-in-out infinite;
+}
+.hp-hero-title {
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1.25;
+  color: #0f172a;
+  margin-bottom: 24px;
+  letter-spacing: -1px;
+}
+.hp-title-gradient {
+  background: var(--hp-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hp-hero-sub {
+  font-size: 1.15rem;
+  color: #334155;
+  line-height: 1.8;
+  margin-bottom: 40px;
+  max-width: 560px;
+  font-weight: 500;
+}
+.hp-hero-btns { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 40px; }
+.hp-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--hp-gradient);
+  color: #fff !important;
+  padding: 14px 28px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 24px rgba(79,70,229,0.3);
+}
+.hp-btn-primary:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(79,70,229,0.45);
+}
+.hp-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.9);
+  color: var(--hp-primary) !important;
+  padding: 14px 28px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 15px;
+  border: 2px solid rgba(79,70,229,0.25);
+  cursor: pointer;
+  text-decoration: none !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+}
+.hp-btn-outline:hover {
+  background: var(--hp-primary);
+  color: #fff !important;
+  border-color: var(--hp-primary);
+  transform: translateY(-3px) scale(1.02);
+}
+
+/* ── Stats Strip ─────────────────────────────────────────── */
+.hp-stats-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 32px 24px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(24px);
+  border-radius: var(--hp-radius);
+  border: 1px solid rgba(79,70,229,0.12);
+  box-shadow: 0 12px 40px rgba(79,70,229,0.06);
+  margin-top: 32px;
+}
+.hp-stat-item { text-align: center; }
+.hp-stat-num {
+  font-size: 2.2rem;
+  font-weight: 800;
+  background: var(--hp-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  display: block;
+  margin-bottom: 6px;
+}
+.hp-stat-label { font-size: 12px; color: #334155; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 4px; }
+
+/* ── Hero Visual & Floating shapes ────────────────────────── */
+.hp-hero-visual { position: relative; width: 100%; display: flex; justify-content: center; }
+.hp-hero-img {
+  position: relative;
+  z-index: 2;
+  animation: hp-float 6s ease-in-out infinite;
+  filter: drop-shadow(0 20px 40px rgba(79,70,229,0.12));
+}
+.hp-hero-blob {
+  position: absolute;
+  width: 450px;
+  height: 450px;
+  background: var(--hp-gradient);
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.15;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+}
+.hp-floating-shape {
+  position: absolute;
+  color: rgba(79,70,229,0.25);
+  font-size: 24px;
+  animation: hp-float 4s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ── Available Doctor Card (floating) ─────────────────────── */
+.hp-doc-float-card {
+  position: absolute;
+  bottom: 8%;
+  left: -8%;
+  width: 250px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.8);
+  border-radius: var(--hp-radius);
+  padding: 20px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.06);
+  z-index: 10;
+  animation: hp-float 5s ease-in-out infinite;
+  animation-delay: 1s;
+}
+.hp-doc-float-card .available-dot {
+  width: 10px; height: 10px;
+  background: var(--hp-success);
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+  animation: hp-badge-pulse 1.5s infinite;
+}
+
+/* ── Booking Confirm Card ─────────────────────────────────── */
+.hp-booking-float-card {
+  position: absolute;
+  top: 10%;
+  right: -8%;
+  width: 230px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.8);
+  border-radius: var(--hp-radius);
+  padding: 20px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.06);
+  z-index: 10;
+  animation: hp-float 6s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+/* ── Search Section ──────────────────────────────────────── */
+.hp-search-section {
+  position: relative;
+  z-index: 20;
+  padding: 80px 0 60px;
+}
+.hp-bg-search {
+  background: linear-gradient(135deg, #f8fbff 0%, #ecfeff 50%, #faf5ff 100%);
+  background-size: 200% 200%;
+  animation: hp-bg-move 12s ease infinite;
+}
+.hp-search-panel {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-radius: 35px;
+  border: 1px solid rgba(79, 70, 229, 0.12);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.08);
+  padding: 40px;
+  position: relative;
+  overflow: visible;
+  animation: searchBorderGlow 6s ease-in-out infinite;
+}
+@keyframes searchBorderGlow {
+  0%, 100% { border-color: rgba(79, 70, 229, 0.15); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.08); }
+  50% { border-color: rgba(6, 182, 212, 0.4); box-shadow: 0 30px 80px rgba(6, 182, 212, 0.12), 0 30px 80px rgba(0, 0, 0, 0.08); }
+}
+.hp-search-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hp-search-title i {
+  color: #4F46E5;
+  font-size: 26px;
+}
+.hp-search-field {
+  position: relative;
+  margin-bottom: 0;
+}
+.hp-search-field label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #334155;
+  margin-bottom: 10px;
+}
+.hp-search-field .field-icon {
+  position: absolute;
+  left: 20px;
+  top: 48px;
+  color: #4F46E5;
+  font-size: 15px;
+  z-index: 5;
+  pointer-events: none;
+}
+.hp-search-field input,
+.hp-search-field select {
+  width: 100%;
+  height: 60px;
+  padding: 0 20px 0 46px;
+  border: 1.5px solid rgba(79, 70, 229, 0.15);
+  border-radius: 18px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #0f172a;
+  transition: all 0.25s ease;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.hp-search-field input::placeholder {
+  color: #94A3B8;
+}
+.hp-search-field input:focus,
+.hp-search-field select:focus {
+  outline: none;
+  border-color: #4F46E5;
+  background: #fff;
+  box-shadow: 0 0 25px rgba(79, 70, 229, 0.25);
+}
+.hp-location-wrapper {
+  position: relative;
+}
+.hp-gps-btn {
+  position: absolute;
+  right: 68px;
+  top: 10px;
+  background: linear-gradient(135deg, #06B6D4, #4F46E5);
+  border: none;
+  color: #fff;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.25s ease;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
+}
+.hp-gps-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(6, 182, 212, 0.35);
+}
+.hp-gps-btn i {
+  animation: gpsPulse 2s infinite;
+}
+@keyframes gpsPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.8; }
+}
+
+/* Voice trigger button style */
+.hp-voice-btn {
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(79, 70, 229, 0.15);
+  color: #4F46E5;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.25s ease;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+.hp-voice-btn:hover {
+  transform: translateY(-2px);
+  background: #fff;
+  box-shadow: 0 0 12px rgba(79, 70, 229, 0.3);
+}
+.hp-voice-btn.active {
+  background: #ef4444 !important;
+  color: #fff !important;
+  animation: voicePulse 1.2s infinite;
+}
+@keyframes voicePulse {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.hp-location-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid rgba(79,70,229,0.15);
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+  display: none;
+  margin-top: 8px;
+}
+.hp-location-suggestions.active { display: block; }
+.hp-suggestion-item {
+  padding: 12px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #334155;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hp-suggestion-item:hover { background: #f0f4ff; color: #4F46E5; }
+
+/* ── Custom Range Slider ── */
+.hp-slider-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 0;
+}
+.hp-slider-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-top: 8px;
+}
+.hp-distance-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #06B6D4, #4F46E5);
+  outline: none;
+}
+.hp-distance-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #4F46E5;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  box-shadow: 0 3px 8px rgba(79, 70, 229, 0.3);
+}
+.hp-distance-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: #06B6D4;
+  border-color: #fff;
+}
+.hp-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+  margin-top: 4px;
+}
+.hp-slider-labels span {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748B;
+  cursor: pointer;
+}
+.hp-slider-labels span.active {
+  color: #4F46E5;
+}
+
+.hp-search-btn {
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(135deg, #4F46E5, #06B6D4);
+  color: #fff !important;
+  border: none;
+  border-radius: 18px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 20px 40px rgba(79, 70, 229, 0.3);
+}
+.hp-search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 25px 50px rgba(79, 70, 229, 0.45);
+}
+.hp-search-btn:active {
+  transform: translateY(0);
+}
+
+/* ── Department Dropdown ─────────────────────────────────── */
+.hp-dept-select-wrapper::after {
+  content: '\f107';
+  font-family: 'FontAwesome';
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  color: #4F46E5;
+  pointer-events: none;
+  font-size: 18px;
+}
+}
+
+/* ── Section Headers ─────────────────────────────────────── */
+.hp-section-header { text-align: center; margin-bottom: 60px; }
+.hp-section-label {
+  display: inline-block;
+  background: rgba(79,70,229,0.08);
+  color: var(--hp-primary);
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(79,70,229,0.18);
+}
+.hp-section-title {
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+.hp-section-sub { font-size: 1.05rem; color: #475569; max-width: 550px; margin: 0 auto; line-height: 1.6; }
+
+/* ── Specializations Grid ────────────────────────────────── */
+.hp-spec-card {
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(79,70,229,0.1);
+  border-radius: var(--hp-radius);
+  padding: 36px 28px;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+}
+.hp-spec-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 30px 60px rgba(79,70,229,0.15);
+  border-color: rgba(79,70,229,0.25);
+}
+.hp-spec-icon-wrap {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 32px;
+  transition: transform 0.3s ease;
+}
+.hp-spec-card:hover .hp-spec-icon-wrap { transform: scale(1.15) rotate(-5deg); }
+.hp-spec-card h5 { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+.hp-spec-card .hp-spec-desc { font-size: 13px; color: #475569; margin-bottom: 16px; line-height: 1.6; }
+.hp-spec-card .hp-spec-count { font-size: 12px; font-weight: 700; color: var(--hp-primary); margin-bottom: 18px; }
+.hp-spec-explore-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1.5px solid var(--hp-primary);
+  color: var(--hp-primary);
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+.hp-spec-explore-btn:hover { background: var(--hp-primary); color: #fff !important; transform: scale(1.05); }
+
+/* ── Doctor Cards (Featured Doctors & Available Slots) ───── */
+.hp-doctor-card {
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(79,70,229,0.1);
+  border-radius: var(--hp-radius);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.04);
+}
+.hp-doctor-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 30px 60px rgba(79,70,229,0.15);
+  border-color: rgba(79,70,229,0.22);
+}
+.hp-doctor-img-wrap {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  width: 100%;
+}
+.hp-doctor-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.hp-doctor-card:hover .hp-doctor-img-wrap img { transform: scale(1.08); }
+
+/* Fallback Initials Avatar Style */
+.hp-avatar-initials {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #06b6d4 0%, #4f46e5 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: clamp(2.5rem, 6vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -1px;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Heart Icon (Favourite) Style */
+.hp-favourite-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+.hp-favourite-btn:hover {
+  transform: scale(1.1);
+  color: #ef4444;
+}
+.hp-favourite-btn.active {
+  color: #ef4444;
+}
+
+/* Alias used in card HTML */
+.hp-fav-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+.hp-fav-btn:hover { transform: scale(1.1); color: #ef4444; }
+.hp-fav-btn.active { color: #ef4444; background: rgba(254,226,226,0.95); }
+
+.hp-avail-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 12px rgba(16,185,129,0.25);
+  z-index: 10;
+}
+.hp-avail-badge .dot { width: 8px; height: 8px; background: #fff; border-radius: 50%; animation: hp-badge-pulse 1.5s infinite; }
+.hp-rating-badge {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  background: rgba(255,255,255,0.95);
+  color: #f59e0b;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  border: 1px solid rgba(245,158,11,0.15);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+}
+.hp-doctor-body { padding: 24px 20px 16px; flex-grow: 1; }
+.hp-doctor-dept { font-size: 11px; font-weight: 700; color: var(--hp-accent); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+.hp-doctor-name { font-size: 1.15rem; font-weight: 800; color: #0f172a; margin-bottom: 12px; }
+.hp-doctor-meta { list-style: none; padding: 0; margin: 0 0 16px; }
+.hp-doctor-meta li { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569; margin-bottom: 7px; }
+.hp-doctor-meta li i { color: var(--hp-primary); width: 16px; flex-shrink: 0; }
+.hp-doctor-footer {
+  padding: 14px 20px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fafbff;
+}
+.hp-fee { font-size: 1rem; font-weight: 800; color: #0f172a; }
+.hp-fee span { font-size: 12px; font-weight: 400; color: #64748b; }
+.hp-book-btn {
+  padding: 9px 18px;
+  background: var(--hp-gradient);
+  color: #fff !important;
+  border: none;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none !important;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.hp-book-btn:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(79,70,229,0.3); }
+.hp-view-btn {
+  padding: 9px 16px;
+  background: transparent;
+  color: var(--hp-primary) !important;
+  border: 1.5px solid var(--hp-primary);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none !important;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.hp-view-btn:hover { background: var(--hp-primary); color: #fff !important; }
+
+/* ── Timeline Section (How It Works) ─────────────────────── */
+.hp-timeline-container {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+.hp-timeline-line {
+  position: absolute;
+  top: 50px;
+  left: 10%;
+  right: 10%;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(79,70,229,0.3), rgba(6,182,212,0.3));
+  z-index: 0;
+  border-radius: 2px;
+}
+.hp-process-step {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  flex: 1 1 200px;
+}
+.hp-step-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(10px);
+  border: 3px solid rgba(79,70,229,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 26px;
+  transition: all 0.4s ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+}
+.hp-process-step:hover .hp-step-circle {
+  background: var(--hp-gradient);
+  border-color: transparent;
+  transform: scale(1.1);
+  box-shadow: 0 15px 35px rgba(79,70,229,0.35);
+}
+.hp-process-step:hover .hp-step-circle i { color: #fff !important; }
+.hp-step-num {
+  position: absolute;
+  top: -8px;
+  right: calc(50% - 48px);
+  width: 28px;
+  height: 28px;
+  background: var(--hp-gradient);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(79,70,229,0.3);
+}
+
+/* ── Statistics Big Banner ────────────────────────────────── */
+.hp-stats-section {
+  padding: 80px 0;
+}
+.hp-big-stat {
+  text-align: center;
+  padding: 32px 24px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(24px);
+  border-radius: var(--hp-radius);
+  border: 1px solid rgba(79,70,229,0.1);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.03);
+  transition: all 0.3s;
+}
+.hp-big-stat:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(79,70,229,0.1);
+  border-color: rgba(79,70,229,0.2);
+}
+.hp-big-num {
+  font-size: clamp(2.5rem, 5vw, 3.8rem);
+  font-weight: 800;
+  background: var(--hp-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+.hp-big-label {
+  font-size: 13px;
+  color: #334155;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.hp-big-icon {
+  font-size: 28px;
+  color: var(--hp-primary);
+  margin-bottom: 12px;
+}
+
+.hp-info-img{
+    width:100%;
+    max-width:550px;
+    height:auto;
+    border-radius:30px;
+    border:4px solid rgba(99,102,241,0.18);
+    box-shadow:
+        0 20px 45px rgba(0,0,0,.12),
+        0 0 0 1px rgba(255,255,255,.4) inset;
+    object-fit:cover;
+    transition:all .45s ease;
+    overflow:hidden;
+}
+
+.hp-info-img:hover{
+    transform:translateY(-8px) scale(1.02);
+    border-color:#4f46e5;
+    box-shadow:
+        0 30px 60px rgba(79,70,229,.25),
+        0 0 35px rgba(6,182,212,.18);
+}
+
+/* ── Login Modal ─────────────────────────────────────────── */
+.hp-login-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.6);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.hp-login-modal-overlay.active { display: flex; }
+.hp-login-modal {
+  background: rgba(255,255,255,0.98);
+  backdrop-filter: blur(30px);
+  border-radius: 28px;
+  padding: 48px;
+  max-width: 440px;
+  width: 90%;
+  text-align: center;
+  animation: hp-slide-up 0.5s ease;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.15);
+  border: 1px solid rgba(255,255,255,0.8);
+}
+.hp-login-modal .modal-icon {
+  width: 70px; height: 70px;
+  background: rgba(79,70,229,0.08);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 28px;
+  color: var(--hp-primary);
+}
+.hp-login-modal h4 { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
+.hp-login-modal p { color: #475569; font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
+.hp-modal-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  background: rgba(0,0,0,0.05);
+  border: none;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+.hp-modal-close:hover { background: rgba(0,0,0,0.1); color: #0f172a; }
+
+/* ── Testimonials & Reviews ──────────────────────────────── */
+.hp-reviews-swiper {
+  position: relative;
+  padding-bottom: 70px;
+}
+.hp-review-card {
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(28px);
+  border: 1px solid rgba(79,70,229,0.08);
+  border-radius: 20px;
+  padding: 32px 28px 28px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+}
+.hp-review-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(79,70,229,0.12);
+  border-color: rgba(79,70,229,0.18);
+}
+.hp-stars { color: #f59e0b; margin-bottom: 14px; font-size: 14px; letter-spacing: 1px; }
+.hp-review-text {
+  font-size: 14px;
+  color: #334155;
+  font-style: italic;
+  line-height: 1.75;
+  margin-bottom: 20px;
+  flex-grow: 1;
+}
+.hp-review-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  background: rgba(79,70,229,0.04);
+  border-radius: 12px;
+  border: 1px solid rgba(79,70,229,0.08);
+}
+.hp-review-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #475569;
+}
+.hp-review-meta-item i {
+  color: var(--hp-primary);
+  width: 14px;
+  text-align: center;
+}
+.hp-reviewer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 16px;
+  margin-top: auto;
+}
+.hp-reviewer img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(79,70,229,0.15);
+  object-fit: cover;
+}
+.hp-reviewer-info { flex: 1; min-width: 0; }
+.hp-reviewer-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #0f172a;
+}
+.hp-reviewer-role { font-size: 12px; color: #10b981; display: flex; align-items: center; gap: 4px; }
+.hp-reviewer-date { font-size: 11px; color: #64748b; }
+
+.hp-reviews-swiper .swiper-pagination-bullet {
+  width: 10px;
+  height: 10px;
+  background: #cbd5e1;
+  opacity: 1;
+  margin: 0 6px !important;
+  transition: all 0.4s ease;
+}
+.hp-reviews-swiper .swiper-pagination-bullet-active {
+  width: 32px;
+  border-radius: 20px;
+  background: var(--hp-gradient);
+}
+
+/* ── Informative Section Alternate Layouts ────────────────── */
+.hp-info-img-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+.hp-info-img {
+  max-height: 400px;
+  filter: drop-shadow(0 15px 30px rgba(0,0,0,0.05));
+  animation: hp-float 6s ease-in-out infinite;
+}
+
+/* ── Accordion FAQ ────────────────────────────────────────── */
+.hp-faq-card {
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(79,70,229,0.1);
+  border-radius: var(--hp-radius);
+  margin-bottom: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.02);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+.hp-faq-card:hover {
+  border-color: rgba(79,70,229,0.2);
+  box-shadow: 0 12px 40px rgba(79,70,229,0.06);
+}
+.hp-faq-header {
+  padding: 22px 26px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.3s;
+}
+.hp-faq-header:hover {
+  background: rgba(79,70,229,0.03);
+}
+.hp-faq-title {
+  font-weight: 700;
+  margin: 0;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hp-faq-body {
+  padding: 0 26px 22px;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.8;
+  border-top: 1px solid rgba(79,70,229,0.08);
+  padding-top: 18px;
+}
+
+/* ── Empty State ─────────────────────────────────────────── */
+.hp-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+.hp-empty-state i { font-size: 64px; color: #cbd5e1; margin-bottom: 20px; }
+.hp-empty-state h4 { font-size: 1.25rem; font-weight: 700; color: #334155; margin-bottom: 8px; }
+.hp-empty-state p { font-size: 14px; color: #64748b; }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 991px) {
+  .hp-hero { padding: 80px 0 50px; }
+  .hp-doc-float-card, .hp-booking-float-card { display: none; }
+  .hp-stats-strip { grid-template-columns: repeat(2, 1fr); }
+  .hp-timeline-line { display: none; }
+}
+@media (max-width: 767px) {
+  .hp-search-panel { padding: 24px 18px; }
+  .hp-stats-strip { padding: 16px; }
+  .hp-stat-num { font-size: 1.8rem; }
+  .hp-hero-visual { margin-top: 40px; }
+}
+@media (max-width: 480px) {
+  .hp-stats-strip { grid-template-columns: 1fr; }
+  .hp-login-modal { padding: 32px 24px; }
+  .hp-hero-btns { flex-direction: column; }
+  .hp-btn-primary, .hp-btn-outline { justify-content: center; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="home-page">
+
+<!-- ========================================================
+     LOGIN RESTRICTION MODAL
+     ======================================================== -->
+<div class="hp-login-modal-overlay" id="hpLoginModal">
+  <div class="hp-login-modal" style="position:relative;">
+    <button class="hp-modal-close" onclick="closeLoginModal()"><i class="fa fa-times"></i></button>
+    <div class="modal-icon"><i class="fa fa-lock"></i></div>
+    <h4>Login Required</h4>
+    <p>Please login as a Patient to book appointments or view full doctor profiles. Create a free account in seconds!</p>
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+      <a id="hpModalLoginBtn" href="{% url 'accounts:login' %}" class="hp-btn-primary" style="font-size:14px;">
+        <i class="fa fa-sign-in"></i> Patient Login
+      </a>
+      <a href="{% url 'accounts:patient-register' %}" class="hp-btn-outline" style="font-size:14px;">
+        <i class="fa fa-user-plus"></i> Register Free
+      </a>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- ========================================================
+     HERO SECTION
+     ======================================================== -->
+<section class="hp-hero hp-bg-hero hp-section hp-section-gap" data-aos="fade-up">
+  <!-- Floating Shapes/Particles -->
+  <div class="hp-floating-shape" style="top: 15%; left: 8%; animation-delay: 0s;"><i class="fa fa-heartbeat"></i></div>
+  <div class="hp-floating-shape" style="top: 25%; right: 12%; animation-delay: 1.5s; color: rgba(6,182,212,0.3);"><i class="fa fa-stethoscope"></i></div>
+  <div class="hp-floating-shape" style="bottom: 20%; right: 8%; animation-delay: 3s; color: rgba(124,58,237,0.25);"><i class="fa fa-user-md"></i></div>
+  <div class="hp-floating-shape" style="bottom: 30%; left: 12%; animation-delay: 4.5s; color: rgba(16,185,129,0.3);"><i class="fa fa-plus-square"></i></div>
+
+  <div class="container">
+    <div class="row align-items-center">
+
+      <!-- LEFT -->
+      <div class="col-12 col-lg-6 mb-5 mb-lg-0" data-aos="fade-right">
+        <div class="hp-hero-badge">
+          <i class="fa fa-heartbeat"></i> Premium Healthcare Portal
+        </div>
+        <h1 class="hp-hero-title">
+          Modern Healthcare<br>
+          <span class="hp-title-gradient">At Your Fingertips</span>
+        </h1>
+        <p class="hp-hero-sub">
+          Book consultations with top qualified specialists globally. Experience secure, transparent, and seamless medical appointments designed for your well-being.
+        </p>
+
+        <div class="hp-hero-btns">
+          <a href="#hp-featured-doctors" class="hp-btn-primary">
+            <i class="fa fa-calendar-check-o"></i> Book Appointment
+          </a>
+          <a href="{% url 'appointment:search' %}" class="hp-btn-outline">
+            <i class="fa fa-search"></i> Find Doctor
+          </a>
+        </div>
+
+        <!-- Live Stats Strip -->
+        <div class="hp-stats-strip" data-aos="fade-up" data-aos-delay="300">
+          <div class="hp-stat-item">
+            <span class="hp-stat-num" data-count="{{ stats.total_doctors }}" data-suffix="+">0+</span>
+            <span class="hp-stat-label"><i class="fa fa-user-md"></i> Doctors</span>
+          </div>
+          <div class="hp-stat-item">
+            <span class="hp-stat-num" data-count="{{ stats.total_patients }}" data-suffix="+">0+</span>
+            <span class="hp-stat-label"><i class="fa fa-users"></i> Patients</span>
+          </div>
+          <div class="hp-stat-item">
+            <span class="hp-stat-num" data-count="{{ stats.total_hospitals|default:10 }}" data-suffix="+">0+</span>
+            <span class="hp-stat-label"><i class="fa fa-hospital-o"></i> Hospitals</span>
+          </div>
+          <div class="hp-stat-item">
+            <span class="hp-stat-num" data-count="{{ stats.satisfaction }}" data-suffix="%">0%</span>
+            <span class="hp-stat-label"><i class="fa fa-smile-o"></i> Satisfaction</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT VISUAL -->
+      <div class="col-12 col-lg-6" data-aos="fade-left" data-aos-delay="200">
+        <div class="hp-hero-visual" style="position:relative; text-align:center;">
+          <div class="hp-hero-blob"></div>
+
+          <!-- Main Illustration -->
+          <img src="https://cdni.iconscout.com/illustration/premium/thumb/female-doctor-giving-online-consultation-to-patient-4489311-3766164.png"
+               alt="Healthcare Illustration"
+               class="hp-hero-img img-fluid"
+               style="max-height: 480px; position:relative; z-index:2;">
+
+          <!-- Real-Time Available Doctor Card -->
+          <div class="hp-doc-float-card" id="real-time-hero-card">
+            {% if hero_doctor %}
+              <div class="d-flex align-items-center mb-2">
+                {% if hero_doctor.photo %}
+                  <img src="{{ hero_doctor.photo.url }}"
+                       alt="Dr. {{ hero_doctor.user.first_name }} {{ hero_doctor.user.last_name }}"
+                       width="44" height="44" class="rounded-circle mr-2 hp-pulse-ring"
+                       style="object-fit:cover; border:2px solid #10b981;">
+                {% else %}
+                  <div class="rounded-circle mr-2 hp-pulse-ring d-flex align-items-center justify-content-center text-white"
+                       style="width:44px; height:44px; background:linear-gradient(135deg,#06b6d4,#4f46e5); font-weight:800; font-size:14px; border:2px solid #10b981; flex-shrink:0;">
+                    {{ hero_doctor.user.first_name|slice:":1" }}{{ hero_doctor.user.last_name|slice:":1" }}
+                  </div>
+                {% endif %}
+                <div class="text-left">
+                  <div style="font-size:13px;font-weight:800;color:#0f172a;line-height:1.2;">
+                    Dr. {{ hero_doctor.user.first_name }} {{ hero_doctor.user.last_name }}
+                  </div>
+                  <div style="font-size:11px;color:#06b6d4;font-weight:600;">{{ hero_doctor.specialization }}</div>
+                </div>
+              </div>
+              <div class="text-left" style="font-size:11px;color:#475569;margin-bottom:4px;">
+                <i class="fa fa-hospital-o" style="color:#4f46e5;"></i>
+                {{ hero_doctor.hospital|default:"Private Clinic" }}
+              </div>
+              <div class="text-left" style="font-size:11px;color:#475569;margin-bottom:8px;">
+                <i class="fa fa-briefcase" style="color:#06b6d4;"></i>
+                {{ hero_doctor.experience_years }} Years Experience
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <span style="font-size:11px;font-weight:700;color:#10b981;">
+                  <span class="available-dot"></span> Available Now
+                </span>
+                <span style="font-size:11px;color:#f59e0b;">⭐ {{ hero_doctor.rating }}</span>
+              </div>
+              {% with slot=hero_doctor.user.appointments.first %}
+                {% if slot %}
+                  <a href="{% url 'appointment:take-appointment' slot.id %}"
+                     class="btn btn-sm btn-block text-white py-1"
+                     style="border-radius:8px;font-size:11px;font-weight:700;
+                            background:linear-gradient(135deg,#06b6d4,#4f46e5);border:none;">
+                    <i class="fa fa-calendar-check-o mr-1"></i> View Profile &amp; Book
+                  </a>
+                {% else %}
+                  <a href="{% url 'appointment:search' %}?doctor_name={{ hero_doctor.user.first_name|urlencode }}"
+                     class="btn btn-sm btn-block text-white py-1"
+                     style="border-radius:8px;font-size:11px;font-weight:700;
+                            background:linear-gradient(135deg,#06b6d4,#4f46e5);border:none;">
+                    <i class="fa fa-eye mr-1"></i> View Profile
+                  </a>
+                {% endif %}
+              {% endwith %}
+            {% else %}
+              <div class="text-center w-100 py-3">
+                <i class="fa fa-user-md fa-2x mb-2 text-muted" style="display:block;"></i>
+                <div style="font-size:12px; font-weight:600; color:#0f172a;">No Doctor Available</div>
+                <div style="font-size:11px; color:#475569;">Check back soon</div>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Booking Confirmed Card -->
+          <div class="hp-booking-float-card">
+            <div class="d-flex align-items-center">
+              <div style="width:40px; height:40px; background: linear-gradient(135deg,#4f46e5,#06b6d4); border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:10px;">
+                <i class="fa fa-check" style="color:#fff; font-size:16px;"></i>
+              </div>
+              <div class="text-left">
+                <div style="font-size:13px; font-weight:800; color:#0f172a; line-height:1.2;">Booking Confirmed</div>
+                <div style="font-size:11px; color:#475569;">Today, 10:00 AM</div>
+              </div>
+            </div>
+            <div style="margin-top:12px; background:rgba(16,185,129,0.08); border-radius:8px; padding:8px 10px; font-size:11px; color:#10b981; font-weight:600;">
+              <i class="fa fa-shield"></i> Secure & Confirmed
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+<!-- HERO END -->
+
+
+<!-- ========================================================
+     2 STATISTICS (BIG BANNER)
+     ======================================================== -->
+<section class="hp-stats-section hp-bg-stats hp-section hp-section-gap" data-aos="fade-up">
+  <div class="container">
+    <div class="row">
+      <div class="col-6 col-lg-3" data-aos="zoom-in" data-aos-delay="100">
+        <div class="hp-big-stat">
+          <i class="fa fa-user-md hp-big-icon"></i>
+          <span class="hp-big-num" data-count="{{ stats.total_doctors }}" data-suffix="+">0</span>
+          <span class="hp-big-label">Registered Doctors</span>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3" data-aos="zoom-in" data-aos-delay="200">
+        <div class="hp-big-stat">
+          <i class="fa fa-users hp-big-icon"></i>
+          <span class="hp-big-num" data-count="{{ stats.total_patients }}" data-suffix="+">0</span>
+          <span class="hp-big-label">Happy Patients</span>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3" data-aos="zoom-in" data-aos-delay="300">
+        <div class="hp-big-stat">
+          <i class="fa fa-calendar-check-o hp-big-icon"></i>
+          <span class="hp-big-num" data-count="{{ stats.total_bookings }}" data-suffix="+">0</span>
+          <span class="hp-big-label">Appointments Booked</span>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3" data-aos="zoom-in" data-aos-delay="400">
+        <div class="hp-big-stat">
+          <i class="fa fa-smile-o hp-big-icon"></i>
+          <span class="hp-big-num" data-count="{{ stats.satisfaction }}" data-suffix="%">0</span>
+          <span class="hp-big-label">Patient Satisfaction</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     3 ADVANCED SEARCH SECTION & EXTRA CARDS
+     ======================================================== -->
+<section class="hp-search-section hp-bg-search hp-section hp-section-gap" data-aos="fade-up" data-aos-delay="100">
+  <div class="container">
+    
+    <!-- Redesigned Search Panel -->
+    <div class="hp-search-panel mb-5">
+      <h3 class="hp-search-title">
+        <i class="fa fa-search animate-pulse"></i> Find Your Specialist
+      </h3>
+      <form id="hp-search-form" method="get" action="{% url 'appointment:search' %}">
+        <div class="row align-items-end" style="row-gap: 25px;">
+
+          <!-- Location Field with GPS and Voice -->
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="hp-search-field">
+              <label><i class="fa fa-map-marker text-primary mr-1"></i> Location</label>
+              <div class="hp-location-wrapper">
+                <i class="fa fa-map-marker field-icon"></i>
+                <input type="text" id="hp-location-input" name="location"
+                       placeholder=" Lucknow, India..." autocomplete="off"
+                       style="padding-right: 125px;">
+                
+                <!-- GPS button -->
+                <button type="button" class="hp-gps-btn" onclick="getGPSLocation()" title="Use my location">
+                  <i class="fa fa-crosshairs"></i> GPS
+                </button>
+                
+                <!-- Voice button -->
+                <button type="button" class="hp-voice-btn" id="hp-voice-btn" title="Voice search">
+                  <i class="fa fa-microphone"></i>
+                </button>
+                
+                <div class="hp-location-suggestions" id="hp-location-suggestions"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Department Field -->
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="hp-search-field">
+              <label><i class="fa fa-stethoscope text-primary mr-1"></i> Department</label>
+              <div class="hp-dept-select-wrapper" style="position:relative;">
+                <i class="fa fa-stethoscope field-icon"></i>
+                <select name="department">
+                  <option value="">All Departments</option>
+                  <option value="Cardiology">❤️ Cardiology</option>
+                  <option value="Neurology">🧠 Neurology</option>
+                  <option value="Orthopedics">🦴 Orthopedics</option>
+                  <option value="Dermatology">✨ Dermatology</option>
+                  <option value="Dentistry">🦷 Dentistry</option>
+                  <option value="Pediatrics">👶 Pediatrics</option>
+                  <option value="ENT Specialists">👂 ENT Specialists</option>
+                  <option value="Gynecology">🌸 Gynecology</option>
+                  <option value="Psychiatry">🧘 Psychiatry</option>
+                  <option value="General Physician">🩺 General Physician</option>
+                  <option value="Eye Care">👁️ Eye Care</option>
+                  <option value="Physical Therapy">💪 Physical Therapy</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Doctor Name Field -->
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="hp-search-field">
+              <label><i class="fa fa-user-md text-primary mr-1"></i> Doctor Name</label>
+              <i class="fa fa-user-md field-icon"></i>
+              <input type="text" name="doctor_name" placeholder="Search by name">
+            </div>
+          </div>
+
+          <!-- Max Distance Slider -->
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="hp-search-field hp-slider-container">
+              <label><i class="fa fa-sliders text-primary mr-1"></i> Max Distance</label>
+              <div class="hp-slider-wrap">
+                <input type="range" class="hp-distance-slider" id="max-distance-slider" name="max_distance" min="0" max="50" step="5" value="0">
+              </div>
+              <div class="hp-slider-labels">
+                <span data-val="0" class="active">Any</span>
+                <span data-val="5">5 KM</span>
+                <span data-val="10">10 KM</span>
+                <span data-val="20">20 KM</span>
+                <span data-val="50">50 KM</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Experience Field -->
+          <div class="col-12 col-md-6 col-lg-4 mt-2">
+            <div class="hp-search-field">
+              <label><i class="fa fa-clock-o text-primary mr-1"></i> Experience</label>
+              <i class="fa fa-clock-o field-icon"></i>
+              <select name="experience">
+                <option value="">Any Experience</option>
+                <option value="1-5">1–5 Years</option>
+                <option value="5-10">5–10 Years</option>
+                <option value="10+">10+ Years</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Gender Field -->
+          <div class="col-12 col-md-6 col-lg-4 mt-2">
+            <div class="hp-search-field">
+              <label><i class="fa fa-venus-mars text-primary mr-1"></i> Gender</label>
+              <i class="fa fa-venus-mars field-icon"></i>
+              <select name="gender">
+                <option value="">Any Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Search Button Field -->
+          <div class="col-12 col-md-12 col-lg-4 mt-2">
+            <label class="d-none d-lg-block" style="visibility:hidden; height:20px; margin-bottom:10px;">Search</label>
+            <button type="submit" class="hp-search-btn">
+              <i class="fa fa-search animate-pulse"></i> Search Doctors
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+
+    <!-- Extra sections below search panel with glassmorphism cards -->
+    <div class="row mt-5 pt-3" style="row-gap: 30px;">
+      
+      <!-- Nearby Doctors Card -->
+      <div class="col-12 col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+        <div class="glass-card h-100 p-4 border-0 position-relative overflow-hidden" 
+             style="background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid rgba(79,70,229,0.08) !important; transition: all 0.3s ease;">
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" 
+                 style="width: 50px; height: 50px; background: rgba(79, 70, 229, 0.1); color: #4F46E5;">
+              <i class="fa fa-map-marker fa-lg"></i>
+            </div>
+            <h5 class="m-0 font-weight-bold" style="color: #0F172A; font-size: 17px;">Nearby Doctors</h5>
+          </div>
+          <p style="color: #64748B; font-size: 13.5px; line-height: 1.6; margin-bottom: 20px;">
+            Find top rated medical specialists available immediately in your local area.
+          </p>
+          <a href="{% url 'appointment:doctor-list' %}" class="font-weight-bold" style="color: #4F46E5; text-decoration: none; font-size: 13px;">
+            Explore Nearby <i class="fa fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Popular Specializations Card -->
+      <div class="col-12 col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+        <div class="glass-card h-100 p-4 border-0 position-relative overflow-hidden" 
+             style="background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid rgba(79,70,229,0.08) !important; transition: all 0.3s ease;">
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" 
+                 style="width: 50px; height: 50px; background: rgba(6, 182, 212, 0.1); color: #06B6D4;">
+              <i class="fa fa-star fa-lg"></i>
+            </div>
+            <h5 class="m-0 font-weight-bold" style="color: #0F172A; font-size: 17px;">Specializations</h5>
+          </div>
+          <p style="color: #64748B; font-size: 13.5px; line-height: 1.6; margin-bottom: 20px;">
+            Browse doctors in popular fields like Cardiology, Neurology, and Dentistry.
+          </p>
+          <a href="#hp-spec-section" class="font-weight-bold" style="color: #06B6D4; text-decoration: none; font-size: 13px;">
+            View Specializations <i class="fa fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Trending Hospitals Card -->
+      <div class="col-12 col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+        <div class="glass-card h-100 p-4 border-0 position-relative overflow-hidden" 
+             style="background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid rgba(79,70,229,0.08) !important; transition: all 0.3s ease;">
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" 
+                 style="width: 50px; height: 50px; background: rgba(139, 92, 246, 0.1); color: #8B5CF6;">
+              <i class="fa fa-hospital-o fa-lg"></i>
+            </div>
+            <h5 class="m-0 font-weight-bold" style="color: #0F172A; font-size: 17px;">Top Hospitals</h5>
+          </div>
+          <p style="color: #64748B; font-size: 13.5px; line-height: 1.6; margin-bottom: 20px;">
+            Partnered with the region's leading multi-speciality medical institutions.
+          </p>
+          <a href="{% url 'appointment:service' %}" class="font-weight-bold" style="color: #8B5CF6; text-decoration: none; font-size: 13px;">
+            View Hospital List <i class="fa fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Emergency Services Card -->
+      <div class="col-12 col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="400">
+        <div class="glass-card h-100 p-4 border-0 position-relative overflow-hidden" 
+             style="background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid rgba(79,70,229,0.08) !important; transition: all 0.3s ease;">
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" 
+                 style="width: 50px; height: 50px; background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+              <i class="fa fa-ambulance fa-lg"></i>
+            </div>
+            <h5 class="m-0 font-weight-bold" style="color: #0F172A; font-size: 17px;">Emergency Care</h5>
+          </div>
+          <p style="color: #64748B; font-size: 13.5px; line-height: 1.6; margin-bottom: 20px;">
+            Quick response medical hotline and immediate trauma response services.
+          </p>
+          <a href="{% url 'appointment:contact' %}" class="font-weight-bold" style="color: #ef4444; text-decoration: none; font-size: 13px;">
+            Contact Helpline <i class="fa fa-phone ml-1"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+<!-- SEARCH END -->
+
+
+<!-- ========================================================
+     INFORMATIVE SECTION 1: HEALTHCARE EXCELLENCE
+     ======================================================== -->
+<section class="hp-section hp-bg-info hp-section-gap" data-aos="fade-up">
+  <div class="container">
+    <div class="row align-items-center">
+      <!-- Image Left -->
+      <div class="col-12 col-md-6 mb-5 mb-md-0 hp-info-img-wrap" data-aos="fade-right">
+        {% load static %}
+          <img src="{% static 'img/doctors2.jpg' %}"
+            class="hp-info-img img-fluid"
+             alt="Healthcare">
+      </div>
+      <!-- Content Right -->
+      <div class="col-12 col-md-6" data-aos="fade-left" style="padding-left: 30px;">
+        <span class="hp-section-label">Excellence in Care</span>
+        <h2 class="hp-section-title">World-Class Healthcare Standards</h2>
+        <p class="hp-hero-sub" style="color: #475569; margin-bottom: 24px;">
+          DocMed is trusted by thousands of patients worldwide. We deliver premium medical assistance with top certified doctors, digital prescriptions, and 24x7 support.
+        </p>
+        <div class="row">
+          <div class="col-6 mb-3">
+            <h5 style="color:#0f172a; font-weight:700; margin-bottom:6px;"><i class="fa fa-check-circle text-primary mr-2"></i> Certified Doctors</h5>
+            <p style="font-size:13px; color:#475569; line-height:1.5;">Every professional is manually vetted and verified.</p>
+          </div>
+          <div class="col-6 mb-3">
+            <h5 style="color:#0f172a; font-weight:700; margin-bottom:6px;"><i class="fa fa-shield text-accent mr-2"></i> Guaranteed Security</h5>
+            <p style="font-size:13px; color:#475569; line-height:1.5;">Your medical records are fully encrypted and private.</p>
+          </div>
+        </div>
+        <div class="mt-4">
+          <a href="{% url 'appointment:service' %}" class="hp-btn-primary">
+            Discover Our Services <i class="fa fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     4 HOW IT WORKS
+     ======================================================== -->
+<section class="hp-section hp-bg-timeline hp-section-gap" data-aos="fade-up">
+  <div class="container" style="position: relative; z-index: 2;">
+    <div class="hp-section-header" data-aos="fade-up">
+      <span class="hp-section-label">Simple Process</span>
+      <h2 class="hp-section-title">How It Works</h2>
+      <p class="hp-section-sub">4 simple steps to get premium healthcare</p>
+    </div>
+    
+    <div class="hp-timeline-container row">
+      <div class="hp-timeline-line d-none d-lg-block"></div>
+      
+      <div class="col-12 col-md-6 col-lg-3 mb-4" data-aos="zoom-in" data-aos-delay="100">
+        <div class="hp-process-step">
+          <span class="hp-step-num">1</span>
+          <div class="hp-step-circle" style="background: rgba(79,70,229,0.08); border: 2px solid rgba(79,70,229,0.15);">
+            <i class="fa fa-search text-primary" style="font-size:26px;"></i>
+          </div>
+          <h5 style="font-weight:700; color:#0f172a; margin-bottom:8px;">Find Doctor</h5>
+          <p style="font-size:13px; color:#475569;">Search by specialty, location, or name.</p>
+        </div>
+      </div>
+      
+      <div class="col-12 col-md-6 col-lg-3 mb-4" data-aos="zoom-in" data-aos-delay="200">
+        <div class="hp-process-step">
+          <span class="hp-step-num">2</span>
+          <div class="hp-step-circle" style="background: rgba(6,182,212,0.08); border: 2px solid rgba(6,182,212,0.15);">
+            <i class="fa fa-calendar text-accent" style="font-size:26px;"></i>
+          </div>
+          <h5 style="font-weight:700; color:#0f172a; margin-bottom:8px;">View Profile</h5>
+          <p style="font-size:13px; color:#475569;">Check availability, qualifications, and reviews.</p>
+        </div>
+      </div>
+      
+      <div class="col-12 col-md-6 col-lg-3 mb-4" data-aos="zoom-in" data-aos-delay="300">
+        <div class="hp-process-step">
+          <span class="hp-step-num">3</span>
+          <div class="hp-step-circle" style="background: rgba(124,58,237,0.08); border: 2px solid rgba(124,58,237,0.15);">
+            <i class="fa fa-mouse-pointer" style="color:#7c3aed; font-size:26px;"></i>
+          </div>
+          <h5 style="font-weight:700; color:#0f172a; margin-bottom:8px;">Book Slot</h5>
+          <p style="font-size:13px; color:#475569;">Confirm date, time, and booking details.</p>
+        </div>
+      </div>
+      
+      <div class="col-12 col-md-6 col-lg-3 mb-4" data-aos="zoom-in" data-aos-delay="400">
+        <div class="hp-process-step">
+          <span class="hp-step-num">4</span>
+          <div class="hp-step-circle" style="background: rgba(16,185,129,0.08); border: 2px solid rgba(16,185,129,0.15);">
+            <i class="fa fa-stethoscope text-success" style="font-size:26px;"></i>
+          </div>
+          <h5 style="font-weight:700; color:#0f172a; margin-bottom:8px;">Get Care</h5>
+          <p style="font-size:13px; color:#475569;">Receive expert medical care at your convenience.</p>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     TOP SPECIALIZATIONS (8 CARDS)
+     ======================================================== -->
+<section class="hp-section hp-bg-spec hp-section-gap" id="hp-specializations">
+  <div class="container">
+    <div class="hp-section-header" data-aos="fade-up">
+      <span class="hp-section-label">Medical Expertise</span>
+      <h2 class="hp-section-title">Top Specializations</h2>
+      <p class="hp-section-sub">Explore our premium specialized medical services from world-class professionals</p>
+    </div>
+    <div class="row">
+
+      <!-- Cardiology -->
+      <div class="col-6 col-md-4 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="hp-spec-card" style="--card-color: rgba(239,68,68,0.05);">
+          <div class="hp-spec-icon-wrap" style="background:rgba(239,68,68,0.1); color:#ef4444;">❤️</div>
+          <h5>Cardiology</h5>
+          <p class="hp-spec-desc">Heart disease diagnosis and treatment by expert cardiologists</p>
+          <div class="hp-spec-count"><i class="fa fa-user-md"></i> 150+ Doctors</div>
+          <a href="{% url 'appointment:search' %}?department=Cardiology" class="hp-spec-explore-btn">Explore <i class="fa fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Neurology -->
+      <div class="col-6 col-md-4 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="150">
+        <div class="hp-spec-card" style="--card-color: rgba(79,70,229,0.05);">
+          <div class="hp-spec-icon-wrap" style="background:rgba(79,70,229,0.1); color:#4f46e5;">🧠</div>
+          <h5>Neurology</h5>
+          <p class="hp-spec-desc">Brain, spine, and nervous system care by neurologists</p>
+          <div class="hp-spec-count"><i class="fa fa-user-md"></i> 90+ Doctors</div>
+          <a href="{% url 'appointment:search' %}?department=Neurology" class="hp-spec-explore-btn">Explore <i class="fa fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Dentistry -->
+      <div class="col-6 col-md-4 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="hp-spec-card" style="--card-color: rgba(6,182,212,0.05);">
+          <div class="hp-spec-icon-wrap" style="background:rgba(6,182,212,0.1); color:#06b6d4;">🦷</div>
+          <h5>Dentistry</h5>
+          <p class="hp-spec-desc">Complete oral health and cosmetic dental treatments</p>
+          <div class="hp-spec-count"><i class="fa fa-user-md"></i> 120+ Doctors</div>
+          <a href="{% url 'appointment:search' %}?department=Dentistry" class="hp-spec-explore-btn">Explore <i class="fa fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Dermatology -->
+      <div class="col-6 col-md-4 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="250">
+        <div class="hp-spec-card" style="--card-color: rgba(245,158,11,0.05);">
+          <div class="hp-spec-icon-wrap" style="background:rgba(245,158,11,0.1); color:#f59e0b;">✨</div>
+          <h5>Dermatology</h5>
+          <p class="hp-spec-desc">Skin, hair, and nail conditions treated by dermatologists</p>
+          <div class="hp-spec-count"><i class="fa fa-user-md"></i> 80+ Doctors</div>
+          <a href="{% url 'appointment:search' %}?department=Dermatology" class="hp-spec-explore-btn">Explore <i class="fa fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Orthopedics -->
+      <div class="col-6 col-md-4 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="300">
+        <div class="hp-spec-card" style="--card-color: rgba(124,58,237,0.05);">
+          <div class="hp-spec-icon-wrap" style="background:rgba(124,58,237,0.1); color:#7c3aed;">🦴</div>
+          <h5>Orthopedics</h5>
+          <p class="hp-spec-desc">Bone, joint, and muscle treatments by orthopedic surgeons</p>
+          <div class="hp-spec-count"><i class="fa fa-user-md"></i> 110+ Doctors</div>
+          <a href="{% url 'appointment:search' %}?department=Orthopedics" class="hp-spec-explore-btn">Explore <i class="fa fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- ENT -->
+      <div class="col-6 col-md-4 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="350">
+        <div class="hp-spec-card" style="--card-color: rgba(16,185,129,0.05);">
+          <div class="hp-spec-icon-wrap" style="background:rgba(16,185,129,0.1); color:#10b981;">👂</div>
+          <h5>ENT</h5>
+          <p class="hp-spec-desc">Ear, nose, and throat specialists for all ages</p>
+          <div class="hp-spec-count"><i class="fa fa-user-md"></i> 70+ Doctors</div>
+          <a href="{% url 'appointment:search' %}?department=ENT+Specialists" class="hp-spec-explore-btn">Explore <i class="fa fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Pediatrics -->
+      <div class="col-6 col-md-4 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="400">
+        <div class="hp-spec-card" style="--card-color: rgba(236,72,153,0.05);">
+          <div class="hp-spec-icon-wrap" style="background:rgba(236,72,153,0.1); color:#ec4899;">👶</div>
+          <h5>Pediatrics</h5>
+          <p class="hp-spec-desc">Child health and development by expert pediatricians</p>
+          <div class="hp-spec-count"><i class="fa fa-user-md"></i> 200+ Doctors</div>
+          <a href="{% url 'appointment:search' %}?department=Pediatrics" class="hp-spec-explore-btn">Explore <i class="fa fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Gynecology -->
+      <div class="col-6 col-md-4 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="450">
+        <div class="hp-spec-card" style="--card-color: rgba(239,68,68,0.03);">
+          <div class="hp-spec-icon-wrap" style="background:rgba(239,68,68,0.07); color:#ef4444;">🌸</div>
+          <h5>Gynecology</h5>
+          <p class="hp-spec-desc">Women's health, prenatal care and gynecological services</p>
+          <div class="hp-spec-count"><i class="fa fa-user-md"></i> 95+ Doctors</div>
+          <a href="{% url 'appointment:search' %}?department=Gynecology" class="hp-spec-explore-btn">Explore <i class="fa fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     INFORMATIVE SECTION 2: PRIVACY & SECURITY
+     ======================================================== -->
+<section class="hp-section hp-bg-info hp-section-gap" data-aos="fade-up">
+  <div class="container">
+    <div class="row align-items-center">
+      <!-- Content Left -->
+      <div class="col-12 col-md-6" data-aos="fade-right" style="padding-right: 30px;">
+        <span class="hp-section-label">Trust &amp; Privacy</span>
+        <h2 class="hp-section-title">Your Data. 100% Secure.</h2>
+        <p class="hp-hero-sub" style="color: #475569; margin-bottom: 24px;">
+          DocMed employs bank-grade encryption, secure authentication, and strict HIPAA-compliant data policies. Your medical records stay private, always.
+        </p>
+        <div class="row">
+          <div class="col-6 mb-3">
+            <div style="display:flex; align-items:flex-start; gap:10px;">
+              <div style="width:36px; height:36px; background:linear-gradient(135deg,#06b6d4,#4f46e5); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i class="fa fa-lock" style="color:#fff; font-size:14px;"></i>
+              </div>
+              <div>
+                <h6 style="color:#0f172a; font-weight:700; margin-bottom:4px;">AES-256 Encryption</h6>
+                <p style="font-size:12px; color:#475569; margin:0;">Military-grade encryption for all data.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 mb-3">
+            <div style="display:flex; align-items:flex-start; gap:10px;">
+              <div style="width:36px; height:36px; background:linear-gradient(135deg,#10b981,#06b6d4); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i class="fa fa-shield" style="color:#fff; font-size:14px;"></i>
+              </div>
+              <div>
+                <h6 style="color:#0f172a; font-weight:700; margin-bottom:4px;">HIPAA Compliant</h6>
+                <p style="font-size:12px; color:#475569; margin:0;">Meets international healthcare standards.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 mb-3">
+            <div style="display:flex; align-items:flex-start; gap:10px;">
+              <div style="width:36px; height:36px; background:linear-gradient(135deg,#7c3aed,#4f46e5); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i class="fa fa-user-secret" style="color:#fff; font-size:14px;"></i>
+              </div>
+              <div>
+                <h6 style="color:#0f172a; font-weight:700; margin-bottom:4px;">Zero Third-party Share</h6>
+                <p style="font-size:12px; color:#475569; margin:0;">Data never sold or shared without consent.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 mb-3">
+            <div style="display:flex; align-items:flex-start; gap:10px;">
+              <div style="width:36px; height:36px; background:linear-gradient(135deg,#f59e0b,#ef4444); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i class="fa fa-check-circle" style="color:#fff; font-size:14px;"></i>
+              </div>
+              <div>
+                <h6 style="color:#0f172a; font-weight:700; margin-bottom:4px;">2FA Authentication</h6>
+                <p style="font-size:12px; color:#475569; margin:0;">Two-factor login protection on all accounts.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Image Right -->
+    
+
+      <div class="col-12 col-md-6 hp-info-img-wrap mt-5 mt-md-0" data-aos="fade-left">
+    <img src="{% static 'img/security.jpg' %}"
+         alt="Privacy & Security"
+         class="hp-info-img img-fluid">
+</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     FEATURED DOCTORS (6 CARDS)
+     ======================================================== -->
+<section id="hp-featured-doctors" class="hp-section hp-bg-doctors hp-section-gap">
+  <div class="container" style="position: relative; z-index: 1;">
+    <div class="hp-section-header" data-aos="fade-up">
+      <span class="hp-section-label">Featured Professionals</span>
+      <h2 class="hp-section-title">Featured Doctors</h2>
+      <p class="hp-section-sub">Book consultations with our highly rated and experienced specialists</p>
+    </div>
+
+    <div class="row">
+      {% for apt in featured_doctors %}
+      <div class="col-12 col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter }}00">
+        <div class="hp-doctor-card">
+
+          <!-- Image + Badges -->
+          <div class="hp-doctor-img-wrap">
+            {% if apt.photo %}
+              <img src="{{ apt.photo.url }}" alt="Dr. {{ apt.user.first_name }} {{ apt.user.last_name }}" loading="lazy">
+            {% else %}
+              <div class="hp-avatar-initials">
+                <span>{{ apt.user.first_name|slice:":1" }}{{ apt.user.last_name|slice:":1" }}</span>
+              </div>
+            {% endif %}
+
+            {% if apt.is_available_now %}
+              <span class="hp-avail-badge"><span class="dot"></span>Available</span>
+            {% else %}
+              <span class="hp-avail-badge" style="background:rgba(100,116,139,0.9);"><i class="fa fa-moon-o mr-1"></i>Offline</span>
+            {% endif %}
+
+            <span class="hp-rating-badge">⭐ {{ apt.rating }} ({{ apt.review_count }} Reviews)</span>
+
+            <!-- Favourite Button -->
+            <button class="hp-fav-btn" title="Add to favourites" onclick="this.classList.toggle('active'); return false;">
+              <i class="fa fa-heart"></i>
+            </button>
+          </div>
+
+          <!-- Body -->
+          <div class="hp-doctor-body">
+            <div class="hp-doctor-dept">{{ apt.specialization }}</div>
+            <h4 class="hp-doctor-name">
+              Dr. {{ apt.user.first_name }} {{ apt.user.last_name }}
+              {% if apt.is_verified %}
+                <i class="fa fa-check-circle ml-1" style="color:#10b981; font-size:14px;" title="Verified"></i>
+              {% endif %}
+            </h4>
+            <ul class="hp-doctor-meta">
+              <li><i class="fa fa-graduation-cap"></i> {{ apt.qualification|default:"MBBS" }}</li>
+              <li><i class="fa fa-hospital-o"></i> {{ apt.hospital|default:"Private Clinic" }}</li>
+              <li><i class="fa fa-briefcase"></i> {{ apt.experience_years|default:"0" }} Years Experience</li>
+              <li><i class="fa fa-map-marker"></i> {{ apt.city|default:"Unknown City" }}</li>
+              {% if apt.languages %}<li><i class="fa fa-language"></i> {{ apt.languages }}</li>{% endif %}
+            </ul>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <span style="background:rgba(79,70,229,0.08); color:#4f46e5; padding:4px 10px; border-radius:50px; font-size:11px; font-weight:600;">
+                <i class="fa fa-users"></i> {{ apt.patients_treated }}+ Patients
+              </span>
+              {% if apt.is_verified %}
+              <span style="background:rgba(16,185,129,0.08); color:#10b981; padding:4px 10px; border-radius:50px; font-size:11px; font-weight:600;">
+                <i class="fa fa-check-circle"></i> Verified
+              </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="hp-doctor-footer">
+            <div class="hp-fee">₹{{ apt.consultation_fee }} <span>/ Visit</span></div>
+            <div style="display:flex; gap:8px;">
+              {% if request.user.is_authenticated and request.user.role == 'patient' %}
+                <a href="#" class="hp-book-btn">
+                  <i class="fa fa-calendar-plus-o"></i> Book
+                </a>
+              {% elif request.user.is_authenticated and request.user.role == 'doctor' %}
+                <span style="padding:9px 12px; background:#f1f5f9; border-radius:12px; font-size:12px; color:#94a3b8; font-weight:600;">My Profile</span>
+              {% else %}
+                <button onclick="openLoginModal('#')" class="hp-book-btn">
+                  <i class="fa fa-lock"></i> Book
+                </button>
+              {% endif %}
+              <a href="{% url 'appointment:search' %}?doctor_name={{ apt.user.first_name|urlencode }}" class="hp-view-btn" title="View Profile">
+                <i class="fa fa-eye"></i>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <div class="hp-empty-state">
+          <i class="fa fa-user-md"></i>
+          <h4>No Featured Doctors Available</h4>
+          <p>Our doctors are being onboarded. Check back soon!</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Show All -->
+    {% if home.paginator.count > 6 %}
+    <div class="text-center mt-4" data-aos="fade-up">
+      <a href="#hp-all-appointments" class="hp-btn-outline" style="font-size:14px;">
+        <i class="fa fa-th"></i> View All Appointments
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+
+<!-- ========================================================
+     INFORMATIVE SECTION 3: TRUSTED PARTNERS NETWORK
+     ======================================================== -->
+<section class="hp-section hp-bg-stats hp-section-gap" data-aos="fade-up">
+  <div class="container">
+    <div class="hp-section-header" data-aos="fade-up">
+      <span class="hp-section-label">Trusted By The Best</span>
+      <h2 class="hp-section-title">Our Healthcare Partners</h2>
+      <p class="hp-section-sub">We collaborate with leading hospitals, clinics, and healthcare institutions globally to bring you the best care.</p>
+    </div>
+    <div class="row g-4 mt-2">
+      <div class="col-6 col-md-4 col-lg-2" data-aos="zoom-in" data-aos-delay="100">
+        <div class="text-center p-3" style="background:rgba(255,255,255,0.9); border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.05); transition: all 0.3s;">
+          <div style="font-size:2rem; margin-bottom:8px;">🏥</div>
+          <div style="font-size:13px; font-weight:700; color:#0f172a;">Apollo Hospitals</div>
+          <div style="font-size:11px; color:#475569;">Pan-India Network</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2" data-aos="zoom-in" data-aos-delay="150">
+        <div class="text-center p-3" style="background:rgba(255,255,255,0.9); border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.05); transition: all 0.3s;">
+          <div style="font-size:2rem; margin-bottom:8px;">🔬</div>
+          <div style="font-size:13px; font-weight:700; color:#0f172a;">Mayo Clinic</div>
+          <div style="font-size:11px; color:#475569;">USA's Top-Ranked</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2" data-aos="zoom-in" data-aos-delay="200">
+        <div class="text-center p-3" style="background:rgba(255,255,255,0.9); border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.05); transition: all 0.3s;">
+          <div style="font-size:2rem; margin-bottom:8px;">🩺</div>
+          <div style="font-size:13px; font-weight:700; color:#0f172a;">Cleveland Clinic</div>
+          <div style="font-size:11px; color:#475569;">World-Class Care</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2" data-aos="zoom-in" data-aos-delay="250">
+        <div class="text-center p-3" style="background:rgba(255,255,255,0.9); border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.05); transition: all 0.3s;">
+          <div style="font-size:2rem; margin-bottom:8px;">💊</div>
+          <div style="font-size:13px; font-weight:700; color:#0f172a;">Fortis Healthcare</div>
+          <div style="font-size:11px; color:#475569;">Premium Care</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2" data-aos="zoom-in" data-aos-delay="300">
+        <div class="text-center p-3" style="background:rgba(255,255,255,0.9); border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.05); transition: all 0.3s;">
+          <div style="font-size:2rem; margin-bottom:8px;">🧬</div>
+          <div style="font-size:13px; font-weight:700; color:#0f172a;">Practo Clinics</div>
+          <div style="font-size:11px; color:#475569;">Digital-First</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2" data-aos="zoom-in" data-aos-delay="350">
+        <div class="text-center p-3" style="background:rgba(255,255,255,0.9); border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.05); transition: all 0.3s;">
+          <div style="font-size:2rem; margin-bottom:8px;">⚕️</div>
+          <div style="font-size:13px; font-weight:700; color:#0f172a;">AIIMS Network</div>
+          <div style="font-size:11px; color:#475569;">India's Finest</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     ALL AVAILABLE APPOINTMENTS (PAGINATED)
+     ======================================================== -->
+<section id="hp-all-appointments" class="hp-section hp-bg-appointments hp-section-gap">
+  <div class="container">
+    <div class="hp-section-header" data-aos="fade-up">
+      <span class="hp-section-label">All Available Slots</span>
+      <h2 class="hp-section-title">Available Appointments</h2>
+      <p class="hp-section-sub">Browse all available time slots and book your preferred doctor</p>
+    </div>
+
+    <div class="row">
+      {% for apt in home %}
+      <div class="col-12 col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter }}00">
+        <div class="hp-doctor-card">
+          <div class="hp-doctor-img-wrap">
+            {% if apt.image %}
+              <img src="{{ apt.image.url }}" alt="{{ apt.full_name }}" loading="lazy">
+            {% else %}
+              <div class="hp-avatar-initials">
+                <span>{{ apt.user.first_name|slice:":1" }}{{ apt.user.last_name|slice:":1" }}</span>
+              </div>
+            {% endif %}
+            <span class="hp-avail-badge"><span class="dot"></span>Available</span>
+            <span class="hp-rating-badge"><i class="fa fa-star"></i> 4.8</span>
+          </div>
+          <div class="hp-doctor-body">
+            <div class="hp-doctor-dept">{{ apt.department }}</div>
+            <h4 class="hp-doctor-name">{{ apt.full_name }}</h4>
+            <ul class="hp-doctor-meta">
+              <li><i class="fa fa-graduation-cap"></i> {{ apt.qualification_name }}</li>
+              <li><i class="fa fa-hospital-o"></i> {{ apt.hospital_name }}</li>
+              <li><i class="fa fa-map-marker"></i> {{ apt.location }}</li>
+              <li><i class="fa fa-clock-o"></i> {{ apt.start_time }} – {{ apt.end_time }}</li>
+            </ul>
+          </div>
+          <div class="hp-doctor-footer">
+            <div class="hp-fee">$50 <span>/ Visit</span></div>
+            <div style="display:flex; gap:8px;">
+              {% if request.user.is_authenticated and request.user.role == 'patient' %}
+                <a href="{% url 'appointment:take-appointment' apt.id %}" class="hp-book-btn">
+                  <i class="fa fa-calendar-plus-o"></i> Book Now
+                </a>
+              {% elif request.user.is_authenticated and request.user.role == 'doctor' %}
+                <span style="padding:9px 14px; background:#f1f5f9; border-radius:12px; font-size:12px; color:#94a3b8; font-weight:600;">My Slot</span>
+              {% else %}
+                <button onclick="openLoginModal('{% url 'appointment:take-appointment' apt.id %}')" class="hp-book-btn">
+                  <i class="fa fa-lock"></i> Login to Book
+                </button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <div class="hp-empty-state">
+          <i class="fa fa-calendar-times-o"></i>
+          <h4>No Appointments Available Right Now</h4>
+          <p>Doctors are actively adding new slots. Please check back shortly.</p>
+          <a href="{% url 'appointment:search' %}" class="hp-btn-primary" style="margin-top:20px; display:inline-flex;">
+            <i class="fa fa-search"></i> Search Doctors
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="row mt-4">
+      <div class="col-12">
+        <nav aria-label="Appointments pagination" style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
+          {% if page_obj.has_previous %}
+            <a href="?page=1" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#f1f5f9; color:#4f46e5; text-decoration:none; font-weight:700; transition:all 0.3s;" onmouseover="this.style.background='#4f46e5'; this.style.color='#fff'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#4f46e5'"><i class="fa fa-angle-double-left"></i></a>
+            <a href="?page={{ page_obj.previous_page_number }}" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#f1f5f9; color:#4f46e5; text-decoration:none; font-weight:700; transition:all 0.3s;" onmouseover="this.style.background='#4f46e5'; this.style.color='#fff'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#4f46e5'"><i class="fa fa-angle-left"></i></a>
+          {% endif %}
+          <span style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:linear-gradient(135deg,#4f46e5,#06b6d4); color:#fff; font-weight:800;">{{ page_obj.number }}</span>
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#f1f5f9; color:#4f46e5; text-decoration:none; font-weight:700; transition:all 0.3s;" onmouseover="this.style.background='#4f46e5'; this.style.color='#fff'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#4f46e5'"><i class="fa fa-angle-right"></i></a>
+            <a href="?page={{ page_obj.paginator.num_pages }}" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:#f1f5f9; color:#4f46e5; text-decoration:none; font-weight:700; transition:all 0.3s;" onmouseover="this.style.background='#4f46e5'; this.style.color='#fff'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#4f46e5'"><i class="fa fa-angle-double-right"></i></a>
+          {% endif %}
+        </nav>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+
+<!-- ========================================================
+     PATIENT TESTIMONIALS
+     ======================================================== -->
+<section class="hp-section hp-bg-reviews hp-section-gap">
+  <div style="position: absolute; top: 0; left: -15%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 70%); border-radius: 50%; pointer-events:none;"></div>
+  <div class="container" style="position: relative; z-index: 1;">
+    <div class="hp-section-header" data-aos="fade-up">
+      <span class="hp-section-label">Patient Reviews</span>
+      <h2 class="hp-section-title">What Our Patients Say</h2>
+      <p class="hp-section-sub">Real experiences from real patients worldwide</p>
+    </div>
+
+    {% if reviews %}
+    <div style="position:relative;" data-aos="fade-up" data-aos-delay="200">
+      <div class="swiper hp-reviews-swiper">
+        <div class="swiper-wrapper">
+          {% for review in reviews %}
+          <div class="swiper-slide" style="height:auto;">
+            <div class="hp-review-card">
+              <!-- Stars -->
+              <div class="hp-stars">{{ review.stars_html }}</div>
+
+              <!-- Review Text -->
+              <p class="hp-review-text">"{{ review.text }}"</p>
+
+              <!-- Appointment Meta -->
+              <div class="hp-review-meta">
+                <div class="hp-review-meta-item">
+                  <i class="fa fa-user-md"></i>
+                  <span>Dr. {{ review.booking.appointment.full_name }}</span>
+                </div>
+                <div class="hp-review-meta-item">
+                  <i class="fa fa-stethoscope"></i>
+                  <span>{{ review.department }}</span>
+                </div>
+                <div class="hp-review-meta-item">
+                  <i class="fa fa-map-marker"></i>
+                  <span>{{ review.location }}</span>
+                </div>
+                <div class="hp-review-meta-item">
+                  <i class="fa fa-calendar"></i>
+                  <span>{{ review.appointment_date|date:"M d, Y" }}</span>
+                </div>
+              </div>
+
+              <!-- Reviewer -->
+              <div class="hp-reviewer">
+                {% if review.booking.user.patient_profile.photo %}
+                  <img src="{{ review.booking.user.patient_profile.photo.url }}"
+                       alt="{{ review.patient_name }}">
+                {% else %}
+                  <div style="width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,#4f46e5,#06b6d4); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:14px; flex-shrink:0;">
+                    {{ review.patient_name|slice:":2"|upper }}
+                  </div>
+                {% endif %}
+                <div class="hp-reviewer-info">
+                  <div class="hp-reviewer-name">{{ review.patient_name }}</div>
+                  <div class="hp-reviewer-role">
+                    <i class="fa fa-check-circle"></i> Verified Patient
+                  </div>
+                  <div class="hp-reviewer-date">{{ review.created_at|date:"M d, Y" }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="swiper-pagination"></div>
+      </div>
+
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="hp-empty-state" data-aos="fade-up">
+      <i class="fa fa-comments-o" style="font-size:64px; color:#cbd5e1; margin-bottom:20px; display:block;"></i>
+      <h4 style="font-size:1.2rem; font-weight:700; color:#475569; margin-bottom:8px;">No Reviews Available Yet</h4>
+      <p style="font-size:14px; color:#94a3b8; max-width:400px; margin:0 auto;">Be the first to share your experience! Book an appointment and leave a review after your consultation.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+
+<!-- ========================================================
+     INFORMATIVE SECTION 4: TELEMEDICINE & EMERGENCY CARE
+     ======================================================== -->
+<section class="hp-section hp-bg-info hp-section-gap" data-aos="fade-up">
+  <div class="container">
+    <div class="row align-items-center">
+      <!-- Image Left -->
+      <div class="col-12 col-md-6 mb-5 mb-md-0 hp-info-img-wrap" data-aos="fade-right">
+    <img src="{% static 'img/emergency-consults.jpg' %}"
+         alt="Telemedicine"
+         class="hp-info-img img-fluid rounded-4">
+     </div>
+      <!-- Content Right -->
+      <div class="col-12 col-md-6" data-aos="fade-left" style="padding-left: 30px;">
+        <span class="hp-section-label">Virtual Care</span>
+        <h2 class="hp-section-title">Telemedicine &amp; Emergency Consultations</h2>
+        <p class="hp-hero-sub" style="color: #475569; margin-bottom: 24px;">
+          Access instant video consultations, chat with specialists, and receive emergency medical guidance from the comfort of your home — 24 hours a day, 7 days a week.
+        </p>
+        <div class="row">
+          <div class="col-6 mb-3">
+            <h5 style="color:#0f172a; font-weight:700; margin-bottom:6px;"><i class="fa fa-video-camera text-primary mr-2"></i> Video Consult</h5>
+            <p style="font-size:13px; color:#475569; line-height:1.5;">Face-to-face with doctors via secure HD video.</p>
+          </div>
+          <div class="col-6 mb-3">
+            <h5 style="color:#0f172a; font-weight:700; margin-bottom:6px;"><i class="fa fa-ambulance text-danger mr-2"></i> Emergency Line</h5>
+            <p style="font-size:13px; color:#475569; line-height:1.5;">Immediate response for critical medical situations.</p>
+          </div>
+          <div class="col-6 mb-3">
+            <h5 style="color:#0f172a; font-weight:700; margin-bottom:6px;"><i class="fa fa-comments text-success mr-2"></i> AI Chat Support</h5>
+            <p style="font-size:13px; color:#475569; line-height:1.5;">Smart AI-powered symptom triage and support.</p>
+          </div>
+          <div class="col-6 mb-3">
+            <h5 style="color:#0f172a; font-weight:700; margin-bottom:6px;"><i class="fa fa-file-text-o" style="color:#7c3aed;" class="mr-2"></i> Digital Rx</h5>
+            <p style="font-size:13px; color:#475569; line-height:1.5;">Receive digital prescriptions directly to your app.</p>
+          </div>
+        </div>
+        <div class="mt-4">
+          <a href="{% url 'appointment:search' %}" class="hp-btn-primary">
+            <i class="fa fa-video-camera"></i> Start Consultation
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     FAQ SECTION
+     ======================================================== -->
+<section class="hp-section hp-bg-faq hp-section-gap" data-aos="fade-up">
+  <div class="container" style="position: relative; z-index: 1;">
+    <div class="hp-section-header" data-aos="fade-up">
+      <span class="hp-section-label">Got Questions?</span>
+      <h2 class="hp-section-title">Frequently Asked Questions</h2>
+      <p class="hp-section-sub">Everything you need to know about using DocMed</p>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-8" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="accordion" id="hpFaqAccordion">
+          {% for faq in "1234"|make_list %}
+          <div class="hp-faq-card">
+            <div class="hp-faq-header" data-toggle="collapse" data-target="#hpFaq{{ forloop.counter }}">
+              <h6 class="hp-faq-title">
+                <span style="width:32px; height:32px; background:linear-gradient(135deg,rgba(79,70,229,0.1),rgba(6,182,212,0.08)); color:#4f46e5; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;">
+                  <i class="fa fa-question"></i>
+                </span>
+                {% if forloop.counter == 1 %}How do I book an appointment?
+                {% elif forloop.counter == 2 %}How can doctors create appointment slots?
+                {% elif forloop.counter == 3 %}Is cancellation or rescheduling supported?
+                {% elif forloop.counter == 4 %}Is my personal data secure?
+                {% endif %}
+              </h6>
+              <i class="fa fa-chevron-down" style="color:#4f46e5; transition:transform 0.3s; flex-shrink:0;"></i>
+            </div>
+            <div id="hpFaq{{ forloop.counter }}" class="collapse {% if forloop.counter == 1 %}show{% endif %}" data-parent="#hpFaqAccordion">
+              <div class="hp-faq-body">
+                {% if forloop.counter == 1 %}Register as a Patient, browse the Featured Doctors grid or use the Advanced Search, select an available slot, fill out the booking form, and click Submit. Your booking is instantly confirmed via email.
+                {% elif forloop.counter == 2 %}Registered Doctors can log in and navigate to their Dashboard &rarr; "Create Appointment Slot". Fill in your qualifications, availability, hospital details, and submit. Your slot will appear publicly within minutes.
+                {% elif forloop.counter == 3 %}Yes! Both Doctors and Patients can manage upcoming appointments from their respective Dashboards. You can cancel or view details of any booking at any time.
+                {% elif forloop.counter == 4 %}Absolutely. DocMed uses industry-standard encryption and secure authentication. Your medical and personal data is never shared with third parties without your explicit consent.
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /home-page -->
+{% endblock %}
+
+
+{% block javascripts %}
+<script>
+// ============================================================
+// HOME PAGE JAVASCRIPT — SCOPED TO HOME PAGE
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+
+  // ── AOS Init ──────────────────────────────────────────────
+  if (typeof AOS !== 'undefined') {
+    AOS.init({ duration: 800, easing: 'ease-out-cubic', once: true, offset: 60 });
+  }
+
+  // ── Animated Counters ─────────────────────────────────────
+  function animateCounter(el) {
+    const target = parseInt(el.getAttribute('data-count')) || 0;
+    const suffix = el.getAttribute('data-suffix') || '';
+    if (target === 0) { el.textContent = '0' + suffix; return; }
+    const duration = 2000;
+    const step = target / (duration / 16);
+    let current = 0;
+    const timer = setInterval(() => {
+      current += step;
+      if (current >= target) {
+        current = target;
+        clearInterval(timer);
+      }
+      el.textContent = Math.floor(current) + suffix;
+    }, 16);
+  }
+
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animateCounter(entry.target);
+        counterObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
+
+  // ── Swiper (Reviews — Premium Testimonial Slider) ────────
+  if (typeof Swiper !== 'undefined' && document.querySelector('.hp-reviews-swiper')) {
+    const reviewSwiper = new Swiper('.hp-reviews-swiper', {
+      slidesPerView: 1,
+      spaceBetween: 24,
+      loop: true,
+      speed: 600,
+      grabCursor: true,
+      keyboard: { enabled: true, onlyInViewport: true },
+      autoplay: {
+        delay: 4000,
+        disableOnInteraction: false,
+        pauseOnMouseEnter: true,
+      },
+      pagination: {
+        el: '.hp-reviews-swiper .swiper-pagination',
+        clickable: true,
+        dynamicBullets: false,
+      },
+      breakpoints: {
+        640:  { slidesPerView: 1, spaceBetween: 20 },
+        768:  { slidesPerView: 2, spaceBetween: 24 },
+        1024: { slidesPerView: 3, spaceBetween: 28 },
+      },
+    });
+  }
+
+  // ── Location Autocomplete (OpenStreetMap Nominatim) ────────
+  let searchTimeout;
+  const locationInput = document.getElementById('hp-location-input');
+  const suggestionsBox = document.getElementById('hp-location-suggestions');
+
+  if (locationInput) {
+    locationInput.addEventListener('input', function() {
+      const query = this.value.trim();
+      clearTimeout(searchTimeout);
+      if (query.length < 2) { suggestionsBox.classList.remove('active'); suggestionsBox.innerHTML = ''; return; }
+      searchTimeout = setTimeout(() => {
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`)
+          .then(r => r.json())
+          .then(data => {
+            if (!data.length) { suggestionsBox.classList.remove('active'); return; }
+            suggestionsBox.innerHTML = data.map(item => {
+              const shortName = item.display_name.split(',').slice(0, 2).join(', ');
+              return `<div class="hp-suggestion-item" onclick="selectLocation('${shortName.replace(/'/g, "\\'")}')">
+                        <i class="fa fa-map-marker" style="color:#4f46e5;"></i> ${shortName}
+                      </div>`;
+            }).join('');
+            suggestionsBox.classList.add('active');
+          })
+          .catch(() => suggestionsBox.classList.remove('active'));
+      }, 400);
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!locationInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+        suggestionsBox.classList.remove('active');
+      }
+    });
+  }
+
+  // ── GPS Location ───────────────────────────────────────────
+  window.getGPSLocation = function() {
+    if (!navigator.geolocation) { alert('Geolocation not supported.'); return; }
+    const btn = document.querySelector('.hp-gps-btn');
+    if (btn) { btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>'; }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const { latitude, longitude } = pos.coords;
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+          .then(r => r.json())
+          .then(data => {
+            const city = data.address.city || data.address.town || data.address.county || 'Your Location';
+            if (locationInput) locationInput.value = city;
+            if (btn) btn.innerHTML = '<i class="fa fa-crosshairs"></i> GPS';
+          })
+          .catch(() => { if (btn) btn.innerHTML = '<i class="fa fa-crosshairs"></i> GPS'; });
+      },
+      () => {
+        if (btn) btn.innerHTML = '<i class="fa fa-crosshairs"></i> GPS';
+        alert('Unable to retrieve location. Please type it manually.');
+      }
+    );
+  };
+
+  // ── Voice Search (Speech Recognition) ──────────────────────
+  const voiceBtn = document.getElementById('hp-voice-btn');
+  if (voiceBtn && locationInput) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+
+      voiceBtn.addEventListener('click', function() {
+        if (voiceBtn.classList.contains('active')) {
+          recognition.stop();
+        } else {
+          voiceBtn.classList.add('active');
+          recognition.start();
+        }
+      });
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript.trim().replace(/\.$/, '');
+        locationInput.value = transcript;
+        // Trigger autocomplete event manually
+        locationInput.dispatchEvent(new Event('input'));
+      };
+
+      recognition.onerror = function() {
+        voiceBtn.classList.remove('active');
+      };
+
+      recognition.onend = function() {
+        voiceBtn.classList.remove('active');
+      };
+    } else {
+      voiceBtn.style.display = 'none'; // Hide if speech recognition is not supported
+    }
+  }
+
+  // ── Custom Max Distance Slider ─────────────────────────────
+  const distSlider = document.getElementById('max-distance-slider');
+  const sliderLabels = document.querySelectorAll('.hp-slider-labels span');
+  if (distSlider && sliderLabels.length) {
+    // Label click updates slider
+    sliderLabels.forEach(label => {
+      label.addEventListener('click', function() {
+        const val = this.getAttribute('data-val');
+        distSlider.value = val;
+        updateSliderState(val);
+      });
+    });
+
+    // Slider input updates active label
+    distSlider.addEventListener('input', function() {
+      updateSliderState(this.value);
+    });
+
+    function updateSliderState(val) {
+      sliderLabels.forEach(lbl => {
+        if (lbl.getAttribute('data-val') === val) {
+          lbl.classList.add('active');
+        } else {
+          lbl.classList.remove('active');
+        }
+      });
+    }
+  }
+
+  // ── Login Restriction Modal ────────────────────────────────
+  window.openLoginModal = function(nextUrl) {
+    const modal = document.getElementById('hpLoginModal');
+    const loginBtn = document.getElementById('hpModalLoginBtn');
+    if (nextUrl && loginBtn) {
+      loginBtn.href = "{% url 'accounts:login' %}?next=" + encodeURIComponent(nextUrl);
+    }
+    if (modal) modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeLoginModal = function() {
+    const modal = document.getElementById('hpLoginModal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
+  };
+
+  // Close on backdrop click
+  const loginModal = document.getElementById('hpLoginModal');
+  if (loginModal) {
+    loginModal.addEventListener('click', function(e) {
+      if (e.target === this) closeLoginModal();
+    });
+  }
+
+  // ── Map Modal ──────────────────────────────────────────────
+  window.openMapModal = function() {
+    const modal = document.getElementById('hpMapModal');
+    if (modal) modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeMapModal = function() {
+    const modal = document.getElementById('hpMapModal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
+  };
+
+  window.selectCity = function(city) {
+    if (locationInput) locationInput.value = city;
+    closeMapModal();
+  };
+
+  window.selectLocation = function(loc) {
+    if (locationInput) locationInput.value = loc;
+    if (suggestionsBox) { suggestionsBox.classList.remove('active'); suggestionsBox.innerHTML = ''; }
+  };
+
+  const mapModal = document.getElementById('hpMapModal');
+  if (mapModal) {
+    mapModal.addEventListener('click', function(e) {
+      if (e.target === this) closeMapModal();
+    });
+  }
+
+  // ── Ripple Effect on Buttons ───────────────────────────────
+  document.querySelectorAll('.hp-btn-primary, .hp-search-btn, .hp-book-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      const ripple = document.createElement('span');
+      ripple.style.cssText = `
+        position:absolute; border-radius:50%; background:rgba(255,255,255,0.4);
+        width:1px; height:1px; animation: hp-ripple 0.6s linear;
+        left:${e.offsetX}px; top:${e.offsetY}px; transform-origin:center;
+        pointer-events:none;
+      `;
+      this.style.position = 'relative';
+      this.style.overflow = 'hidden';
+      this.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 600);
+    });
+  });
+
+  // ── GSAP Hero Animations ───────────────────────────────────
+  if (typeof gsap !== 'undefined') {
+    gsap.from('.hp-hero-badge', { opacity: 0, y: 30, duration: 0.8, delay: 0.2 });
+    gsap.from('.hp-hero-title', { opacity: 0, y: 40, duration: 0.9, delay: 0.4 });
+    gsap.from('.hp-hero-sub', { opacity: 0, y: 30, duration: 0.8, delay: 0.6 });
+    gsap.from('.hp-hero-btns', { opacity: 0, y: 25, duration: 0.8, delay: 0.8 });
+    gsap.from('.hp-hero-img', { opacity: 0, scale: 0.9, duration: 1.2, delay: 0.5, ease: 'back.out(1.5)' });
+    gsap.from('.hp-doc-float-card', { opacity: 0, x: -40, duration: 0.8, delay: 1.2, ease: 'back.out(2)' });
+    gsap.from('.hp-booking-float-card', { opacity: 0, x: 40, duration: 0.8, delay: 1.4, ease: 'back.out(2)' });
+  }
+
+  // ── Search form submit feedback ────────────────────────────
+  const searchForm = document.getElementById('hp-search-form');
+  if (searchForm) {
+    searchForm.addEventListener('submit', function() {
+      const btn = this.querySelector('.hp-search-btn');
+      if (btn) { btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Searching...'; btn.disabled = true; }
+    });
+  }
+
+  // ── Auto-refresh available doctor card (polling) ───────────
+  let userLat = null;
+  let userLon = null;
+  
+  function fetchNearbyDoctors() {
+    let url = '/api/doctors/nearby/?limit=1';
+    if (userLat && userLon) {
+      url += `&lat=${userLat}&lon=${userLon}`;
+    }
+    
+    fetch(url)
+      .then(r => r.json())
+      .then(data => {
+        if (data.doctors && data.doctors.length > 0) {
+          const doc = data.doctors[0];
+          const card = document.getElementById('real-time-hero-card');
+          if (!card) return;
+          
+          card.innerHTML = `
+              <div class="d-flex align-items-center mb-2">
+                  <img src="${doc.photo_url}" alt="Dr. ${doc.first_name} ${doc.last_name}"
+                       width="44" height="44" class="rounded-circle mr-2 hp-pulse-ring" style="object-fit:cover; border:2px solid #10b981;">
+                <div>
+                  <div style="font-size:13px; font-weight:800; color:#0f172a; line-height:1.2;">Dr. ${doc.first_name} ${doc.last_name}</div>
+                  <div style="font-size:11px; color:#06b6d4; font-weight:600;">${doc.specialization}</div>
+                </div>
+              </div>
+              <div style="font-size:11px; color:#64748b; margin-bottom:8px;">
+                <i class="fa fa-hospital-o" style="color:#4f46e5;"></i> ${doc.hospital || 'Private Clinic'}
+              </div>
+              <div style="display:flex; align-items:center; justify-content:space-between;">
+                <span style="font-size:11px; font-weight:700; color:#10b981;">
+                  <span class="available-dot"></span> Available Now
+                </span>
+                <span style="font-size:11px; color:#f59e0b;"><i class="fa fa-star"></i> ${doc.rating}</span>
+              </div>
+          `;
+        }
+      })
+      .catch(e => console.error('Error fetching real-time doctors:', e));
+  }
+
+  setInterval(fetchNearbyDoctors, 60000);
+
+});
+</script>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let map = null;
+    let marker = null;
+    
+    window.openMapModal = function() {
+        const modal = document.getElementById('hpMapModal');
+        if (modal) modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Initialize map if not already done
+        if (!map) {
+            // Default center (Dhaka, Bangladesh)
+            map = L.map('hp-map-container').setView([23.8103, 90.4125], 7);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            
+            map.on('click', function(e) {
+                if (marker) map.removeLayer(marker);
+                marker = L.marker(e.latlng).addTo(map);
+                
+                // Reverse geocode
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}`)
+                  .then(r => r.json())
+                  .then(data => {
+                      const city = data.address.city || data.address.town || data.address.county || 'Selected Location';
+                      document.getElementById('hp-location-input').value = city;
+                      userLat = e.latlng.lat;
+                      userLon = e.latlng.lng;
+                      
+                      // Trigger fetch for nearby doctors based on new location
+                      if (typeof fetchNearbyDoctors === 'function') {
+                          fetchNearbyDoctors();
+                      }
+                      
+                      setTimeout(closeMapModal, 800); // Close after brief delay
+                  });
+            });
+        } else {
+            // Fix map sizing issues if container was hidden
+            setTimeout(() => { map.invalidateSize(); }, 100);
+        }
+    };
+});
+
+// ── Dynamic Header Location Injection ─────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  const headerSmall = document.querySelector('.top-header-area .col-8 small');
+  if (headerSmall) {
+    // Inject the dropdown structure
+    headerSmall.innerHTML = `
+      <span style="position:relative; display:inline-block;">
+        <a href="#" id="hp-header-location-btn" style="color:inherit; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+          <i class="fa fa-map-marker"></i>
+          <span id="hp-header-location-text">Select Location</span>
+          <i class="fa fa-angle-down" style="font-size:10px;"></i>
+        </a>
+        <div id="hp-header-dropdown" class="hp-header-dropdown">
+          <a href="#" id="hp-btn-current-location"><i class="fa fa-crosshairs mr-2 text-primary"></i> Use Current Location</a>
+          <div class="hp-dropdown-divider"></div>
+          <div class="hp-dropdown-title">Popular Cities</div>
+          <a href="#" class="hp-loc-option">Delhi, India</a>
+          <a href="#" class="hp-loc-option">Lucknow, India</a>
+          <a href="#" class="hp-loc-option">Noida, India</a>
+        </div>
+      </span>
+      <span class="mx-2">|</span> 
+      <i class="fa fa-envelope mr-2"></i> info.docmed@gmail.com
+    `;
+
+    const locBtn = document.getElementById('hp-header-location-btn');
+    const dropdown = document.getElementById('hp-header-dropdown');
+    const locText = document.getElementById('hp-header-location-text');
+    const currentLocBtn = document.getElementById('hp-btn-current-location');
+    const locOptions = document.querySelectorAll('.hp-loc-option');
+
+    // Toggle dropdown
+    locBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      dropdown.classList.toggle('active');
+    });
+
+    // Close dropdown on outside click
+    document.addEventListener('click', function(e) {
+      if (!locBtn.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('active');
+      }
+    });
+
+    // Handle Option Selection
+    locOptions.forEach(opt => {
+      opt.addEventListener('click', function(e) {
+        e.preventDefault();
+        locText.innerText = this.innerText;
+        dropdown.classList.remove('active');
+        // Trigger fetch based on new city if needed
+      });
+    });
+
+    // Handle Current Location Geolocation
+    function requestLocation() {
+      if (navigator.geolocation) {
+        locText.innerText = 'Detecting...';
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            const { latitude, longitude } = pos.coords;
+            fetch(\`https://nominatim.openstreetmap.org/reverse?format=json&lat=\${latitude}&lon=\${longitude}\`)
+              .then(r => r.json())
+              .then(data => {
+                const city = data.address.city || data.address.town || data.address.county || '';
+                const state = data.address.state || '';
+                const country = data.address.country || '';
+                let display = 'Selected Location';
+                
+                if (city && country) {
+                  display = \`\${city}, \${country}\`;
+                } else if (state && country) {
+                  display = \`\${state}, \${country}\`;
+                }
+                
+                locText.innerText = display;
+                if(typeof userLat !== 'undefined') {
+                    userLat = latitude;
+                    userLon = longitude;
+                    if (typeof fetchNearbyDoctors === 'function') { fetchNearbyDoctors(); }
+                }
+              })
+              .catch(() => { locText.innerText = 'Select Location'; });
+          },
+          err => {
+            console.warn('Geolocation denied or error:', err);
+            locText.innerText = 'Select Location';
+          }
+        );
+      } else {
+        locText.innerText = 'Select Location';
+      }
+    }
+
+    currentLocBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      dropdown.classList.remove('active');
+      requestLocation();
+    });
+
+    // Auto-request location on page load
+    requestLocation();
+  }
+});
+</script>
+{% endblock %}

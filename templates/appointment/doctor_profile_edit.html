@@ -1,0 +1,644 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}| Edit Profile{% endblock %}
+
+{% block styles %}
+<style>
+  body { background: linear-gradient(180deg, #0f0c29 0%, #1a1a3e 100%); }
+
+  /* ── Tabs ── */
+  .profile-tabs {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; padding: 8px;
+    margin-bottom: 28px;
+  }
+  .tab-btn {
+    flex: 1; min-width: 120px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    color: rgba(255,255,255,0.55);
+    font-size: 0.85rem; font-weight: 600;
+    padding: 10px 14px;
+    cursor: pointer; transition: all 0.25s;
+    display: flex; align-items: center; gap: 6px; justify-content: center;
+    text-decoration: none;
+  }
+  .tab-btn:hover { color: #a5b4fc; background: rgba(99,102,241,0.1); }
+  .tab-btn.active {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: #fff; border-color: transparent;
+    box-shadow: 0 4px 14px rgba(99,102,241,0.35);
+  }
+  .tab-btn i { font-size: 1rem; }
+
+  /* ── Glass Card ── */
+  .edit-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 28px;
+    backdrop-filter: blur(12px);
+  }
+  .edit-card h5 {
+    color: #a78bfa; font-weight: 700; font-size: 0.82rem;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    margin-bottom: 20px;
+    display:flex; align-items:center; gap:8px;
+  }
+
+  /* ── Form Controls ── */
+  .form-label { color: rgba(255,255,255,0.65); font-size: 0.82rem; font-weight: 600; margin-bottom: 5px; }
+  .form-control, .form-select {
+    background: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    color: #fff !important;
+    border-radius: 12px !important;
+    padding: 10px 14px !important;
+    font-size: 0.9rem !important;
+    transition: all 0.25s;
+  }
+  .form-control::placeholder { color: rgba(255,255,255,0.35) !important; }
+  .form-control:focus, .form-select:focus {
+    background: rgba(255,255,255,0.12) !important;
+    border-color: rgba(99,102,241,0.5) !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.25) !important;
+    color: #fff !important;
+  }
+  .form-select option { background: #1a1a3e; color: #fff; }
+  .form-check-input:checked { background-color: #6366f1; border-color: #6366f1; }
+  .form-check-label { color: rgba(255,255,255,0.75); font-size: 0.88rem; }
+  textarea.form-control { resize: vertical; min-height: 90px; }
+
+  /* ── Buttons ── */
+  .btn-save {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    border: none; border-radius: 12px;
+    color: #fff; font-weight: 700; padding: 12px 28px;
+    transition: all 0.3s; cursor: pointer;
+  }
+  .btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,0.5); color: #fff; }
+  .btn-add {
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 10px; color: #a5b4fc;
+    font-size: 0.85rem; font-weight: 600;
+    padding: 8px 16px; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-add:hover { background: rgba(99,102,241,0.3); color: #fff; }
+  .btn-del {
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 8px; color: #fca5a5;
+    font-size: 0.78rem; padding: 4px 10px; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-del:hover { background: rgba(239,68,68,0.3); color: #fff; }
+
+  /* ── List Items ── */
+  .list-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  }
+  .list-item-title { color: #fff; font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; }
+  .list-item-sub { color: rgba(255,255,255,0.5); font-size: 0.8rem; }
+
+  /* ── Photo Upload ── */
+  .photo-upload-wrap {
+    display: flex; align-items: center; gap: 20px; margin-bottom: 24px;
+    padding: 20px; background: rgba(255,255,255,0.04);
+    border: 1px dashed rgba(255,255,255,0.15); border-radius: 14px;
+  }
+  .photo-preview {
+    width: 80px; height: 80px; border-radius: 50%;
+    object-fit: cover; border: 3px solid rgba(99,102,241,0.4);
+  }
+  .photo-placeholder {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: linear-gradient(135deg,#6366f1,#a855f7);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; color:#fff; font-weight:700;
+    border: 3px solid rgba(99,102,241,0.4);
+  }
+
+  /* ── Slot day badge ── */
+  .weekday-badge {
+    display: inline-block;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.25);
+    color: #a5b4fc; border-radius: 6px; padding: 2px 8px; font-size: 0.75rem; font-weight: 600;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="min-height:100vh; padding-top:100px; padding-bottom:60px;">
+  <div class="container">
+
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3" data-aos="fade-down">
+      <div>
+        <h1 style="color:#fff; font-weight:800; font-size:1.8rem;">My Doctor Profile</h1>
+        <p style="color:rgba(255,255,255,0.5); margin:0;">Manage your professional profile and availability</p>
+      </div>
+      <a href="{% url 'appointment:doctor-public-profile' doctor.pk %}" class="btn-add">
+        <i class="ri-eye-line me-1"></i> View Public Profile
+      </a>
+    </div>
+
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible fade show" style="border-radius:12px; border:none; background:rgba({% if msg.tags == 'success' %}16,185,129,0.15{% elif msg.tags == 'error' or msg.tags == 'danger' %}239,68,68,0.15{% else %}99,102,241,0.15{% endif %}); color:#fff;" role="alert">
+      {{ msg }}
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Tabs -->
+    <div class="profile-tabs" data-aos="fade-up">
+      <a href="#tab-profile" class="tab-btn active" data-tab="tab-profile"><i class="ri-user-line"></i> Basic Info</a>
+      <a href="#tab-quals" class="tab-btn" data-tab="tab-quals"><i class="ri-graduation-cap-line"></i> Education</a>
+      <a href="#tab-exp" class="tab-btn" data-tab="tab-exp"><i class="ri-briefcase-line"></i> Experience</a>
+      <a href="#tab-clinics" class="tab-btn" data-tab="tab-clinics"><i class="ri-hospital-line"></i> Clinics</a>
+      <a href="#tab-fees" class="tab-btn" data-tab="tab-fees"><i class="ri-money-rupee-circle-line"></i> Fees</a>
+      <a href="#tab-docs" class="tab-btn" data-tab="tab-docs"><i class="ri-file-shield-line"></i> Documents</a>
+      <a href="#tab-slots" class="tab-btn" data-tab="tab-slots"><i class="ri-calendar-2-line"></i> Slots</a>
+    </div>
+
+    <!-- ── TAB: Basic Profile ── -->
+    <div class="tab-pane" id="tab-profile" data-aos="fade-up">
+      <form method="POST" enctype="multipart/form-data" action="{% url 'appointment:doctor-profile-edit' %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="profile">
+
+        <div class="edit-card mb-4">
+          <h5><i class="ri-camera-line"></i> Profile Photo & Cover</h5>
+          <div class="photo-upload-wrap">
+            {% if doctor.photo %}
+            <img src="{{ doctor.photo.url }}" alt="avatar" class="photo-preview" id="avatarPreview">
+            {% else %}
+            <div class="photo-placeholder" id="avatarPlaceholder">{{ doctor.full_name|slice:":1" }}</div>
+            {% endif %}
+            <div>
+              <p class="text-white-50 small mb-2">Profile Photo</p>
+              <input type="file" name="photo" accept="image/*" class="form-control" style="max-width:280px;" id="photoInput">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Cover Image (optional)</label>
+            {% if doctor.cover_image %}
+            <div class="mb-2"><img src="{{ doctor.cover_image.url }}" alt="cover" style="width:100%; height:80px; object-fit:cover; border-radius:10px;"></div>
+            {% endif %}
+            <input type="file" name="cover_image" accept="image/*" class="form-control">
+          </div>
+        </div>
+
+        <div class="edit-card mb-4">
+          <h5><i class="ri-stethoscope-line"></i> Professional Info</h5>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Qualification *</label>
+              {{ profile_form.qualification }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Specialization *</label>
+              {{ profile_form.specialization }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Hospital / Clinic Name</label>
+              {{ profile_form.hospital }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Experience (years)</label>
+              {{ profile_form.experience_years }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Consultation Fee (₹)</label>
+              {{ profile_form.consultation_fee }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">License Number</label>
+              {{ profile_form.license_number }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Medical Registration Number</label>
+              {{ profile_form.medical_registration_number }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Languages Spoken</label>
+              {{ profile_form.languages }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Short Bio (Homepage)</label>
+              {{ profile_form.bio }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">About (Full Profile)</label>
+              {{ profile_form.about }}
+            </div>
+          </div>
+        </div>
+
+        <div class="edit-card mb-4">
+          <h5><i class="ri-time-line"></i> Availability</h5>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Opening Time</label>
+              {{ profile_form.opening_time }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Closing Time</label>
+              {{ profile_form.closing_time }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Working Days</label>
+              {{ profile_form.working_days }}
+            </div>
+            <div class="col-md-4">
+              <div class="form-check mt-3">
+                {{ profile_form.online_consultation }}
+                <label class="form-check-label">Online Consultation</label>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-check mt-3">
+                {{ profile_form.offline_consultation }}
+                <label class="form-check-label">In-Clinic Consultation</label>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-check mt-3">
+                {{ profile_form.emergency }}
+                <label class="form-check-label">Emergency Available</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="edit-card mb-4">
+          <h5><i class="ri-map-pin-line"></i> Location</h5>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Full Address</label>
+              {{ profile_form.full_address }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">City</label>
+              {{ profile_form.city }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">State</label>
+              {{ profile_form.state }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Country</label>
+              {{ profile_form.country }}
+            </div>
+          </div>
+        </div>
+
+        <div class="edit-card mb-4">
+          <h5><i class="ri-share-line"></i> Social Links</h5>
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label"><i class="ri-facebook-fill me-1"></i> Facebook</label>{{ profile_form.social_facebook }}</div>
+            <div class="col-md-6"><label class="form-label"><i class="ri-twitter-fill me-1"></i> Twitter</label>{{ profile_form.social_twitter }}</div>
+            <div class="col-md-6"><label class="form-label"><i class="ri-linkedin-fill me-1"></i> LinkedIn</label>{{ profile_form.social_linkedin }}</div>
+            <div class="col-md-6"><label class="form-label"><i class="ri-instagram-line me-1"></i> Instagram</label>{{ profile_form.social_instagram }}</div>
+            <div class="col-md-12"><label class="form-label"><i class="ri-global-line me-1"></i> Website</label>{{ profile_form.social_website }}</div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-save"><i class="ri-save-line me-2"></i> Save Profile</button>
+      </form>
+    </div>
+
+    <!-- ── TAB: Education ── -->
+    <div class="tab-pane d-none" id="tab-quals">
+      <div class="edit-card mb-4">
+        <h5><i class="ri-graduation-cap-line"></i> Education & Qualifications</h5>
+        {% for q in qualifications %}
+        <div class="list-item">
+          <div>
+            <p class="list-item-title">{{ q.degree }}</p>
+            <p class="list-item-sub">{{ q.institute }} · {{ q.year }}</p>
+            {% if q.description %}<p class="list-item-sub">{{ q.description }}</p>{% endif %}
+          </div>
+          <form method="POST" action="{% url 'appointment:doctor-qualification-delete' q.pk %}" style="flex-shrink:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn-del" onclick="return confirm('Remove this qualification?')"><i class="ri-delete-bin-line me-1"></i>Remove</button>
+          </form>
+        </div>
+        {% empty %}
+        <p class="text-white-50 text-center py-3">No qualifications added yet.</p>
+        {% endfor %}
+      </div>
+
+      <div class="edit-card">
+        <h5><i class="ri-add-circle-line"></i> Add Qualification</h5>
+        <form method="POST" action="{% url 'appointment:doctor-profile-edit' %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_qualification">
+          <div class="row g-3">
+            <div class="col-md-4"><label class="form-label">Degree</label>{{ qual_form.degree }}</div>
+            <div class="col-md-4"><label class="form-label">Institution</label>{{ qual_form.institute }}</div>
+            <div class="col-md-2"><label class="form-label">Year</label>{{ qual_form.year }}</div>
+            <div class="col-md-2 d-flex align-items-end"><button type="submit" class="btn-save w-100"><i class="ri-add-line"></i></button></div>
+            <div class="col-12"><label class="form-label">Description (optional)</label>{{ qual_form.description }}</div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── TAB: Experience ── -->
+    <div class="tab-pane d-none" id="tab-exp">
+      <div class="edit-card mb-4">
+        <h5><i class="ri-briefcase-line"></i> Work Experience</h5>
+        {% for exp in experiences %}
+        <div class="list-item">
+          <div>
+            <p class="list-item-title">{{ exp.designation }}</p>
+            <p class="list-item-sub">{{ exp.hospital_name }}</p>
+            <p class="list-item-sub">{{ exp.start_date|date:"M Y" }} – {% if exp.is_current %}Present{% else %}{{ exp.end_date|date:"M Y" }}{% endif %}</p>
+          </div>
+          <form method="POST" action="{% url 'appointment:doctor-experience-delete' exp.pk %}" style="flex-shrink:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn-del" onclick="return confirm('Remove?')"><i class="ri-delete-bin-line me-1"></i>Remove</button>
+          </form>
+        </div>
+        {% empty %}
+        <p class="text-white-50 text-center py-3">No experience entries yet.</p>
+        {% endfor %}
+      </div>
+
+      <div class="edit-card">
+        <h5><i class="ri-add-circle-line"></i> Add Experience</h5>
+        <form method="POST" action="{% url 'appointment:doctor-profile-edit' %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_experience">
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Hospital / Clinic</label>{{ exp_form.hospital_name }}</div>
+            <div class="col-md-6"><label class="form-label">Designation</label>{{ exp_form.designation }}</div>
+            <div class="col-md-4"><label class="form-label">Start Date</label>{{ exp_form.start_date }}</div>
+            <div class="col-md-4"><label class="form-label">End Date</label>{{ exp_form.end_date }}</div>
+            <div class="col-md-4 d-flex align-items-end">
+              <div class="form-check">{{ exp_form.is_current }}<label class="form-check-label">Currently working here</label></div>
+            </div>
+            <div class="col-12"><label class="form-label">Description</label>{{ exp_form.description }}</div>
+            <div class="col-12"><button type="submit" class="btn-save"><i class="ri-add-line me-2"></i>Add Experience</button></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── TAB: Clinics ── -->
+    <div class="tab-pane d-none" id="tab-clinics">
+      <div class="edit-card mb-4">
+        <h5><i class="ri-hospital-line"></i> My Clinics</h5>
+        {% for clinic in clinics %}
+        <div class="list-item">
+          <div>
+            <p class="list-item-title">{{ clinic.name }} {% if clinic.is_primary %}<span style="font-size:0.7rem; background:rgba(16,185,129,0.2); color:#6ee7b7; border-radius:4px; padding:1px 6px;">Primary</span>{% endif %}</p>
+            <p class="list-item-sub">{{ clinic.get_clinic_type_display }} · {{ clinic.city }}{% if clinic.state %}, {{ clinic.state }}{% endif %}</p>
+            <p class="list-item-sub">{{ clinic.working_days }} · {{ clinic.opening_time|time:"H:i" }}–{{ clinic.closing_time|time:"H:i" }}</p>
+          </div>
+          <form method="POST" action="{% url 'appointment:doctor-clinic-delete' clinic.pk %}" style="flex-shrink:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn-del" onclick="return confirm('Remove?')"><i class="ri-delete-bin-line me-1"></i>Remove</button>
+          </form>
+        </div>
+        {% empty %}
+        <p class="text-white-50 text-center py-3">No clinics added yet.</p>
+        {% endfor %}
+      </div>
+
+      <div class="edit-card">
+        <h5><i class="ri-add-circle-line"></i> Add Clinic</h5>
+        <form method="POST" action="{% url 'appointment:doctor-profile-edit' %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_clinic">
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Clinic Name</label>{{ clinic_form.name }}</div>
+            <div class="col-md-6"><label class="form-label">Type</label>{{ clinic_form.clinic_type }}</div>
+            <div class="col-12"><label class="form-label">Address</label>{{ clinic_form.address }}</div>
+            <div class="col-md-4"><label class="form-label">City</label>{{ clinic_form.city }}</div>
+            <div class="col-md-4"><label class="form-label">State</label>{{ clinic_form.state }}</div>
+            <div class="col-md-4"><label class="form-label">Country</label>{{ clinic_form.country }}</div>
+            <div class="col-md-4"><label class="form-label">Phone</label>{{ clinic_form.phone }}</div>
+            <div class="col-md-4"><label class="form-label">Working Days</label>{{ clinic_form.working_days }}</div>
+            <div class="col-md-2"><label class="form-label">Opens</label>{{ clinic_form.opening_time }}</div>
+            <div class="col-md-2"><label class="form-label">Closes</label>{{ clinic_form.closing_time }}</div>
+            <div class="col-12">
+              <div class="form-check">{{ clinic_form.is_primary }}<label class="form-check-label">Set as primary clinic</label></div>
+            </div>
+            <div class="col-12"><button type="submit" class="btn-save"><i class="ri-add-line me-2"></i>Add Clinic</button></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── TAB: Fees ── -->
+    <div class="tab-pane d-none" id="tab-fees">
+      <div class="edit-card">
+        <h5><i class="ri-money-rupee-circle-line"></i> Fee Structure</h5>
+        <form method="POST" action="{% url 'appointment:doctor-profile-edit' %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="update_fees">
+          <div class="row g-3">
+            <div class="col-md-2"><label class="form-label">Currency</label>{{ fee_form.currency }}</div>
+            <div class="col-md-2"><label class="form-label">Clinic Fee</label>{{ fee_form.clinic_fee }}</div>
+            <div class="col-md-2"><label class="form-label">Video Fee</label>{{ fee_form.video_fee }}</div>
+            <div class="col-md-2"><label class="form-label">Emergency Fee</label>{{ fee_form.emergency_fee }}</div>
+            <div class="col-md-2"><label class="form-label">Follow-up Fee</label>{{ fee_form.followup_fee }}</div>
+            <div class="col-md-2"><label class="form-label">Discount %</label>{{ fee_form.discount_percent }}</div>
+            <div class="col-md-3"><label class="form-label">Free Follow-up Days</label>{{ fee_form.free_followup_days }}</div>
+            <div class="col-md-9"><label class="form-label">Notes</label>{{ fee_form.notes }}</div>
+            <div class="col-12"><button type="submit" class="btn-save"><i class="ri-save-line me-2"></i>Update Fees</button></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── TAB: Documents ── -->
+    <div class="tab-pane d-none" id="tab-docs">
+      <div class="edit-card mb-4">
+        <h5><i class="ri-file-shield-line"></i> Verification Documents</h5>
+        {% for doc in documents %}
+        <div class="list-item">
+          <div>
+            <p class="list-item-title">{{ doc.title }}</p>
+            <p class="list-item-sub">{{ doc.get_doc_type_display }} · Uploaded {{ doc.uploaded_at|date:"d M Y" }}</p>
+            {% if doc.is_verified %}
+            <span style="font-size:0.7rem; background:rgba(16,185,129,0.2); color:#6ee7b7; border-radius:4px; padding:2px 8px;"><i class="ri-shield-check-fill me-1"></i>Verified</span>
+            {% else %}
+            <span style="font-size:0.7rem; background:rgba(251,191,36,0.15); color:#fcd34d; border-radius:4px; padding:2px 8px;"><i class="ri-time-line me-1"></i>Pending Verification</span>
+            {% endif %}
+          </div>
+          <form method="POST" action="{% url 'appointment:doctor-document-delete' doc.pk %}" style="flex-shrink:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn-del" onclick="return confirm('Remove?')"><i class="ri-delete-bin-line me-1"></i>Remove</button>
+          </form>
+        </div>
+        {% empty %}
+        <p class="text-white-50 text-center py-3">No documents uploaded yet.</p>
+        {% endfor %}
+      </div>
+
+      <div class="edit-card">
+        <h5><i class="ri-upload-cloud-line"></i> Upload Document</h5>
+        <form method="POST" action="{% url 'appointment:doctor-profile-edit' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="upload_document">
+          <div class="row g-3">
+            <div class="col-md-4"><label class="form-label">Document Type</label>{{ doc_form.doc_type if doc_form else '' }}<select name="doc_type" class="form-control"><option value="license">Medical License</option><option value="degree">Degree Certificate</option><option value="registration">Registration Certificate</option><option value="id_proof">ID Proof</option><option value="other">Other</option></select></div>
+            <div class="col-md-4"><label class="form-label">Title</label><input type="text" name="title" class="form-control" placeholder="Document title" required></div>
+            <div class="col-md-4"><label class="form-label">File</label><input type="file" name="file" class="form-control" required></div>
+            <div class="col-12"><button type="submit" class="btn-save"><i class="ri-upload-cloud-line me-2"></i>Upload</button></div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── TAB: Slots ── -->
+    <div class="tab-pane d-none" id="tab-slots">
+      <!-- Vacations -->
+      <div class="edit-card mb-4">
+        <h5><i class="ri-calendar-close-line"></i> Blocked Dates / Vacations</h5>
+        {% for v in vacations %}
+        <div class="list-item">
+          <div>
+            <p class="list-item-title">{{ v.get_leave_type_display }}</p>
+            <p class="list-item-sub">{{ v.start_date|date:"d M Y" }} → {{ v.end_date|date:"d M Y" }}{% if v.reason %} · {{ v.reason }}{% endif %}</p>
+          </div>
+          <form method="POST" action="{% url 'appointment:doctor-vacation-delete' v.pk %}" style="flex-shrink:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn-del" onclick="return confirm('Remove?')"><i class="ri-delete-bin-line me-1"></i>Remove</button>
+          </form>
+        </div>
+        {% empty %}
+        <p class="text-white-50 text-center py-2">No vacation blocks.</p>
+        {% endfor %}
+
+        <form method="POST" action="{% url 'appointment:doctor-profile-edit' %}" class="mt-3 pt-3" style="border-top:1px solid rgba(255,255,255,0.08);">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_vacation">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-3"><label class="form-label">Type</label>{{ vacation_form.leave_type }}</div>
+            <div class="col-md-3"><label class="form-label">From</label>{{ vacation_form.start_date }}</div>
+            <div class="col-md-3"><label class="form-label">Until</label>{{ vacation_form.end_date }}</div>
+            <div class="col-md-2"><label class="form-label">Reason</label>{{ vacation_form.reason }}</div>
+            <div class="col-md-1 d-flex align-items-end"><button type="submit" class="btn-save w-100"><i class="ri-add-line"></i></button></div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Weekly Slots -->
+      <div class="edit-card mb-4">
+        <h5><i class="ri-calendar-2-line"></i> Weekly Availability Slots</h5>
+        {% for slot in slots %}
+        <div class="list-item">
+          <div>
+            <span class="weekday-badge me-1">{{ slot.get_weekday_display }}</span>
+            <span class="text-white fw-600 ms-1">{{ slot.start_time|time:"H:i" }} – {{ slot.end_time|time:"H:i" }}</span>
+            <span class="text-white-50 small ms-2">{{ slot.get_session_display }} · Cap: {{ slot.capacity }}</span>
+            {% if slot.is_online %}<span style="color:#a5b4fc; font-size:0.78rem; margin-left:6px;"><i class="ri-video-line me-1"></i>Online</span>{% endif %}
+          </div>
+          <form method="POST" action="{% url 'appointment:doctor-slot-delete' slot.pk %}" style="flex-shrink:0;">
+            {% csrf_token %}
+            <button type="submit" class="btn-del" onclick="return confirm('Remove slot?')"><i class="ri-delete-bin-line me-1"></i>Remove</button>
+          </form>
+        </div>
+        {% empty %}
+        <p class="text-white-50 text-center py-2">No slots created yet.</p>
+        {% endfor %}
+      </div>
+
+      <div class="edit-card">
+        <h5><i class="ri-add-circle-line"></i> Add Weekly Slot</h5>
+        <form method="POST" action="{% url 'appointment:doctor-profile-edit' %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_slot">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-2"><label class="form-label">Session</label>{{ slot_form.session }}</div>
+            <div class="col-md-2"><label class="form-label">Weekday</label>{{ slot_form.weekday }}</div>
+            <div class="col-md-2"><label class="form-label">From</label>{{ slot_form.start_time }}</div>
+            <div class="col-md-2"><label class="form-label">Until</label>{{ slot_form.end_time }}</div>
+            <div class="col-md-1"><label class="form-label">Capacity</label>{{ slot_form.capacity }}</div>
+            <div class="col-md-2"><label class="form-label">From Date</label>{{ slot_form.effective_from }}</div>
+            <div class="col-md-2"><label class="form-label">Until Date</label>{{ slot_form.effective_until }}</div>
+            <div class="col-md-2">
+              <div class="form-check">{{ slot_form.is_online }}<label class="form-check-label">Online</label></div>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button type="submit" class="btn-save w-100"><i class="ri-add-line me-1"></i>Add</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+AOS.init({ duration: 600, once: true });
+
+// Tab switching
+const tabBtns = document.querySelectorAll('.tab-btn');
+const tabPanes = document.querySelectorAll('.tab-pane');
+
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = this.getAttribute('data-tab');
+
+    tabBtns.forEach(b => b.classList.remove('active'));
+    tabPanes.forEach(p => p.classList.add('d-none'));
+
+    this.classList.add('active');
+    document.getElementById(target).classList.remove('d-none');
+
+    // Save active tab in sessionStorage
+    sessionStorage.setItem('doctorProfileTab', target);
+  });
+});
+
+// Restore tab on reload
+const savedTab = sessionStorage.getItem('doctorProfileTab');
+if (savedTab) {
+  const btn = document.querySelector(`[data-tab="${savedTab}"]`);
+  if (btn) btn.click();
+}
+
+// Photo preview
+const photoInput = document.getElementById('photoInput');
+if (photoInput) {
+  photoInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        let preview = document.getElementById('avatarPreview');
+        const placeholder = document.getElementById('avatarPlaceholder');
+        if (!preview) {
+          preview = document.createElement('img');
+          preview.id = 'avatarPreview';
+          preview.className = 'photo-preview';
+          preview.alt = 'Preview';
+          if (placeholder) placeholder.replaceWith(preview);
+        }
+        preview.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+</script>
+{% endblock %}

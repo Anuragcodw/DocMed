@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load socialaccount %}
+
+{% block title %}Sign In - DocMed Premium{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper" style="min-height: 100vh; background: linear-gradient(135deg, #F8FBFF 0%, #E1EBFF 100%); display: flex; align-items: center; justify-content: center; padding: 40px 0;">
+  
+  <!-- Floating Medical Shapes in Background -->
+  <div class="medical-shapes">
+    <div class="medical-shape shape-1"><i class="fa fa-plus-circle"></i></div>
+    <div class="medical-shape shape-2"><i class="fa fa-heartbeat"></i></div>
+    <div class="medical-shape shape-3"><i class="fa fa-user-md"></i></div>
+    <div class="medical-shape shape-4"><i class="fa fa-plus"></i></div>
+  </div>
+
+  <div class="login-card-container" data-aos="zoom-in" data-aos-duration="1000" style="width: 100%; max-width: 520px; z-index: 10;">
+    <div class="premium-login-card p-5" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.08);">
+      
+      <!-- Card Header -->
+      <div class="text-center mb-5">
+        <div class="d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background: rgba(6, 182, 212, 0.1); border-radius: 50%;">
+          <i class="fa fa-user-md fa-2x text-primary" style="color: #4f46e5 !important;"></i>
+        </div>
+        <h3 class="font-weight-bold text-dark mb-1">Welcome Back</h3>
+        <p class="text-muted">Sign in to your DocMed account</p>
+      </div>
+
+      <!-- Login Form -->
+      <form action="" method="POST" id="loginForm" data-loading>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 px-3 mb-4 rounded-lg small">
+            {% for error in form.non_field_errors %}
+              <p class="mb-0"><i class="fa fa-exclamation-circle mr-1"></i> {{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <!-- Username/Email/Phone Input Field -->
+        <div class="form-floating-custom mb-4 position-relative">
+          <input type="text" name="login_credential" id="id_login_credential" placeholder=" " required value="{{ form.login_credential.value|default:'' }}" class="{% if form.login_credential.errors %}is-invalid{% endif %}">
+          <i class="fa fa-envelope input-icon"></i>
+          <label for="id_login_credential">Email, Username or Phone</label>
+          {% for error in form.login_credential.errors %}
+            <div class="invalid-feedback d-block mt-1 pl-2">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-floating-custom mb-4 position-relative">
+          <input type="password" name="password" id="id_password" placeholder=" " required class="{% if form.password.errors %}is-invalid{% endif %}">
+          <i class="fa fa-lock input-icon"></i>
+          <label for="id_password">Password</label>
+          <i class="fa fa-eye password-eye" id="passwordToggleEye" style="position: absolute; right: 15px; top: 18px; cursor: pointer; color: #94a3b8; z-index: 10;"></i>
+          
+          <!-- Caps Lock Detection warning placeholder -->
+          <div class="caps-warn alert alert-warning py-1 px-2 mt-2 mb-0 small" style="display: none;">
+            <i class="fa fa-exclamation-triangle mr-1"></i> Caps Lock is ON
+          </div>
+
+          {% for error in form.password.errors %}
+            <div class="invalid-feedback d-block mt-1 pl-2">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <!-- Remember Me & Forgot Password -->
+        <div class="d-flex justify-content-between align-items-center mb-4 small font-weight-bold">
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" name="remember_me" class="custom-control-input" id="rememberMe">
+            <label class="custom-control-label text-muted" for="rememberMe" style="cursor: pointer;">Remember me</label>
+          </div>
+          <a href="{% url 'accounts:password_reset' %}" class="text-primary hover-scale" style="color: #4f46e5;">Forgot Password?</a>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-premium btn-primary-gradient w-100 py-3 mb-3 shadow-glow" id="loginBtn" style="background: linear-gradient(135deg, #4f46e5, #06b6d4); color: white; border: 0; border-radius: 12px; font-weight: 700;">
+          <span class="btn-text"><i class="fa fa-sign-in mr-2"></i> Sign In</span>
+          <span class="btn-spinner spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+        </button>
+
+        <div class="text-center mb-4">
+          <a href="{% url 'accounts:otp-login' %}" class="btn btn-outline-info w-100 font-weight-bold py-2" style="border-radius: 12px; border-color: #06b6d4; color: #06b6d4;">
+            <i class="fa fa-phone mr-2"></i> Login with Phone OTP
+          </a>
+        </div>
+      </form>
+
+      <!-- Divider -->
+      <div class="position-relative text-center my-4">
+        <hr style="border-color: rgba(0,0,0,0.08);">
+        <span class="position-absolute px-3 small font-weight-bold text-muted" style="top: -10px; left: 50%; transform: translateX(-50%); background: #f1f5f9; border-radius: 20px;">OR CONNECT WITH</span>
+      </div>
+
+      <!-- Social Login Buttons -->
+      <div class="row mb-4">
+        <div class="col-6">
+          <a href="{% provider_login_url 'google' %}" class="btn btn-light btn-block font-weight-bold text-dark shadow-sm border py-2 hover-scale d-flex align-items-center justify-content-center" style="border-radius: 12px; background: white; border-color: rgba(0,0,0,0.08) !important;">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo" width="18" class="mr-2"> Google
+          </a>
+        </div>
+        <div class="col-6">
+          <a href="{% provider_login_url 'github' %}" class="btn btn-light btn-block font-weight-bold text-dark shadow-sm border py-2 hover-scale d-flex align-items-center justify-content-center" style="border-radius: 12px; background: white; border-color: rgba(0,0,0,0.08) !important;">
+            <img src="https://www.svgrepo.com/show/512317/github-142.svg" alt="GitHub Logo" width="18" class="mr-2"> GitHub
+          </a>
+        </div>
+      </div>
+
+      <!-- Sign Up Redirect -->
+      <div class="text-center pt-3 border-top small font-weight-bold" style="border-color: rgba(0,0,0,0.08) !important;">
+        <span class="text-muted">Don't have an account?</span> 
+        <div class="dropdown d-inline-block ml-1">
+          <a href="#" class="text-primary dropdown-toggle" data-toggle="dropdown" style="color: #4f46e5;">Register Now</a>
+          <div class="dropdown-menu dropdown-menu-right glass-panel border-0 shadow-soft mt-2 p-2" style="min-width: 150px; border-radius: 12px; background: white; border: 1px solid rgba(0,0,0,0.08);">
+            <a class="dropdown-item py-2 rounded font-weight-bold text-dark" href="{% url 'accounts:patient-register' %}"><i class="fa fa-user mr-2 text-primary"></i> As Patient</a>
+            <a class="dropdown-item py-2 rounded font-weight-bold text-dark" href="{% url 'accounts:doctor-register' %}"><i class="fa fa-user-md mr-2 text-accent"></i> As Doctor</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const eye = document.getElementById('passwordToggleEye');
+  const passwordInput = document.getElementById('id_password');
+  
+  if (eye && passwordInput) {
+    eye.addEventListener('click', function() {
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eye.classList.remove('fa-eye');
+        eye.classList.add('fa-eye-slash');
+      } else {
+        passwordInput.type = 'password';
+        eye.classList.remove('fa-eye-slash');
+        eye.classList.add('fa-eye');
+      }
+    });
+  }
+
+  // Parse URL query parameter for notifications
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('verified') === 'success') {
+    Swal.fire({
+      title: 'Email Verified!',
+      text: 'Your account is now activated. You can sign in using your credentials.',
+      icon: 'success',
+      confirmButtonColor: '#4f46e5',
+      customClass: {
+        popup: 'rounded-lg border-0 shadow-lg'
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

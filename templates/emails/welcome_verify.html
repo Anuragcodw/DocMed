@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome to DocMed 🎉</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f0f4ff; font-family: 'Segoe UI', Arial, sans-serif; color: #334155; }
+  .wrapper { max-width: 600px; margin: 30px auto; background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 40px rgba(79,70,229,0.12); }
+  .header { background: linear-gradient(135deg, #4F46E5 0%, #06B6D4 100%); padding: 40px 30px 30px; text-align: center; }
+  .header h1 { color: #fff; font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+  .header p { color: rgba(255,255,255,0.85); font-size: 15px; }
+  .logo { width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+  .body { padding: 36px 36px 28px; }
+  .greeting { font-size: 20px; font-weight: 600; color: #1e293b; margin-bottom: 14px; }
+  .text { font-size: 15px; line-height: 1.7; color: #475569; margin-bottom: 18px; }
+  .verify-box { background: linear-gradient(135deg, #f0f4ff, #e0f2fe); border-left: 4px solid #4F46E5; border-radius: 12px; padding: 20px 24px; margin: 24px 0; }
+  .verify-box p { font-size: 14px; color: #475569; margin-bottom: 14px; }
+  .btn-verify { display: inline-block; background: linear-gradient(135deg, #4F46E5, #06B6D4); color: #fff !important; text-decoration: none; padding: 14px 32px; border-radius: 50px; font-size: 15px; font-weight: 600; letter-spacing: 0.3px; }
+  .feature-list { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+  .feature-item { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: #475569; }
+  .feature-icon { width: 28px; height: 28px; background: #ede9fe; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .note { font-size: 13px; color: #94a3b8; background: #f8fafc; border-radius: 8px; padding: 12px 16px; margin-top: 20px; }
+  .footer { background: #f8fafc; padding: 20px 36px; text-align: center; border-top: 1px solid #e2e8f0; }
+  .footer p { font-size: 12px; color: #94a3b8; line-height: 1.6; }
+  .footer a { color: #4F46E5; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <div class="logo">🏥</div>
+    <h1>Welcome to DocMed! 🎉</h1>
+    <p>Your premium healthcare companion</p>
+  </div>
+  <div class="body">
+    <p class="greeting">Hello, {{ first_name }}!</p>
+    <p class="text">
+      We're thrilled to have you on board. Your DocMed account is <strong>active and ready</strong>
+      — you can book appointments, chat with our AI assistant, and manage your health records right now.
+    </p>
+
+    <div class="verify-box">
+      <p>
+        ✅ Please verify your email address to unlock all features, including appointment booking,
+        payments, and medical report uploads.
+      </p>
+      <a href="{{ verify_link }}" class="btn-verify">Verify My Email →</a>
+    </div>
+
+    <p class="text">With DocMed you can:</p>
+    <div class="feature-list">
+      <div class="feature-item"><div class="feature-icon">📅</div><span>Book appointments with specialist doctors instantly</span></div>
+      <div class="feature-item"><div class="feature-icon">🤖</div><span>Chat with our AI health assistant 24/7</span></div>
+      <div class="feature-item"><div class="feature-icon">📊</div><span>Upload &amp; analyse medical reports with AI</span></div>
+      <div class="feature-item"><div class="feature-icon">💊</div><span>Get personalised health risk predictions</span></div>
+    </div>
+
+    <div class="note">
+      🔐 This email verification link expires in <strong>24 hours</strong>. If you did not create this account, you can safely ignore this email.
+    </div>
+  </div>
+  <div class="footer">
+    <p>
+      DocMed &mdash; Premium Healthcare Platform<br>
+      <a href="{{ login_link }}">Sign in to your account</a> &bull;
+      <a href="#">Privacy Policy</a> &bull; <a href="#">Contact Support</a>
+    </p>
+    <p style="margin-top:8px;">© 2025 DocMed. All rights reserved.</p>
+  </div>
+</div>
+</body>
+</html>

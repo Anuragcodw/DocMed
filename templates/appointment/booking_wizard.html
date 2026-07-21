@@ -1,0 +1,399 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}| Book Appointment{% endblock %}
+
+{% block styles %}
+<style>
+  body { background: linear-gradient(180deg, #0f0c29 0%, #1a1a3e 100%); }
+
+  /* ── Progress Stepper ── */
+  .stepper { display:flex; align-items:center; justify-content:center; gap:0; margin-bottom:40px; flex-wrap:wrap; }
+  .step { display:flex; align-items:center; }
+  .step-circle {
+    width:44px; height:44px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:0.9rem; position:relative; z-index:1;
+    border: 2px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.06);
+    transition: all 0.4s ease;
+  }
+  .step.active .step-circle, .step.done .step-circle {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 0 20px rgba(99,102,241,0.5);
+  }
+  .step-label { font-size:0.75rem; color:rgba(255,255,255,0.4); margin-top:6px; text-align:center; font-weight:600; }
+  .step.active .step-label, .step.done .step-label { color:#a5b4fc; }
+  .step-connector { width:60px; height:2px; background:rgba(255,255,255,0.1); margin-bottom:24px; transition:all 0.4s; }
+  .step-connector.done { background:linear-gradient(90deg,#6366f1,#a855f7); }
+  .step-inner { display:flex; flex-direction:column; align-items:center; }
+
+  /* ── Glass Card ── */
+  .wizard-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:32px; backdrop-filter:blur(12px); }
+  .wizard-card h4 { color:#fff; font-weight:800; font-size:1.3rem; margin-bottom:6px; }
+  .wizard-card p { color:rgba(255,255,255,0.6); font-size:0.9rem; margin-bottom:24px; }
+
+  /* ── Doctor Select Cards ── */
+  .doc-option {
+    background: rgba(255,255,255,0.04);
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 16px; padding: 16px;
+    cursor: pointer; transition: all 0.3s;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 10px;
+    text-decoration: none;
+  }
+  .doc-option:hover, .doc-option.selected {
+    border-color: rgba(99,102,241,0.6);
+    background: rgba(99,102,241,0.1);
+  }
+  .doc-option.selected { box-shadow: 0 0 0 2px rgba(99,102,241,0.4); }
+  .doc-opt-avatar { width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid rgba(99,102,241,0.4); flex-shrink:0; }
+  .doc-opt-placeholder { width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#a855f7); display:flex; align-items:center; justify-content:center; font-size:1.3rem; color:#fff; font-weight:700; flex-shrink:0; border:2px solid rgba(99,102,241,0.4); }
+  .doc-opt-name { color:#fff; font-weight:700; font-size:0.95rem; margin:0 0 2px; }
+  .doc-opt-spec { color:#a78bfa; font-size:0.8rem; margin:0 0 2px; }
+  .doc-opt-detail { color:rgba(255,255,255,0.45); font-size:0.78rem; margin:0; }
+
+  /* ── Date Picker ── */
+  .date-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(90px, 1fr)); gap:8px; }
+  .date-cell {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 12px 8px; text-align:center;
+    cursor: pointer; transition: all 0.25s; text-decoration:none; display:block;
+  }
+  .date-cell:hover { border-color:rgba(99,102,241,0.5); background:rgba(99,102,241,0.12); }
+  .date-cell.selected { background:linear-gradient(135deg,#6366f1,#a855f7); border-color:transparent; box-shadow:0 4px 14px rgba(99,102,241,0.4); }
+  .date-cell .day { color:rgba(255,255,255,0.5); font-size:0.7rem; text-transform:uppercase; font-weight:600; }
+  .date-cell .num { color:#fff; font-size:1.3rem; font-weight:800; display:block; margin:2px 0; }
+  .date-cell .month { color:rgba(255,255,255,0.5); font-size:0.7rem; }
+  .date-cell.selected .day, .date-cell.selected .month { color:rgba(255,255,255,0.75); }
+  .date-cell.disabled { opacity:0.35; cursor:not-allowed; pointer-events:none; }
+
+  /* ── Slot Buttons ── */
+  .slot-grid { display:flex; flex-wrap:wrap; gap:10px; }
+  .slot-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px; padding: 10px 16px;
+    color: #fff; font-size:0.85rem; font-weight:600;
+    cursor: pointer; transition: all 0.25s;
+    display:flex; align-items:center; gap:6px;
+  }
+  .slot-btn:hover { border-color:rgba(99,102,241,0.5); background:rgba(99,102,241,0.12); }
+  .slot-btn.selected { background:linear-gradient(135deg,#6366f1,#a855f7); border-color:transparent; box-shadow:0 4px 12px rgba(99,102,241,0.4); }
+  .slot-btn.full { background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.2); color:#fca5a5; cursor:not-allowed; opacity:0.6; }
+  .slot-session-label { color:#a78bfa; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin:16px 0 8px; }
+
+  /* ── Confirm Card ── */
+  .confirm-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.07); }
+  .confirm-row:last-child { border-bottom:none; }
+  .confirm-label { color:rgba(255,255,255,0.5); font-size:0.85rem; }
+  .confirm-value { color:#fff; font-weight:600; font-size:0.9rem; }
+
+  /* ── Buttons ── */
+  .btn-wiz {
+    background:linear-gradient(135deg,#6366f1,#a855f7);
+    border:none; border-radius:14px;
+    color:#fff; font-weight:700; padding:13px 28px;
+    font-size:1rem; transition:all 0.3s; cursor:pointer;
+    text-decoration:none; display:inline-block;
+  }
+  .btn-wiz:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(99,102,241,0.5); color:#fff; }
+  .btn-wiz-outline {
+    background:transparent; border:1px solid rgba(255,255,255,0.2);
+    border-radius:14px; color:rgba(255,255,255,0.65);
+    font-weight:600; padding:13px 24px; font-size:0.95rem;
+    transition:all 0.3s; cursor:pointer; text-decoration:none; display:inline-block;
+  }
+  .btn-wiz-outline:hover { border-color:rgba(255,255,255,0.4); color:#fff; }
+
+  /* ── Form ── */
+  .form-label { color:rgba(255,255,255,0.65); font-size:0.82rem; font-weight:600; margin-bottom:5px; }
+  .form-control { background:rgba(255,255,255,0.08)!important; border:1px solid rgba(255,255,255,0.15)!important; color:#fff!important; border-radius:12px!important; padding:10px 14px!important; font-size:0.9rem!important; }
+  .form-control::placeholder { color:rgba(255,255,255,0.35)!important; }
+  .form-control:focus { background:rgba(255,255,255,0.12)!important; border-color:rgba(99,102,241,0.5)!important; box-shadow:0 0 0 3px rgba(99,102,241,0.25)!important; }
+
+  /* ── Success ── */
+  .success-animation { text-align:center; padding:40px 20px; }
+  .success-icon { font-size:5rem; color:#10b981; margin-bottom:16px; animation:bounceIn 0.6s ease; }
+  @keyframes bounceIn { 0%{transform:scale(0.3); opacity:0;} 60%{transform:scale(1.1);} 100%{transform:scale(1); opacity:1;} }
+
+  /* ── Doctor Summary Card (Steps 2-5) ── */
+  .doctor-summary-card {
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+    border-radius:14px; padding:16px;
+    display:flex; align-items:center; gap:14px;
+    margin-bottom:24px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="min-height:100vh; padding-top:100px; padding-bottom:60px;">
+  <div class="container" style="max-width:860px;">
+
+    <div class="text-center mb-4" data-aos="fade-down">
+      <h1 style="color:#fff; font-weight:800; font-size:1.9rem;"><i class="ri-calendar-check-line me-2" style="color:#a78bfa;"></i>Book Appointment</h1>
+      <p style="color:rgba(255,255,255,0.5);">Fast, easy, and secure appointment booking</p>
+    </div>
+
+    <!-- Stepper -->
+    <div class="stepper" data-aos="fade-up">
+      {% for s in "12345" %}
+      <div class="step {% if step == forloop.counter %}active{% elif step > forloop.counter %}done{% endif %}">
+        <div class="step-inner">
+          <div class="step-circle">
+            {% if step > forloop.counter %}<i class="ri-check-line"></i>{% else %}{{ s }}{% endif %}
+          </div>
+          <span class="step-label">{% if s == '1' %}Doctor{% elif s == '2' %}Date{% elif s == '3' %}Slot{% elif s == '4' %}Confirm{% else %}Done{% endif %}</span>
+        </div>
+      </div>
+      {% if not forloop.last %}
+      <div class="step-connector {% if step > forloop.counter %}done{% endif %}"></div>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         STEP 1: Choose Doctor
+    ══════════════════════════════════════════════════════ -->
+    {% if step == 1 %}
+    <div class="wizard-card" data-aos="fade-up">
+      <h4>Select a Doctor</h4>
+      <p>Search our network of {{ doctors|length }} available specialists</p>
+
+      <form method="GET" action="{% url 'appointment:booking-wizard' %}" class="d-flex gap-2 mb-4">
+        <input type="hidden" name="step" value="1">
+        <input type="text" name="q" value="{{ q }}" placeholder="Search name or specialty…" class="form-control">
+        <select name="dept" class="form-control" style="max-width:200px;">
+          <option value="">All Departments</option>
+          {% for value, label in dept_choices %}
+          <option value="{{ value }}" {% if dept == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn-wiz" style="padding:10px 20px; white-space:nowrap;"><i class="ri-search-line"></i></button>
+      </form>
+
+      {% for doctor in doctors %}
+      <a href="{% url 'appointment:booking-wizard' %}?step=2&doctor_id={{ doctor.pk }}" class="doc-option">
+        {% if doctor.photo %}
+        <img src="{{ doctor.photo.url }}" alt="{{ doctor.full_name }}" class="doc-opt-avatar">
+        {% else %}
+        <div class="doc-opt-placeholder">{{ doctor.full_name|slice:":1" }}</div>
+        {% endif %}
+        <div class="flex-grow-1">
+          <p class="doc-opt-name">Dr. {{ doctor.full_name }}</p>
+          <p class="doc-opt-spec">{{ doctor.specialization|default:"General Physician" }}</p>
+          <p class="doc-opt-detail"><i class="ri-hospital-line me-1"></i>{{ doctor.hospital|default:"—" }} · ₹{{ doctor.consultation_fee|default:"—" }} · ⭐{{ doctor.rating|default:"0.0" }}</p>
+        </div>
+        <i class="ri-arrow-right-line" style="color:#a78bfa;"></i>
+      </a>
+      {% empty %}
+      <div class="text-center py-5 text-white-50"><i class="ri-user-search-line d-block mb-2" style="font-size:2.5rem;"></i>No doctors found. <a href="{% url 'appointment:booking-wizard' %}?step=1" style="color:#a5b4fc;">Clear search</a></div>
+      {% endfor %}
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         STEP 2: Choose Date
+    ══════════════════════════════════════════════════════ -->
+    {% elif step == 2 %}
+    <div class="wizard-card" data-aos="fade-up">
+      {% if doctor %}
+      <div class="doctor-summary-card">
+        {% if doctor.photo %}<img src="{{ doctor.photo.url }}" alt="{{ doctor.full_name }}" class="doc-opt-avatar">{% else %}<div class="doc-opt-placeholder">{{ doctor.full_name|slice:":1" }}</div>{% endif %}
+        <div><p class="doc-opt-name">Dr. {{ doctor.full_name }}</p><p class="doc-opt-spec">{{ doctor.specialization|default:"—" }}</p></div>
+      </div>
+      {% endif %}
+
+      <h4>Select a Date</h4>
+      <p>Choose your preferred appointment date</p>
+
+      <div class="date-grid" id="dateGrid">
+        {% comment %} Dates are generated by JS {% endcomment %}
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mt-4 pt-3" style="border-top:1px solid rgba(255,255,255,0.08);">
+        <a href="{% url 'appointment:booking-wizard' %}?step=1" class="btn-wiz-outline"><i class="ri-arrow-left-line me-1"></i> Back</a>
+        <button id="nextStep2Btn" class="btn-wiz" disabled onclick="goStep3()"><i class="ri-arrow-right-line me-1"></i> Choose Slot</button>
+      </div>
+    </div>
+
+    <script>
+    const doctorId = "{{ doctor_id }}";
+    const selectedDateParam = "{{ selected_date }}";
+    let chosenDate = selectedDateParam || null;
+
+    function buildDateGrid() {
+      const grid = document.getElementById('dateGrid');
+      const today = new Date();
+      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      let html = '';
+      for (let i = 0; i < 14; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        const iso = d.toISOString().split('T')[0];
+        const isPast = false;
+        const isSelected = iso === chosenDate;
+        html += `<a href="#" class="date-cell ${isSelected ? 'selected' : ''} ${isPast ? 'disabled' : ''}" data-date="${iso}" onclick="selectDate(event,'${iso}')">
+          <span class="day">${days[d.getDay()]}</span>
+          <span class="num">${String(d.getDate()).padStart(2,'0')}</span>
+          <span class="month">${months[d.getMonth()]}</span>
+        </a>`;
+      }
+      grid.innerHTML = html;
+      if (chosenDate) document.getElementById('nextStep2Btn').removeAttribute('disabled');
+    }
+
+    function selectDate(e, iso) {
+      e.preventDefault();
+      chosenDate = iso;
+      document.querySelectorAll('.date-cell').forEach(c => c.classList.remove('selected'));
+      e.currentTarget.classList.add('selected');
+      document.getElementById('nextStep2Btn').removeAttribute('disabled');
+    }
+
+    function goStep3() {
+      window.location.href = `{% url 'appointment:booking-wizard' %}?step=3&doctor_id=${doctorId}&date=${chosenDate}`;
+    }
+
+    buildDateGrid();
+    </script>
+
+    <!-- ══════════════════════════════════════════════════════
+         STEP 3: Choose Slot
+    ══════════════════════════════════════════════════════ -->
+    {% elif step == 3 %}
+    <div class="wizard-card" data-aos="fade-up">
+      {% if doctor %}
+      <div class="doctor-summary-card">
+        {% if doctor.photo %}<img src="{{ doctor.photo.url }}" alt="{{ doctor.full_name }}" class="doc-opt-avatar">{% else %}<div class="doc-opt-placeholder">{{ doctor.full_name|slice:":1" }}</div>{% endif %}
+        <div>
+          <p class="doc-opt-name">Dr. {{ doctor.full_name }}</p>
+          <p class="doc-opt-spec">{{ selected_date }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      <h4>Select a Time Slot</h4>
+      <p>Choose an available slot for your appointment</p>
+
+      {% if available_slots %}
+      <div id="slotContainer">
+        {% regroup available_slots by get_session_display as slot_groups %}
+        {% for group in slot_groups %}
+        <p class="slot-session-label"><i class="ri-time-line me-1"></i>{{ group.grouper }}</p>
+        <div class="slot-grid mb-3">
+          {% for slot in group.list %}
+          <button type="button" class="slot-btn {% if slot.is_online %}online{% endif %}"
+            data-slot="{{ slot.pk }}" onclick="selectSlot(this, '{{ slot.pk }}')">
+            <i class="ri-time-line"></i>
+            {{ slot.start_time|time:"H:i" }} – {{ slot.end_time|time:"H:i" }}
+            {% if slot.is_online %}<i class="ri-video-line" style="color:#a5b4fc;"></i>{% endif %}
+          </button>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-5 text-white-50">
+        <i class="ri-calendar-close-line d-block mb-2" style="font-size:2.5rem; color:rgba(239,68,68,0.4);"></i>
+        No available slots for this date.<br>
+        <a href="{% url 'appointment:booking-wizard' %}?step=2&doctor_id={{ doctor_id }}" class="btn-wiz mt-3" style="font-size:0.85rem; padding:8px 18px;">Choose Another Date</a>
+      </div>
+      {% endif %}
+
+      <div class="d-flex justify-content-between align-items-center mt-4 pt-3" style="border-top:1px solid rgba(255,255,255,0.08);">
+        <a href="{% url 'appointment:booking-wizard' %}?step=2&doctor_id={{ doctor_id }}" class="btn-wiz-outline"><i class="ri-arrow-left-line me-1"></i> Back</a>
+        <button id="nextStep3Btn" class="btn-wiz" disabled onclick="goStep4()">Confirm Slot <i class="ri-arrow-right-line ms-1"></i></button>
+      </div>
+    </div>
+
+    <script>
+    let chosenSlot = null;
+    function selectSlot(el, slotId) {
+      document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      chosenSlot = slotId;
+      document.getElementById('nextStep3Btn').removeAttribute('disabled');
+    }
+    function goStep4() {
+      window.location.href = `{% url 'appointment:booking-wizard' %}?step=4&doctor_id={{ doctor_id }}&date={{ selected_date }}&slot_id=${chosenSlot}`;
+    }
+    </script>
+
+    <!-- ══════════════════════════════════════════════════════
+         STEP 4: Confirm & Submit
+    ══════════════════════════════════════════════════════ -->
+    {% elif step == 4 %}
+    <div class="wizard-card" data-aos="fade-up">
+      <h4>Confirm Your Appointment</h4>
+      <p>Review the details below and submit your booking</p>
+
+      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:20px; margin-bottom:24px;">
+        {% if doctor %}
+        <div class="confirm-row">
+          <span class="confirm-label"><i class="ri-stethoscope-line me-2"></i>Doctor</span>
+          <span class="confirm-value">Dr. {{ doctor.full_name }}</span>
+        </div>
+        <div class="confirm-row">
+          <span class="confirm-label"><i class="ri-award-line me-2"></i>Specialty</span>
+          <span class="confirm-value">{{ doctor.specialization|default:"—" }}</span>
+        </div>
+        <div class="confirm-row">
+          <span class="confirm-label"><i class="ri-hospital-line me-2"></i>Hospital</span>
+          <span class="confirm-value">{{ doctor.hospital|default:"—" }}</span>
+        </div>
+        <div class="confirm-row">
+          <span class="confirm-label"><i class="ri-calendar-line me-2"></i>Date</span>
+          <span class="confirm-value">{{ selected_date }}</span>
+        </div>
+        {% if selected_slot %}
+        <div class="confirm-row">
+          <span class="confirm-label"><i class="ri-time-line me-2"></i>Time</span>
+          <span class="confirm-value">{{ selected_slot.start_time|time:"H:i" }} – {{ selected_slot.end_time|time:"H:i" }}</span>
+        </div>
+        <div class="confirm-row">
+          <span class="confirm-label"><i class="ri-video-line me-2"></i>Mode</span>
+          <span class="confirm-value">{% if selected_slot.is_online %}Online (Video){% else %}In-Clinic{% endif %}</span>
+        </div>
+        {% endif %}
+        <div class="confirm-row">
+          <span class="confirm-label"><i class="ri-money-rupee-circle-line me-2"></i>Fee</span>
+          <span class="confirm-value" style="color:#a78bfa;">₹{{ doctor.consultation_fee|default:"—" }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <form method="POST" action="{% url 'appointment:booking-wizard' %}">
+        {% csrf_token %}
+        <input type="hidden" name="doctor_id" value="{{ doctor_id }}">
+        <input type="hidden" name="slot_id" value="{{ slot_id }}">
+        <input type="hidden" name="booking_date" value="{{ selected_date }}">
+
+        <div class="mb-3">
+          <label class="form-label">Phone Number (for confirmation)</label>
+          <input type="tel" name="phone" class="form-control" placeholder="+91 9876543210" value="{{ request.user.phone_number|default:'' }}">
+        </div>
+        <div class="mb-4">
+          <label class="form-label">Message for the Doctor (optional)</label>
+          <textarea name="message" class="form-control" rows="3" placeholder="Describe your symptoms or reason for visit…"></textarea>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center pt-3" style="border-top:1px solid rgba(255,255,255,0.08);">
+          <a href="{% url 'appointment:booking-wizard' %}?step=3&doctor_id={{ doctor_id }}&date={{ selected_date }}" class="btn-wiz-outline"><i class="ri-arrow-left-line me-1"></i> Back</a>
+          <button type="submit" class="btn-wiz">
+            <i class="ri-calendar-check-line me-2"></i> Confirm Booking
+          </button>
+        </div>
+      </form>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

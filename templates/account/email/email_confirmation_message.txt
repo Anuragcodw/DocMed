@@ -1,0 +1,16 @@
+{% load i18n %}{% autoescape off %}
+{% blocktrans with site_name=current_site.name %}Hi there,
+
+Thank you for registering at {{ site_name }}.
+
+To complete your registration and activate your account, please verify your email address by clicking the link below:{% endblocktrans %}
+
+{{ activate_url }}
+
+{% blocktrans with expiration_days=expiration_days %}This link will expire in {{ expiration_days }} days.{% endblocktrans %}
+
+{% trans "If you did not register at DocMed, please ignore this email." %}
+
+{% blocktrans with site_name=current_site.name %}Thank you,
+The {{ site_name }} Team{% endblocktrans %}
+{% endautoescape %}

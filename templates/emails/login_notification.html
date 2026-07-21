@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Login Detected – DocMed</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f0f4ff; font-family: 'Segoe UI', Arial, sans-serif; color: #334155; }
+  .wrapper { max-width: 600px; margin: 30px auto; background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 40px rgba(79,70,229,0.12); }
+  .header { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 36px 30px; text-align: center; }
+  .header h1 { color: #fff; font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+  .header p { color: rgba(255,255,255,0.7); font-size: 14px; }
+  .shield-icon { font-size: 42px; margin-bottom: 12px; }
+  .body { padding: 36px 36px 28px; }
+  .greeting { font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 12px; }
+  .text { font-size: 15px; line-height: 1.7; color: #475569; margin-bottom: 20px; }
+  .info-table { width: 100%; border-collapse: collapse; margin: 20px 0; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
+  .info-table tr:nth-child(even) { background: #f8fafc; }
+  .info-table td { padding: 12px 16px; font-size: 14px; color: #475569; border-bottom: 1px solid #f1f5f9; }
+  .info-table td:first-child { font-weight: 600; color: #1e293b; width: 38%; }
+  .alert-box { background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 10px; padding: 16px 20px; margin: 20px 0; }
+  .alert-box p { font-size: 14px; color: #78350f; line-height: 1.6; }
+  .btn-reset { display: inline-block; background: #ef4444; color: #fff !important; text-decoration: none; padding: 12px 28px; border-radius: 50px; font-size: 14px; font-weight: 600; margin-top: 8px; }
+  .footer { background: #f8fafc; padding: 20px 36px; text-align: center; border-top: 1px solid #e2e8f0; }
+  .footer p { font-size: 12px; color: #94a3b8; line-height: 1.6; }
+  .footer a { color: #4F46E5; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <div class="shield-icon">🔐</div>
+    <h1>New Login Detected</h1>
+    <p>DocMed account security alert</p>
+  </div>
+  <div class="body">
+    <p class="greeting">Hi {{ first_name }},</p>
+    <p class="text">
+      We detected a new login to your DocMed account. Here are the details:
+    </p>
+
+    <table class="info-table">
+      <tr><td>⏰ Time</td><td>{{ login_time }}</td></tr>
+      <tr><td>🌐 IP Address</td><td>{{ ip_address }}</td></tr>
+      <tr><td>📱 Device / Browser</td><td>{{ user_agent|truncatechars:80 }}</td></tr>
+    </table>
+
+    <div class="alert-box">
+      <p>
+        <strong>⚠️ Was this not you?</strong><br>
+        If you did not log in at this time, your account may be compromised.
+        Please reset your password immediately to secure your account.
+      </p>
+      <a href="/password-reset/" class="btn-reset">Reset Password Now →</a>
+    </div>
+
+    <p class="text" style="margin-top:16px;">
+      If this was you, no further action is needed. You can safely ignore this email.
+    </p>
+  </div>
+  <div class="footer">
+    <p>
+      DocMed &mdash; Premium Healthcare Platform<br>
+      <a href="/login/">Sign in to your account</a> &bull; <a href="#">Contact Support</a>
+    </p>
+    <p style="margin-top:8px;">© 2025 DocMed. All rights reserved.</p>
+  </div>
+</div>
+</body>
+</html>

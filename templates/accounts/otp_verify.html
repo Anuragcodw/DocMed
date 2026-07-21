@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verify OTP Code - DocMed Premium{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper" style="min-height: 100vh; background: linear-gradient(135deg, #F8FBFF 0%, #E1EBFF 100%); display: flex; align-items: center; justify-content: center; padding: 40px 0;">
+  
+  <!-- Floating Medical Shapes in Background -->
+  <div class="medical-shapes">
+    <div class="medical-shape shape-1"><i class="fa fa-plus-circle"></i></div>
+    <div class="medical-shape shape-2"><i class="fa fa-heartbeat"></i></div>
+    <div class="medical-shape shape-3"><i class="fa fa-user-md"></i></div>
+    <div class="medical-shape shape-4"><i class="fa fa-plus"></i></div>
+  </div>
+
+  <div class="login-card-container" data-aos="zoom-in" data-aos-duration="1000" style="width: 100%; max-width: 520px; z-index: 10;">
+    <div class="premium-login-card p-5" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.08);">
+      
+      <!-- Card Header -->
+      <div class="text-center mb-5">
+        <div class="d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background: rgba(16, 185, 129, 0.1); border-radius: 50%;">
+          <i class="fa fa-shield fa-2x" style="color: #10b981 !important;"></i>
+        </div>
+        <h3 class="font-weight-bold text-dark mb-1">Verify OTP</h3>
+        <p class="text-muted small">Enter the 6-digit one-time code sent to <strong>{{ phone_number }}</strong>.</p>
+      </div>
+
+      <!-- OTP Verification Form -->
+      <form method="POST" action="{% url 'accounts:otp-verify' %}" data-loading>
+        {% csrf_token %}
+        <input type="hidden" name="phone_number" value="{{ phone_number }}">
+
+        <div class="form-group mb-4 text-center">
+          <label for="code" class="font-weight-bold text-dark small d-block mb-3">6-Digit Verification Code</label>
+          <input type="text" class="form-control text-center font-weight-bold" id="code" name="code" required maxlength="6" pattern="\d{6}" placeholder="------" style="border-radius: 12px; height: 55px; font-size: 24px; letter-spacing: 8px; border: 2px solid rgba(79,70,229,0.15); background: rgba(255,255,255,0.85);">
+          <small class="form-text text-muted mt-2">The code is valid for 5 minutes.</small>
+        </div>
+
+        <button type="submit" class="btn-premium btn-primary-gradient w-100 py-3 mb-3 shadow-glow" style="background: linear-gradient(135deg, #10b981, #06b6d4); color: white; border: 0; border-radius: 12px; font-weight: 700;">
+          <span class="btn-text">Verify & Login <i class="fa fa-sign-in ml-2"></i></span>
+          <span class="btn-spinner spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+        </button>
+      </form>
+
+      <!-- Resend form and timer -->
+      <form method="POST" action="{% url 'accounts:otp-login' %}" id="resendForm" style="display:none;">
+        {% csrf_token %}
+        <input type="hidden" name="phone_number" value="{{ phone_number }}">
+      </form>
+
+      <div class="text-center mt-4">
+        <p class="text-muted small mb-0">
+          Didn't receive the SMS code? 
+          <a href="#" id="resendBtn" class="text-primary font-weight-bold" style="color: #4f46e5; pointer-events: none; opacity: 0.5;">Resend OTP</a>
+          <span id="timer" class="text-muted ml-2 font-weight-bold" style="font-size: 0.8rem;">(Resend in 60s)</span>
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  let timeLeft = 60;
+  const timerEl = document.getElementById('timer');
+  const resendBtn = document.getElementById('resendBtn');
+  const resendForm = document.getElementById('resendForm');
+
+  const countdown = setInterval(() => {
+    if (timeLeft <= 0) {
+      clearInterval(countdown);
+      timerEl.style.display = 'none';
+      resendBtn.style.pointerEvents = 'auto';
+      resendBtn.style.opacity = '1';
+    } else {
+      timerEl.textContent = `(Resend in ${timeLeft}s)`;
+      timeLeft--;
+    }
+  }, 1000);
+
+  if (resendBtn && resendForm) {
+    resendBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      resendForm.submit();
+    });
+  }
+});
+</script>
+{% endblock %}

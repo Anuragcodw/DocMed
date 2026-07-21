@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load glass_form %}
+
+{% block title %} Take Appointment - Premium Healthcare Portal {% endblock %}
+
+{% block content %}
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 mb-5">
+      <div class="glass-panel custom-form-card" style="margin-top: 100px;">
+        <center>
+          <div style="font-size: 40px; color: var(--primary-cyan); margin-bottom: 10px;"><i class="fa fa-calendar-plus-o"></i></div>
+          <h3 style="font-weight: 800; margin-bottom: 30px;">Take Appointment</h3>
+        </center>
+
+        <form action="" method="POST">{% csrf_token %}
+          <div class="mb-4">
+            {% render_glass_form form %}
+          </div>
+
+          <button type="submit" class="btn-gradient btn-cyan btn-block text-white mt-4" style="justify-content: center; height: 50px; font-size: 16px;">
+            <i class="fa fa-check"></i> Book Slot
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

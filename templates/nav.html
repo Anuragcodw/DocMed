@@ -1,0 +1,434 @@
+{% load static %}
+
+<!-- Page Loader (New Modern Design) -->
+<div id="preloader" class="page-loader">
+    <div class="skeleton" style="width: 100px; height: 100px; border-radius: 50%;"></div>
+</div>
+
+<!-- ***** Modern Dark Glass Header Area Start ***** -->
+<header class="header-area glass-nav sticky-top">
+
+    <!-- Main Glass Navbar - Light Gradient -->
+    <div class="main-header-area glass-panel border-0 rounded-0 shadow-lg" style="backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); background: rgba(255, 255, 255, 0.85); border-bottom: 2px solid rgba(79,70,229,0.15);">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-light px-0 py-3" id="dentoNav">
+                
+                <!-- Logo -->
+                <a class="navbar-brand animate__animated animate__fadeInLeft" href="{% url 'appointment:home' %}">
+                    <h3 class="m-0 font-weight-bold" style="color: #0f172a; letter-spacing: -0.5px;">
+                        <i class="fa fa-heartbeat text-danger mr-2"></i><span style="background: linear-gradient(90deg, #06b6d4, #4f46e5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">DocMed</span>
+                    </h3>
+                </a>
+
+                <!-- Mobile Toggler -->
+                <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#dentoNavContent" aria-controls="dentoNavContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22%230f172a%22><line x1=%223%22 y1=%226%22 x2=%2221%22 y2=%226%22 stroke=%22%230f172a%22 stroke-width=%222%22/><line x1=%223%22 y1=%2212%22 x2=%2221%22 y2=%2212%22 stroke=%22%230f172a%22 stroke-width=%222%22/><line x1=%223%22 y1=%2218%22 x2=%2221%22 y2=%2218%22 stroke=%22%230f172a%22 stroke-width=%222%22/></svg>');"></span>
+                </button>
+
+                <!-- Nav Links -->
+                <div class="collapse navbar-collapse" id="dentoNavContent">
+                    <!-- Center Nav Items -->
+                    <ul class="navbar-nav mx-auto animate__animated animate__fadeInDown" style="gap: 40px;">
+                        <li class="nav-item">
+                            <a class="nav-link font-weight-bold animated-link-navbar" href="{% url 'appointment:home' %}">
+                                <i class="fa fa-home mr-1"></i> Home
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link font-weight-bold animated-link-navbar" href="{% url 'appointment:service' %}">
+                                <i class="fa fa-stethoscope mr-1"></i> Services
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle font-weight-bold animated-link-navbar" href="#" id="doctorsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-user-md mr-1"></i> Find Doctors
+                            </a>
+                            <div class="dropdown-menu nav-dropdown-menu p-3" aria-labelledby="doctorsDropdown" style="min-width: 260px;">
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:doctor-list' %}"><i class="ri-stethoscope-line text-purple mr-2"></i> Doctor Directory</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:booking-wizard' %}"><i class="ri-calendar-check-line text-success mr-2"></i> Book Appointment</a>
+                                <div class="dropdown-divider" style="border-color:rgba(79,70,229,0.08);"></div>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:search' %}"><i class="fa fa-search text-info mr-2"></i> Search Doctor</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:service' %}"><i class="fa fa-list text-primary mr-2"></i> All Services</a>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link font-weight-bold animated-link-navbar" href="{% url 'appointment:about' %}">
+                                <i class="fa fa-info-circle mr-1"></i> About
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link font-weight-bold animated-link-navbar" href="{% url 'appointment:contact' %}">
+                                <i class="fa fa-envelope mr-1"></i> Contact
+                            </a>
+                        </li>
+                        {% if not request.user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle font-weight-bold animated-link-navbar" href="#" id="registerDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: #10b981;">
+                                <i class="fa fa-user-plus mr-1"></i> Register
+                            </a>
+                            <div class="dropdown-menu nav-dropdown-menu p-3" aria-labelledby="registerDropdown" style="min-width: 260px;">
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'accounts:doctor-register' %}"><i class="fa fa-user-md text-info mr-2"></i> Register as Doctor</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'accounts:patient-register' %}"><i class="fa fa-user text-primary mr-2"></i> Register as Patient</a>
+                            </div>
+                        </li>
+                        {% endif %}
+                    </ul>
+
+                    <!-- Right Side Action Area -->
+                    <div class="d-flex align-items-center animate__animated animate__fadeInRight nav-action-right" style="gap: 12px;">
+                        
+                        {% if not request.user.is_authenticated %}
+                        <!-- Guest User: Show Login portals and Register dropdown -->
+                        <div class="dropdown">
+                            <button class="btn btn-login-nav dropdown-toggle" type="button" id="loginDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-sign-in mr-2"></i> Login
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right nav-dropdown-menu login-dropdown-menu p-3" aria-labelledby="loginDropdown" style="min-width: 300px;">
+                                <div class="login-drop-header px-2 pb-3 mb-1">
+                                    <p class="mb-0" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;">Sign in as</p>
+                                </div>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'accounts:patient-login' %}"><i class="fa fa-user text-primary mr-2"></i> Patient Login</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'accounts:doctor-login' %}"><i class="fa fa-user-md text-info mr-2"></i> Doctor Login</a>
+                                <div class="dropdown-divider" style="border-color:rgba(79,70,229,0.08);"></div>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'accounts:admin-login' %}"><i class="fa fa-shield text-warning mr-2"></i> Admin Login</a>
+                            </div>
+                        </div>
+                        {% else %}
+                        
+                        <!-- Notification Bell (Auth Only) -->
+                        <div class="dropdown mr-2">
+                            <button class="btn btn-notification rounded-circle shadow-lg position-relative dropdown-toggle border-0" id="notificationDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; padding: 0; background: rgba(79, 70, 229, 0.08) !important; transition: all 0.3s;">
+                                <i class="fa fa-bell-o" style="font-size: 18px; color: #4F46E5;"></i>
+                                <span class="position-absolute top-0 right-0 badge badge-danger badge-pill shadow-lg" style="transform: translate(35%, -35%); font-size: 11px; padding: 4px 7px; animation: pulse-badge 2s infinite;">2</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right nav-dropdown-menu p-4" aria-labelledby="notificationDropdown" style="min-width: 340px; border-radius: 20px;">
+                                <h6 class="font-weight-bold text-dark mb-4" style="font-size: 16px; display: flex; align-items: center;"><i class="fa fa-bell mr-2 text-primary"></i> Notifications</h6>
+                                <div class="d-flex flex-column" style="gap: 14px;">
+                                    <div class="p-4 rounded" style="font-size: 13px; border-left: 4px solid #06b6d4; background: linear-gradient(135deg, rgba(6,182,212,0.08), rgba(6,182,212,0.04)); cursor: pointer; transition: all 0.3s; border-radius: 10px;">
+                                        <div class="font-weight-bold text-dark" style="display: flex; align-items: center;"><span>Welcome to DocMed! 🎉</span></div>
+                                        <div class="text-muted small" style="margin-top: 6px;">Your premium healthcare account is now active and ready to use.</div>
+                                        <div class="text-muted" style="font-size: 11px; margin-top: 8px; display: flex; align-items: center;"><i class="fa fa-clock-o mr-1"></i> Just now</div>
+                                    </div>
+                                </div>
+                                <hr style="border-color: rgba(0,0,0,0.08); margin: 16px 0;">
+                                <a href="#" class="text-center d-block" style="color: #4f46e5; font-weight: 700; font-size: 13px; transition: all 0.3s;">View All Notifications →</a>
+                            </div>
+                        </div>
+
+                        <!-- Admin Logged In -->
+                        {% if request.user.is_superuser or request.user.is_staff %}
+                        <a class="btn btn-admin-panel ml-3 mr-2 d-flex align-items-center"
+                           href="{% url 'appointment:admin-dashboard' %}"
+                           style="background: linear-gradient(135deg, #f59e0b, #f97316); color: white; border: 0; border-radius: 50px; padding: 10px 20px; font-weight: 700; font-size: 14px; transition: all 0.3s; box-shadow: 0 8px 20px rgba(245,158,11,0.3); text-decoration: none;">
+                            <i class="fa fa-dashboard mr-2" style="font-size: 16px;"></i> Admin Dashboard
+                        </a>
+                        {% endif %}
+
+                        <!-- Doctor Logged In Dropdown & Quick Menu -->
+                        {% if request.user.role == 'doctor' %}
+                        <div class="dropdown mr-2">
+                            <button class="btn btn-profile dropdown-toggle border-0 p-0 d-flex align-items-center" type="button" id="doctorDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background: none;">
+                                {% if request.user.doctor_profile.photo %}
+                                    <img src="{{ request.user.doctor_profile.photo.url }}" alt="Profile" width="42" height="42" class="rounded-circle shadow-md border" style="border: 2px solid rgba(79,70,229,0.5); object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle shadow-md d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: linear-gradient(135deg, #4f46e5, #06b6d4); color: white; font-weight: bold; border: 2px solid rgba(255,255,255,0.3);">
+                                        <i class="fa fa-user-md"></i>
+                                    </div>
+                                {% endif %}
+                                <span class="ml-2 font-weight-bold" style="color: #0f172a; font-size: 14px;">Dr. {{ request.user.first_name|truncatewords:1 }}</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right nav-dropdown-menu p-3" aria-labelledby="doctorDropdown" style="min-width: 260px;">
+                                <h6 class="text-dark font-weight-bold px-2 pt-1 pb-2 mb-1" style="font-size: 11px; border-bottom: 1px solid rgba(79,70,229,0.08); text-transform: uppercase; letter-spacing:1px; color: #94a3b8;">Doctor Menu</h6>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:doctor-appointment' %}"><i class="fa fa-th-large text-primary mr-2"></i> Dashboard</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:doctor-appointment' %}"><i class="fa fa-calendar text-primary mr-2"></i> Appointments</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:doctor-profile-edit' %}"><i class="ri-user-settings-line text-primary mr-2"></i> Manage Profile</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:doctor-appointment-create' %}"><i class="fa fa-plus-circle text-primary mr-2"></i> Create Slot</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:patient-list' %}"><i class="fa fa-users text-primary mr-2"></i> Patients</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:payment-history' %}"><i class="fa fa-credit-card text-primary mr-2"></i> Payments</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:report-center' %}"><i class="fa fa-file-text text-primary mr-2"></i> Reports</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'accounts:doctor-profile-update' %}"><i class="fa fa-user-md text-primary mr-2"></i> Edit Profile</a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Patient Logged In Dropdown & Quick Menu -->
+                        {% if request.user.role == 'patient' %}
+                        <div class="dropdown mr-2">
+                            <button class="btn btn-profile dropdown-toggle border-0 p-0 d-flex align-items-center" type="button" id="patientDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background: none;">
+                                {% if request.user.patient_profile.photo %}
+                                    <img src="{{ request.user.patient_profile.photo.url }}" alt="Profile" width="42" height="42" class="rounded-circle shadow-md border" style="border: 2px solid rgba(6,182,212,0.5); object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle shadow-md d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: linear-gradient(135deg, #06b6d4, #4f46e5); color: white; font-weight: bold; border: 2px solid rgba(255,255,255,0.3);">
+                                        <i class="fa fa-user"></i>
+                                    </div>
+                                {% endif %}
+                                <span class="ml-2 font-weight-bold" style="color: #0f172a; font-size: 14px;">{{ request.user.first_name|truncatewords:1 }}</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right nav-dropdown-menu p-3" aria-labelledby="patientDropdown" style="min-width: 260px;">
+                                <h6 class="text-dark font-weight-bold px-2 pt-1 pb-2 mb-1" style="font-size: 11px; border-bottom: 1px solid rgba(79,70,229,0.08); text-transform: uppercase; letter-spacing:1px; color: #94a3b8;">Patient Menu</h6>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:patient-bookings' %}"><i class="fa fa-th-large text-accent mr-2"></i> Dashboard</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:patient-bookings' %}"><i class="fa fa-calendar-check-o text-accent mr-2"></i> My Appointments</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:patient-profile' %}"><i class="ri-heart-pulse-line text-accent mr-2"></i> My Health Profile</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:booking-wizard' %}"><i class="ri-calendar-check-line text-accent mr-2"></i> Book Appointment</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:payment-history' %}"><i class="fa fa-credit-card text-accent mr-2"></i> Payment History</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:report-center' %}"><i class="fa fa-file-text text-accent mr-2"></i> Report Center</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'appointment:patient-profile-edit' %}"><i class="fa fa-edit text-accent mr-2"></i> Edit Profile</a>
+                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'accounts:patient-profile-update' %}"><i class="fa fa-cog text-accent mr-2"></i> Settings</a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Logout Button shown for all logged in users -->
+                        <a href="{% url 'accounts:logout' %}" class="btn btn-outline-danger ml-2 d-flex align-items-center" style="border-radius: 50px; padding: 10px 20px; font-weight: 700; font-size: 14px; transition: all 0.3s; border-color: rgba(220,53,69,0.5); color: #dc3545; text-decoration: none;">
+                            <i class="fa fa-sign-out mr-2"></i> Logout
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<style>
+@keyframes pulse-badge {
+  0%, 100% { transform: translate(35%, -35%) scale(1); }
+  50% { transform: translate(35%, -35%) scale(1.15); }
+}
+
+/* ─── ANIMATED NAV LINK STYLING ─── */
+.animated-link-navbar {
+  position: relative;
+  text-decoration: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: #0f172a !important;
+  padding: 6px 0 !important;
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+
+/* Centered underline indicator */
+.animated-link-navbar::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #4f46e5, #06b6d4);
+  border-radius: 20px;
+  transition: width 0.3s ease;
+}
+
+.animated-link-navbar:hover::after,
+.animated-link-navbar.active::after {
+  width: 60%;
+}
+
+.animated-link-navbar:hover {
+  color: #4f46e5 !important;
+  transform: translateY(-2px);
+  text-shadow: none;
+}
+
+/* ─── LOGIN BUTTON ─── */
+.btn-login-nav {
+  background: linear-gradient(135deg, #4f46e5, #06b6d4);
+  color: #fff !important;
+  border: 0;
+  border-radius: 50px;
+  padding: 11px 26px;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 18px rgba(79,70,229,0.30);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-login-nav:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(79,70,229,0.25);
+  color: #fff !important;
+}
+
+.btn-login-nav:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px rgba(79,70,229,0.20);
+}
+
+.btn-login-nav:focus {
+  box-shadow: 0 6px 18px rgba(79,70,229,0.30);
+  outline: none;
+}
+
+/* ─── NAV DROPDOWN MENU ─── */
+.nav-dropdown-menu {
+  background: rgba(255,255,255,0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(99,102,241,0.12) !important;
+  border-radius: 25px !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.12) !important;
+  margin-top: 12px !important;
+  /* Smooth open animation */
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  display: block !important; /* Override Bootstrap's JS show */
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.nav-dropdown-menu.show {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+/* ─── NAV DROPDOWN ITEMS ─── */
+.nav-drop-item {
+  height: 55px;
+  border-radius: 15px !important;
+  display: flex;
+  align-items: center;
+  color: #0f172a !important;
+  font-size: 13.5px;
+  padding: 0 16px !important;
+  margin: 3px 0 !important;
+  transition: background 0.25s ease, transform 0.25s ease !important;
+  position: relative;
+  overflow: visible;
+}
+
+.nav-drop-item::before { display: none; } /* Remove shimmer from these items */
+
+.nav-drop-item:hover,
+.nav-drop-item.active {
+  background: rgba(79,70,229,0.08) !important;
+  transform: translateX(5px) !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+.login-drop-header {
+  border-bottom: 1px solid rgba(79,70,229,0.08);
+}
+
+/* ─── NAV ACTION RIGHT STYLING ─── */
+.nav-action-right {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-action-right li {
+  list-style: none;
+}
+
+/* ─── NOTIFICATION BUTTON HOVER ─── */
+.btn-notification {
+  transition: all 0.25s ease !important;
+}
+
+.btn-notification:hover {
+  background: rgba(79,70,229,0.12) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(79,70,229,0.18) !important;
+}
+
+.btn-notification:active {
+  transform: translateY(0) !important;
+}
+
+/* ─── ADMIN PANEL BUTTON STYLING ─── */
+.btn-admin-panel {
+  transition: all 0.25s ease !important;
+}
+
+.btn-admin-panel:hover {
+  background: linear-gradient(135deg, #f97316, #fb923c) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 25px rgba(245,158,11,0.30) !important;
+}
+
+.btn-admin-panel:active {
+  transform: translateY(0) !important;
+}
+
+.btn-admin-panel:focus {
+  outline: none !important;
+}
+
+/* ─── PROFILE BUTTON STYLING ─── */
+.btn-profile {
+  transition: all 0.25s ease !important;
+  padding: 4px 8px !important;
+  border-radius: 50px !important;
+}
+
+.btn-profile:hover {
+  background: rgba(79,70,229,0.06) !important;
+  transform: translateY(-2px) !important;
+}
+
+.btn-profile:focus {
+  box-shadow: none !important;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 991px) {
+  .nav-action-right {
+    margin-top: 20px;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+    width: 100%;
+  }
+  
+  .animated-link-navbar {
+    display: block;
+    width: 100%;
+    padding: 12px 14px !important;
+    margin: 8px 0;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+  
+  .animated-link-navbar:hover {
+    background: rgba(6,182,212,0.1);
+    border-left: 4px solid #06b6d4;
+    padding-left: 10px !important;
+  }
+  
+  .btn-notification {
+    width: 100% !important;
+    height: auto !important;
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+  }
+  
+  .btn-premium {
+    width: 100% !important;
+  }
+  
+  .btn-admin-panel {
+    width: 100% !important;
+    padding: 12px 16px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  
+  .dropdown-menu {
+    min-width: 180px !important;
+  }
+}
+</style>

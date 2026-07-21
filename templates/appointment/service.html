@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Our Services - Premium Healthcare Portal{% endblock %}
+
+{% block content %}
+
+<!-- Services Breadcrumb Header Start -->
+<div class="welcome-area position-relative" style="padding-top: 150px; padding-bottom: 80px; background: var(--color-dark); overflow: hidden;">
+  <!-- Animated Shapes -->
+  <div class="position-absolute rounded-circle bg-primary" style="width: 300px; height: 300px; filter: blur(80px); opacity: 0.3; top: -50px; left: -50px;"></div>
+  <div class="position-absolute rounded-circle bg-accent" style="width: 250px; height: 250px; filter: blur(80px); opacity: 0.2; bottom: -50px; right: -50px;"></div>
+  
+  <div class="container text-center position-relative z-index-1">
+    <span class="badge badge-primary-soft text-primary px-3 py-2 mb-3" style="background: rgba(79, 70, 229, 0.2);">Explore Our Departments</span>
+    <h1 class="text-white font-weight-bold mb-3 display-4">Specialized Medical Services</h1>
+    <p class="text-muted mx-auto" style="max-width: 600px; font-size: 1.1rem;">Discover premium healthcare solutions tailored to your needs. World-class specialists and cutting-edge technology at your service.</p>
+  </div>
+</div>
+<!-- Services Breadcrumb Header End -->
+
+<!-- Premium Services Grid Start -->
+<section class="section-padding-100 bg-bg">
+  <div class="container">
+    <div class="row">
+      <!-- Cardiology -->
+      <div class="col-12 col-md-6 col-lg-4 mb-5" data-aos="fade-up" data-aos-delay="100">
+        <div class="glass-panel service-card h-100 floating-card border-0 p-0 overflow-hidden d-flex flex-column">
+          <div class="p-4" style="background: linear-gradient(135deg, rgba(79,70,229,0.1), rgba(6,182,212,0.1));">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="icon-wrap bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <i class="fa fa-heartbeat fa-2x text-primary"></i>
+              </div>
+              <span class="badge badge-warning text-dark"><i class="fa fa-star"></i> 4.9</span>
+            </div>
+            <h4 class="font-weight-bold text-dark mb-2">Cardiology</h4>
+            <p class="text-muted small mb-0">Heart health assessments, ECG, hypertension control, and cardiac care.</p>
+          </div>
+          <div class="p-4 bg-white mt-auto border-top">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <small class="text-muted font-weight-bold"><i class="fa fa-user-md text-primary"></i> 15 Specialists</small>
+              <div class="text-right">
+                <small class="text-muted d-block">Starts from</small>
+                <strong class="text-dark">$50.00</strong>
+              </div>
+            </div>
+            <a href="{% url 'appointment:search' %}?department=Cardiology" class="btn-premium btn-primary-gradient w-100 py-2">Book Now</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dentistry -->
+      <div class="col-12 col-md-6 col-lg-4 mb-5" data-aos="fade-up" data-aos-delay="200">
+        <div class="glass-panel service-card h-100 floating-card border-0 p-0 overflow-hidden d-flex flex-column">
+          <div class="p-4" style="background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(16,185,129,0.1));">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="icon-wrap bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <i class="fa fa-smile-o fa-2x text-secondary"></i>
+              </div>
+              <span class="badge badge-warning text-dark"><i class="fa fa-star"></i> 4.8</span>
+            </div>
+            <h4 class="font-weight-bold text-dark mb-2">Dentistry</h4>
+            <p class="text-muted small mb-0">Routine cleaning, teeth whitening, crowns, and advanced oral surgery.</p>
+          </div>
+          <div class="p-4 bg-white mt-auto border-top">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <small class="text-muted font-weight-bold"><i class="fa fa-user-md text-primary"></i> 12 Specialists</small>
+              <div class="text-right">
+                <small class="text-muted d-block">Starts from</small>
+                <strong class="text-dark">$40.00</strong>
+              </div>
+            </div>
+            <a href="{% url 'appointment:search' %}?department=Dentistry" class="btn-premium btn-primary-gradient w-100 py-2">Book Now</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ENT Specialists -->
+      <div class="col-12 col-md-6 col-lg-4 mb-5" data-aos="fade-up" data-aos-delay="300">
+        <div class="glass-panel service-card h-100 floating-card border-0 p-0 overflow-hidden d-flex flex-column">
+          <div class="p-4" style="background: linear-gradient(135deg, rgba(6,182,212,0.1), rgba(79,70,229,0.1));">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="icon-wrap bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <i class="fa fa-volume-up fa-2x text-accent"></i>
+              </div>
+              <span class="badge badge-warning text-dark"><i class="fa fa-star"></i> 4.7</span>
+            </div>
+            <h4 class="font-weight-bold text-dark mb-2">ENT Specialists</h4>
+            <p class="text-muted small mb-0">Diagnostics for ear, nose, throat conditions, sinus problems, and allergies.</p>
+          </div>
+          <div class="p-4 bg-white mt-auto border-top">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <small class="text-muted font-weight-bold"><i class="fa fa-user-md text-primary"></i> 8 Specialists</small>
+              <div class="text-right">
+                <small class="text-muted d-block">Starts from</small>
+                <strong class="text-dark">$45.00</strong>
+              </div>
+            </div>
+            <a href="{% url 'appointment:search' %}?department=ENT Specialists" class="btn-premium btn-primary-gradient w-100 py-2">Book Now</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Neuroanatomy -->
+      <div class="col-12 col-md-6 col-lg-4 mb-5" data-aos="fade-up" data-aos-delay="100">
+        <div class="glass-panel service-card h-100 floating-card border-0 p-0 overflow-hidden d-flex flex-column">
+          <div class="p-4" style="background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(239,68,68,0.1));">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="icon-wrap bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <i class="fa fa-universal-access fa-2x text-warning"></i>
+              </div>
+              <span class="badge badge-warning text-dark"><i class="fa fa-star"></i> 4.9</span>
+            </div>
+            <h4 class="font-weight-bold text-dark mb-2">Neurology</h4>
+            <p class="text-muted small mb-0">Brain and nervous system evaluations, neuromuscular disorders care.</p>
+          </div>
+          <div class="p-4 bg-white mt-auto border-top">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <small class="text-muted font-weight-bold"><i class="fa fa-user-md text-primary"></i> 5 Specialists</small>
+              <div class="text-right">
+                <small class="text-muted d-block">Starts from</small>
+                <strong class="text-dark">$80.00</strong>
+              </div>
+            </div>
+            <a href="{% url 'appointment:search' %}?department=Neurology" class="btn-premium btn-primary-gradient w-100 py-2">Book Now</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Eye Care -->
+      <div class="col-12 col-md-6 col-lg-4 mb-5" data-aos="fade-up" data-aos-delay="200">
+        <div class="glass-panel service-card h-100 floating-card border-0 p-0 overflow-hidden d-flex flex-column">
+          <div class="p-4" style="background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(6,182,212,0.1));">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="icon-wrap bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <i class="fa fa-eye fa-2x text-success"></i>
+              </div>
+              <span class="badge badge-warning text-dark"><i class="fa fa-star"></i> 4.8</span>
+            </div>
+            <h4 class="font-weight-bold text-dark mb-2">Eye Care</h4>
+            <p class="text-muted small mb-0">Comprehensive vision tests, cataracts screenings, and prescription lenses.</p>
+          </div>
+          <div class="p-4 bg-white mt-auto border-top">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <small class="text-muted font-weight-bold"><i class="fa fa-user-md text-primary"></i> 10 Specialists</small>
+              <div class="text-right">
+                <small class="text-muted d-block">Starts from</small>
+                <strong class="text-dark">$35.00</strong>
+              </div>
+            </div>
+            <a href="{% url 'appointment:search' %}?department=Eye Care" class="btn-premium btn-primary-gradient w-100 py-2">Book Now</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Physical Therapy -->
+      <div class="col-12 col-md-6 col-lg-4 mb-5" data-aos="fade-up" data-aos-delay="300">
+        <div class="glass-panel service-card h-100 floating-card border-0 p-0 overflow-hidden d-flex flex-column">
+          <div class="p-4" style="background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(124,58,237,0.1));">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="icon-wrap bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <i class="fa fa-wheelchair fa-2x text-danger"></i>
+              </div>
+              <span class="badge badge-warning text-dark"><i class="fa fa-star"></i> 4.9</span>
+            </div>
+            <h4 class="font-weight-bold text-dark mb-2">Physical Therapy</h4>
+            <p class="text-muted small mb-0">Injury rehabilitation plans, post-operative exercises, and mobility training.</p>
+          </div>
+          <div class="p-4 bg-white mt-auto border-top">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <small class="text-muted font-weight-bold"><i class="fa fa-user-md text-primary"></i> 7 Specialists</small>
+              <div class="text-right">
+                <small class="text-muted d-block">Starts from</small>
+                <strong class="text-dark">$40.00</strong>
+              </div>
+            </div>
+            <a href="{% url 'appointment:search' %}?department=Physical Therapy" class="btn-premium btn-primary-gradient w-100 py-2">Book Now</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+<!-- Services Area End -->
+
+<style>
+  .service-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .service-card:hover { transform: translateY(-15px) scale(1.02); }
+  .icon-wrap i { transition: transform 0.3s ease; }
+  .service-card:hover .icon-wrap i { transform: scale(1.2); }
+</style>
+
+{% endblock %}

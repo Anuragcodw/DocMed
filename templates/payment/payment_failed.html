@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} | Payment Failed{% endblock %}
+
+{% block styles %}
+<style>
+    .failed-animation {
+        margin: 50px auto;
+        position: relative;
+        width: 100px;
+        height: 100px;
+    }
+    .cross-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: block;
+        stroke-width: 2;
+        stroke: #ef4444;
+        stroke-miterlimit: 10;
+        box-shadow: inset 0px 0px 0px #ef4444;
+        animation: fill-red .4s ease-in-out .4s forwards;
+        position: relative;
+        margin: 0 auto;
+    }
+    .cross__circle {
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+        stroke-width: 2;
+        stroke-miterlimit: 10;
+        stroke: #ef4444;
+        fill: none;
+        animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    }
+    .cross__line1 {
+        transform-origin: 50% 50%;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+    }
+    .cross__line2 {
+        transform-origin: 50% 50%;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 1s forwards;
+    }
+    @keyframes stroke {
+        100% {
+            stroke-dashoffset: 0;
+        }
+    }
+    @keyframes fill-red {
+        100% {
+            box-shadow: inset 0px 0px 0px 50px rgba(239, 68, 68, 0.1);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="glass-panel p-5 text-center shadow-soft border-0" data-aos="zoom-in">
+                
+                <div class="failed-animation">
+                    <svg class="cross-circle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                        <circle class="cross__circle" cx="26" cy="26" r="25" fill="none"/>
+                        <path class="cross__line1" fill="none" d="M16 16 L36 36"/>
+                        <path class="cross__line2" fill="none" d="M36 16 L16 36"/>
+                    </svg>
+                </div>
+
+                <h2 class="font-weight-bold text-danger mb-2">Payment Failed</h2>
+                <p class="text-muted">We're sorry, but your transaction could not be completed. Your account has not been charged, or any pending charges will be refunded.</p>
+
+                {% if error_message %}
+                <div class="alert alert-danger border-0 shadow-sm my-4 text-left small" style="border-radius: 12px; background: rgba(239,68,68,0.1); color: #ef4444;">
+                    <i class="fa fa-warning mr-2"></i><strong>Error Detail:</strong> {{ error_message }}
+                </div>
+                {% endif %}
+
+                <p class="text-muted small mb-4">If the amount was deducted from your account, please wait. It will automatically reflect or refund within 2-3 business days.</p>
+
+                <!-- Action Buttons -->
+                <div class="d-flex flex-column flex-sm-row justify-content-center" style="gap: 15px;">
+                    <a href="{% url 'appointment:initiate-payment' booking_id %}" class="btn btn-danger px-4 py-2 font-weight-bold hover-scale" style="border-radius: 12px;">
+                        <i class="fa fa-refresh mr-2"></i>Try Again
+                    </a>
+                    <a href="{% url 'appointment:patient-bookings' %}" class="btn btn-primary-gradient btn-premium px-4 py-2 font-weight-bold hover-scale">
+                        My Bookings<i class="fa fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

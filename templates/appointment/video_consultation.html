@@ -1,0 +1,911 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} | Video Consultation{% endblock %}
+
+{% block styles %}
+<style>
+/* ──────────────────────────────────────────────
+   Video Consultation Layout
+────────────────────────────────────────────── */
+.vc-wrapper {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    min-height: 640px;
+}
+
+/* Video panel */
+.vc-video-panel {
+    flex: 1 1 0%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#jitsi-container {
+    width: 100%;
+    height: 580px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(79,70,229,0.18);
+    background: linear-gradient(135deg, #0f172a, #1e1b4b);
+}
+
+/* Waiting Room Overlay */
+#waiting-room {
+    width: 100%;
+    height: 580px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #0e7490 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+#waiting-room::before {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(99,102,241,0.15), transparent 70%);
+    animation: pulse-ring 3s ease-in-out infinite;
+}
+@keyframes pulse-ring {
+    0%, 100% { transform: scale(0.8); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 1; }
+}
+.wr-avatar {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #06b6d4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px;
+    box-shadow: 0 0 0 12px rgba(99,102,241,0.15);
+    animation: avatar-glow 2s ease-in-out infinite alternate;
+    position: relative; z-index: 1;
+}
+@keyframes avatar-glow {
+    from { box-shadow: 0 0 0 12px rgba(99,102,241,0.15); }
+    to   { box-shadow: 0 0 0 20px rgba(6,182,212,0.25); }
+}
+.wr-status-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #22c55e;
+    display: inline-block;
+    animation: blink 1.2s ease-in-out infinite;
+    margin-right: 6px;
+}
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+}
+.wr-timer {
+    font-size: 42px;
+    font-weight: 800;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 4px;
+    color: #06b6d4;
+    text-shadow: 0 0 20px rgba(6,182,212,0.5);
+}
+
+/* Sidebar */
+.vc-sidebar {
+    width: 340px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.5);
+    height: 580px;
+}
+
+/* Sidebar Tabs */
+.sidebar-tabs {
+    display: flex;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    padding: 0;
+}
+.sidebar-tab-btn {
+    flex: 1;
+    padding: 14px 8px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.65);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .25s;
+    border-bottom: 3px solid transparent;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.sidebar-tab-btn i { font-size: 16px; }
+.sidebar-tab-btn.active {
+    color: #fff;
+    border-bottom-color: #fff;
+    background: rgba(255,255,255,0.1);
+}
+.sidebar-tab-btn:hover { color: #fff; }
+
+/* Sidebar Panels */
+.sidebar-panel {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+.sidebar-panel.active { display: flex; }
+
+/* ── CHAT PANEL ── */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-track { background: #f1f5f9; }
+.chat-messages::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+.chat-msg {
+    display: flex;
+    flex-direction: column;
+    max-width: 80%;
+    animation: slideUp .2s ease;
+}
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.chat-msg.self { align-self: flex-end; align-items: flex-end; }
+.chat-msg.other { align-self: flex-start; align-items: flex-start; }
+.chat-bubble {
+    padding: 8px 14px;
+    border-radius: 18px;
+    font-size: 13px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+.chat-msg.self .chat-bubble {
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+.chat-msg.other .chat-bubble {
+    background: #f1f5f9;
+    color: #1e293b;
+    border-bottom-left-radius: 4px;
+}
+.chat-meta { font-size: 10px; color: #94a3b8; margin-top: 3px; }
+
+.chat-input-area {
+    padding: 12px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    display: flex;
+    gap: 8px;
+    background: rgba(255,255,255,0.9);
+}
+.chat-input-area input {
+    flex: 1;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    padding: 8px 16px;
+    font-size: 13px;
+    outline: none;
+    background: #f8fafc;
+    transition: border-color .2s;
+}
+.chat-input-area input:focus { border-color: #6366f1; }
+.chat-send-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    color: #fff;
+    cursor: pointer;
+    transition: all .2s;
+    flex-shrink: 0;
+}
+.chat-send-btn:hover { transform: scale(1.1); }
+
+/* ── DOCUMENTS PANEL ── */
+.docs-panel-inner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.docs-upload-area {
+    padding: 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.docs-drop-zone {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    background: #f8fafc;
+}
+.docs-drop-zone:hover, .docs-drop-zone.dragover {
+    border-color: #6366f1;
+    background: rgba(99,102,241,0.05);
+}
+.docs-drop-zone i { font-size: 28px; color: #6366f1; margin-bottom: 8px; display: block; }
+.docs-drop-zone p { font-size: 12px; color: #64748b; margin: 0; }
+.docs-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.doc-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    transition: all .2s;
+    animation: slideUp .2s ease;
+}
+.doc-item:hover { border-color: #6366f1; background: rgba(99,102,241,0.04); }
+.doc-icon { font-size: 22px; flex-shrink: 0; }
+.doc-info { flex: 1; min-width: 0; }
+.doc-name { font-size: 12px; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.doc-meta { font-size: 10px; color: #94a3b8; }
+.doc-download { color: #6366f1; font-size: 14px; text-decoration: none; flex-shrink: 0; transition: color .2s; }
+.doc-download:hover { color: #4f46e5; }
+.docs-progress { display: none; padding: 0 12px 8px; }
+
+/* ── NOTES PANEL ── */
+.notes-panel-inner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    gap: 12px;
+    overflow: hidden;
+}
+.notes-panel-inner label { font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .5px; }
+#doctor-notes-textarea {
+    flex: 1;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    background: #f8fafc;
+    transition: border-color .2s;
+    min-height: 200px;
+}
+#doctor-notes-textarea:focus { border-color: #6366f1; }
+.notes-save-btn {
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .25s;
+}
+.notes-save-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79,70,229,0.35); }
+.notes-saved-badge {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #22c55e;
+    font-weight: 700;
+}
+
+/* Meeting Controls Bar */
+.meeting-controls-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(16px);
+    border-radius: 16px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    border: 1px solid rgba(255,255,255,0.6);
+}
+.mcb-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+.mcb-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+}
+.mcb-badge.status-waiting  { background: rgba(234,179,8,0.12);  color: #ca8a04; }
+.mcb-badge.status-active   { background: rgba(34,197,94,0.12);  color: #16a34a; }
+.mcb-badge.status-ended    { background: rgba(239,68,68,0.12);   color: #dc2626; }
+
+/* Responsive */
+@media (max-width: 991px) {
+    .vc-wrapper { flex-direction: column; }
+    .vc-sidebar { width: 100%; height: auto; min-height: 420px; }
+    #jitsi-container, #waiting-room { height: 380px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5 mt-5 px-3 px-lg-5">
+
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0">
+            <li class="breadcrumb-item"><a href="{% url 'appointment:home' %}" class="text-primary font-weight-bold">Home</a></li>
+            <li class="breadcrumb-item">
+                {% if is_doctor %}
+                    <a href="{% url 'appointment:doctor-appointment' %}" class="text-primary font-weight-bold">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'appointment:patient-bookings' %}" class="text-primary font-weight-bold">Bookings</a>
+                {% endif %}
+            </li>
+            <li class="breadcrumb-item active text-muted" aria-current="page">Video Consultation</li>
+        </ol>
+    </nav>
+
+    <!-- Header Card -->
+    <div class="glass-panel p-3 p-md-4 mb-4 border-0 shadow-soft" data-aos="fade-up">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div>
+                <span class="badge badge-info px-3 py-1 mb-2 font-weight-bold" style="border-radius:8px;">Tele-Health Session</span>
+                <h3 class="font-weight-bold text-gradient mb-0">
+                    <i class="fa fa-video-camera mr-2 text-primary"></i>
+                    {% if is_doctor %}
+                        Consultation with {{ booking.patient_name }}
+                    {% else %}
+                        Consultation with Dr. {{ booking.appointment.full_name }}
+                    {% endif %}
+                </h3>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mt-3 mt-md-0" style="gap:10px;">
+                {% if is_doctor %}
+                    <a href="{% url 'appointment:create-prescription' booking.id %}" target="_blank"
+                       class="btn btn-primary-gradient px-3 font-weight-bold hover-scale" style="border-radius:10px;font-size:13px;">
+                        <i class="fa fa-pencil-square-o mr-1"></i> Prescription
+                    </a>
+                    <button id="btn-start-meeting" class="btn px-3 font-weight-bold hover-scale"
+                            style="border-radius:10px;font-size:13px;background:rgba(34,197,94,0.12);color:#16a34a;border:1px solid rgba(34,197,94,0.3);">
+                        <i class="fa fa-play-circle mr-1"></i> Start
+                    </button>
+                    <button id="btn-end-meeting" class="btn px-3 font-weight-bold hover-scale"
+                            style="border-radius:10px;font-size:13px;background:rgba(239,68,68,0.12);color:#dc2626;border:1px solid rgba(239,68,68,0.3);">
+                        <i class="fa fa-stop-circle mr-1"></i> End
+                    </button>
+                {% endif %}
+                <a href="{% if is_doctor %}{% url 'appointment:doctor-appointment' %}{% else %}{% url 'appointment:patient-bookings' %}{% endif %}"
+                   class="btn btn-outline-danger px-3 font-weight-bold hover-scale" style="border-radius:10px;font-size:13px;">
+                    <i class="fa fa-sign-out mr-1"></i> Exit
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meeting Controls Bar -->
+    <div class="meeting-controls-bar mb-4" data-aos="fade-up" data-aos-delay="50">
+        <div class="mcb-left">
+            <span id="meeting-status-badge" class="mcb-badge status-{{ booking.meeting_status|default:'waiting' }}">
+                <span class="wr-status-dot"></span>
+                {{ booking.meeting_status|default:'Waiting'|title }}
+            </span>
+            <span style="font-size:12px;color:#64748b;">
+                <i class="fa fa-calendar mr-1"></i>
+                {{ booking.appointment_date|date:"D, d M Y" }} &nbsp;|&nbsp;
+                <i class="fa fa-clock-o mr-1"></i>
+                {{ booking.appointment.start_time }} – {{ booking.appointment.end_time }}
+            </span>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:#4f46e5;" id="session-timer">
+            <i class="fa fa-hourglass-half mr-1"></i>
+            <span id="timer-display">00:00:00</span>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="vc-wrapper" data-aos="fade-up" data-aos-delay="100">
+
+        <!-- ── Video Panel ── -->
+        <div class="vc-video-panel">
+
+            <!-- Waiting Room (shown when status=waiting) -->
+            <div id="waiting-room" {% if booking.meeting_status == 'active' %}style="display:none;"{% endif %}>
+                <div class="wr-avatar">🩺</div>
+                <h4 style="color:#fff;font-weight:800;margin:0;font-size:22px;">Waiting Room</h4>
+                <p style="color:rgba(255,255,255,0.7);margin:0;font-size:14px;text-align:center;">
+                    {% if is_doctor %}
+                        Start the session when your patient is ready.
+                    {% else %}
+                        Please wait. The doctor will admit you shortly.
+                    {% endif %}
+                </p>
+                <div class="wr-timer" id="waiting-timer">00:00</div>
+                <div style="font-size:13px;color:rgba(255,255,255,0.5);">
+                    <span class="wr-status-dot"></span> Waiting for session to begin…
+                </div>
+                {% if is_doctor %}
+                <button id="btn-admit-patient"
+                        onclick="startMeeting()"
+                        class="btn text-white px-5 py-2 font-weight-700"
+                        style="border-radius:12px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);font-size:14px;letter-spacing:.3px;box-shadow:0 4px 20px rgba(34,197,94,0.4);transition:all .3s;"
+                        onmouseover="this.style.transform='translateY(-2px)'"
+                        onmouseout="this.style.transform='translateY(0)'">
+                    <i class="fa fa-play-circle mr-2"></i> Admit Patient & Start
+                </button>
+                {% endif %}
+            </div>
+
+            <!-- Jitsi Frame (hidden until active) -->
+            <div id="jitsi-container" {% if booking.meeting_status != 'active' %}style="display:none;"{% endif %}></div>
+
+        </div>
+
+        <!-- ── Sidebar ── -->
+        <div class="vc-sidebar" data-aos="fade-left" data-aos-delay="150">
+
+            <!-- Tabs -->
+            <div class="sidebar-tabs">
+                <button class="sidebar-tab-btn active" data-tab="chat-panel" onclick="switchTab(this, 'chat-panel')">
+                    <i class="fa fa-comments"></i>Chat
+                </button>
+                <button class="sidebar-tab-btn" data-tab="docs-panel" onclick="switchTab(this, 'docs-panel')">
+                    <i class="fa fa-paperclip"></i>Docs
+                </button>
+                {% if is_doctor %}
+                <button class="sidebar-tab-btn" data-tab="notes-panel" onclick="switchTab(this, 'notes-panel')">
+                    <i class="fa fa-file-text-o"></i>Notes
+                </button>
+                {% endif %}
+            </div>
+
+            <!-- ── Chat Panel ── -->
+            <div id="chat-panel" class="sidebar-panel active">
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Populated by JS -->
+                    <div style="text-align:center;color:#94a3b8;font-size:12px;padding:20px 0;">
+                        <i class="fa fa-comments" style="font-size:32px;display:block;margin-bottom:8px;color:#cbd5e1;"></i>
+                        Chat is private to this session
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Type a message…" autocomplete="off"
+                           onkeypress="if(event.key==='Enter') sendChat()">
+                    <button class="chat-send-btn" onclick="sendChat()" title="Send">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── Documents Panel ── -->
+            <div id="docs-panel" class="sidebar-panel">
+                <div class="docs-panel-inner">
+                    <div class="docs-upload-area">
+                        <div class="docs-drop-zone" id="drop-zone"
+                             onclick="document.getElementById('doc-file-input').click()"
+                             ondragover="event.preventDefault();this.classList.add('dragover')"
+                             ondragleave="this.classList.remove('dragover')"
+                             ondrop="handleDrop(event)">
+                            <i class="fa fa-cloud-upload"></i>
+                            <p><strong>Click or drag</strong> to upload<br>
+                               <span style="font-size:11px;">PDF, PNG, JPG — max 10MB</span>
+                            </p>
+                        </div>
+                        <input type="file" id="doc-file-input" style="display:none;"
+                               accept=".pdf,.png,.jpg,.jpeg" onchange="uploadDocument(this.files[0])">
+                        <div class="docs-progress" id="docs-progress">
+                            <div class="progress" style="height:6px;border-radius:6px;margin-top:8px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                     id="docs-progress-bar" style="width:0%;background:linear-gradient(90deg,#4f46e5,#06b6d4);"></div>
+                            </div>
+                            <p style="font-size:11px;color:#64748b;margin:4px 0 0;">Uploading…</p>
+                        </div>
+                    </div>
+                    <div class="docs-list" id="docs-list">
+                        <div style="text-align:center;color:#94a3b8;font-size:12px;padding:20px 0;" id="no-docs-msg">
+                            <i class="fa fa-folder-open-o" style="font-size:32px;display:block;margin-bottom:8px;color:#cbd5e1;"></i>
+                            No documents shared yet
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Doctor Notes Panel (Doctor only) ── -->
+            {% if is_doctor %}
+            <div id="notes-panel" class="sidebar-panel">
+                <div class="notes-panel-inner">
+                    <label for="doctor-notes-textarea">
+                        <i class="fa fa-pencil mr-1" style="color:#6366f1;"></i>Clinical Notes
+                    </label>
+                    <textarea id="doctor-notes-textarea"
+                              placeholder="Record symptoms, diagnosis notes, treatment plan…">{{ booking.meeting_notes|default:'' }}</textarea>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <button class="notes-save-btn flex-grow-1" onclick="saveNotes()">
+                            <i class="fa fa-save mr-1"></i> Save Notes
+                        </button>
+                        <div class="notes-saved-badge" id="notes-saved-badge">
+                            <i class="fa fa-check-circle"></i> Saved
+                        </div>
+                    </div>
+                    <p style="font-size:11px;color:#94a3b8;margin:0;">Notes are visible only to you and are saved securely.</p>
+                </div>
+            </div>
+            {% endif %}
+
+        </div><!-- end sidebar -->
+
+    </div><!-- end vc-wrapper -->
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://meet.jit.si/external_api.js"></script>
+<script>
+/* ──────────────────────────────────────────────
+   Configuration
+────────────────────────────────────────────── */
+const BOOKING_ID   = {{ booking.id }};
+const MEETING_URL  = "{{ meeting_url|default:'' }}";
+const IS_DOCTOR    = {% if is_doctor %}true{% else %}false{% endif %};
+const CURRENT_USER = "{% if is_doctor %}Dr. {{ request.user.first_name }} {{ request.user.last_name }}{% else %}{{ booking.patient_name }}{% endif %}";
+const CSRF_TOKEN   = "{{ csrf_token }}";
+
+/* ──────────────────────────────────────────────
+   Session Timer
+────────────────────────────────────────────── */
+let sessionSeconds = 0;
+let waitingSeconds = 0;
+let sessionTimerInterval = null;
+let waitingTimerInterval = null;
+
+function formatTime(secs) {
+    const h = Math.floor(secs / 3600).toString().padStart(2, '0');
+    const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${h}:${m}:${s}`;
+}
+function formatTimeShort(secs) {
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+}
+
+// Waiting timer
+waitingTimerInterval = setInterval(() => {
+    waitingSeconds++;
+    const wt = document.getElementById('waiting-timer');
+    if (wt) wt.textContent = formatTimeShort(waitingSeconds);
+}, 1000);
+
+// Session timer (starts when meeting goes active)
+function startSessionTimer() {
+    if (sessionTimerInterval) return;
+    sessionTimerInterval = setInterval(() => {
+        sessionSeconds++;
+        document.getElementById('timer-display').textContent = formatTime(sessionSeconds);
+    }, 1000);
+}
+
+/* ──────────────────────────────────────────────
+   Tab Switching
+────────────────────────────────────────────── */
+function switchTab(btn, panelId) {
+    document.querySelectorAll('.sidebar-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(panelId).classList.add('active');
+}
+
+/* ──────────────────────────────────────────────
+   Meeting Control (Doctor)
+────────────────────────────────────────────── */
+function updateStatusUI(status) {
+    const badge = document.getElementById('meeting-status-badge');
+    badge.className = `mcb-badge status-${status}`;
+    const labels = { waiting: 'Waiting', active: 'Live', ended: 'Ended' };
+    badge.innerHTML = `<span class="wr-status-dot"></span> ${labels[status] || status}`;
+}
+
+function startMeeting() {
+    fetch(`/booking/${BOOKING_ID}/meeting/status/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+        body: JSON.stringify({ status: 'active' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            document.getElementById('waiting-room').style.display = 'none';
+            document.getElementById('jitsi-container').style.display = 'block';
+            clearInterval(waitingTimerInterval);
+            startSessionTimer();
+            updateStatusUI('active');
+            initJitsi();
+        }
+    })
+    .catch(err => console.error('Status update failed:', err));
+}
+
+function endMeeting() {
+    fetch(`/booking/${BOOKING_ID}/meeting/status/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+        body: JSON.stringify({ status: 'ended' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            updateStatusUI('ended');
+            if (sessionTimerInterval) clearInterval(sessionTimerInterval);
+            setTimeout(() => {
+                window.location.href = IS_DOCTOR
+                    ? "{% url 'appointment:doctor-appointment' %}"
+                    : "{% url 'appointment:patient-bookings' %}";
+            }, 2500);
+        }
+    });
+}
+
+document.getElementById('btn-start-meeting')?.addEventListener('click', startMeeting);
+document.getElementById('btn-end-meeting')?.addEventListener('click', endMeeting);
+
+/* ──────────────────────────────────────────────
+   Jitsi Initialization
+────────────────────────────────────────────── */
+let jitsiApi = null;
+function initJitsi() {
+    if (jitsiApi) return;
+    const roomName = MEETING_URL ? MEETING_URL.split('/').pop() : `docmed-${BOOKING_ID}`;
+    const domain = 'meet.jit.si';
+    const options = {
+        roomName,
+        width: '100%',
+        height: 580,
+        parentNode: document.querySelector('#jitsi-container'),
+        userInfo: { displayName: CURRENT_USER, email: "{{ request.user.email }}" },
+        configOverwrite: {
+            startWithAudioMuted: false,
+            startWithVideoMuted: false,
+            prejoinPageEnabled: true
+        },
+        interfaceConfigOverwrite: {
+            TOOLBAR_BUTTONS: [
+                'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
+                'fodeviceselection', 'hangup', 'profile', 'recording',
+                'settings', 'raisehand', 'videoquality', 'filmstrip',
+                'invite', 'stats', 'tileview', 'download', 'security'
+            ]
+        }
+    };
+    jitsiApi = new JitsiMeetExternalAPI(domain, options);
+    jitsiApi.addEventListener('videoConferenceLeft', () => {
+        window.location.href = IS_DOCTOR
+            ? "{% url 'appointment:doctor-appointment' %}"
+            : "{% url 'appointment:patient-bookings' %}";
+    });
+}
+
+// Auto-start jitsi if meeting is already active
+{% if booking.meeting_status == 'active' %}
+document.addEventListener('DOMContentLoaded', () => {
+    startSessionTimer();
+    updateStatusUI('active');
+    initJitsi();
+});
+{% endif %}
+
+/* ──────────────────────────────────────────────
+   Chat
+────────────────────────────────────────────── */
+let lastMsgId = 0;
+
+function renderMessage(msg, isSelf) {
+    const el = document.createElement('div');
+    el.className = `chat-msg ${isSelf ? 'self' : 'other'}`;
+    el.innerHTML = `
+        <div class="chat-bubble">${escapeHtml(msg.message)}</div>
+        <div class="chat-meta">${isSelf ? 'You' : escapeHtml(msg.sender_name)} · ${msg.timestamp}</div>
+    `;
+    return el;
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+}
+
+function sendChat() {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+
+    fetch(`/booking/${BOOKING_ID}/meeting/chat/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+        body: JSON.stringify({ message: msg })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const container = document.getElementById('chat-messages');
+            // Remove the "no messages" placeholder if present
+            const placeholder = container.querySelector('div[style*="text-align:center"]');
+            if (placeholder) placeholder.remove();
+            container.appendChild(renderMessage(data.message, true));
+            container.scrollTop = container.scrollHeight;
+            lastMsgId = data.message.id;
+        }
+    })
+    .catch(err => console.error('Chat send failed:', err));
+}
+
+function fetchNewMessages() {
+    fetch(`/booking/${BOOKING_ID}/meeting/chat/?after=${lastMsgId}`)
+    .then(r => r.json())
+    .then(data => {
+        if (!data.messages || data.messages.length === 0) return;
+        const container = document.getElementById('chat-messages');
+        const placeholder = container.querySelector('div[style*="text-align:center"]');
+        if (placeholder && data.messages.length > 0) placeholder.remove();
+        data.messages.forEach(msg => {
+            const isSelf = msg.sender_name === CURRENT_USER || msg.is_self;
+            container.appendChild(renderMessage(msg, isSelf));
+            lastMsgId = Math.max(lastMsgId, msg.id);
+        });
+        container.scrollTop = container.scrollHeight;
+    })
+    .catch(() => {});
+}
+
+// Poll for new messages every 3 seconds
+setInterval(fetchNewMessages, 3000);
+// Initial load
+fetchNewMessages();
+
+/* ──────────────────────────────────────────────
+   Documents
+────────────────────────────────────────────── */
+function getFileIcon(name) {
+    const ext = name.split('.').pop().toLowerCase();
+    if (ext === 'pdf') return '📄';
+    if (['png','jpg','jpeg'].includes(ext)) return '🖼️';
+    return '📎';
+}
+
+function renderDocItem(file) {
+    const li = document.createElement('div');
+    li.className = 'doc-item';
+    li.innerHTML = `
+        <span class="doc-icon">${getFileIcon(file.file_name)}</span>
+        <div class="doc-info">
+            <div class="doc-name" title="${escapeHtml(file.file_name)}">${escapeHtml(file.file_name)}</div>
+            <div class="doc-meta">${file.file_size} · ${file.uploaded_by} · ${file.created_at}</div>
+        </div>
+        <a href="${file.file_url}" target="_blank" class="doc-download" title="Download">
+            <i class="fa fa-download"></i>
+        </a>
+    `;
+    return li;
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('drop-zone').classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) uploadDocument(file);
+}
+
+function uploadDocument(file) {
+    if (!file) return;
+    const progress = document.getElementById('docs-progress');
+    const bar = document.getElementById('docs-progress-bar');
+    progress.style.display = 'block';
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `/booking/${BOOKING_ID}/meeting/files/`, true);
+    xhr.setRequestHeader('X-CSRFToken', CSRF_TOKEN);
+
+    xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+            bar.style.width = `${Math.round(e.loaded / e.total * 100)}%`;
+        }
+    };
+
+    xhr.onload = () => {
+        progress.style.display = 'none';
+        bar.style.width = '0%';
+        const data = JSON.parse(xhr.responseText);
+        if (data.status === 'success') {
+            const list = document.getElementById('docs-list');
+            const noMsg = document.getElementById('no-docs-msg');
+            if (noMsg) noMsg.remove();
+            list.appendChild(renderDocItem(data.file));
+        } else {
+            alert(data.error || 'Upload failed.');
+        }
+    };
+    xhr.onerror = () => { progress.style.display = 'none'; alert('Upload error.'); };
+    xhr.send(formData);
+}
+
+function fetchDocuments() {
+    fetch(`/booking/${BOOKING_ID}/meeting/files/`)
+    .then(r => r.json())
+    .then(data => {
+        if (!data.files || data.files.length === 0) return;
+        const list = document.getElementById('docs-list');
+        const noMsg = document.getElementById('no-docs-msg');
+        if (noMsg) noMsg.remove();
+        list.innerHTML = '';
+        data.files.forEach(f => list.appendChild(renderDocItem(f)));
+    })
+    .catch(() => {});
+}
+
+fetchDocuments();
+
+/* ──────────────────────────────────────────────
+   Doctor Notes
+────────────────────────────────────────────── */
+function saveNotes() {
+    const notes = document.getElementById('doctor-notes-textarea')?.value || '';
+    fetch(`/booking/${BOOKING_ID}/meeting/notes/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+        body: JSON.stringify({ notes })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const badge = document.getElementById('notes-saved-badge');
+            badge.style.display = 'flex';
+            setTimeout(() => { badge.style.display = 'none'; }, 3000);
+        }
+    })
+    .catch(err => console.error('Notes save failed:', err));
+}
+
+// Auto-save notes every 30 seconds (doctor only)
+{% if is_doctor %}
+setInterval(() => {
+    const ta = document.getElementById('doctor-notes-textarea');
+    if (ta && ta.value.trim()) saveNotes();
+}, 30000);
+{% endif %}
+</script>
+{% endblock %}

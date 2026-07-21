@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Medical Report Center{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="py-5 text-center" data-aos="fade-up">
+    <div class="container">
+        <h1 class="display-4 font-weight-bold text-gradient mb-3">
+            <i class="fa fa-flask mr-2"></i>AI-Powered Medical Report Center
+        </h1>
+        <p class="lead text-muted mx-auto" style="max-width:640px;">
+            Upload your medical reports and let our AI analyze them instantly.
+            Get actionable insights, summaries, and answers to your health questions.
+        </p>
+    </div>
+</section>
+
+<!-- Upload Section -->
+<section class="pb-5" data-aos="fade-up" data-aos-delay="100">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="glass-panel p-4 p-md-5 shadow-soft" style="border-radius:20px;">
+                    <h4 class="font-weight-bold mb-4 text-center">
+                        <i class="fa fa-upload mr-2 text-gradient"></i>Upload a Report
+                    </h4>
+                    <form method="POST" action="{% url 'appointment:upload-report' %}"
+                          enctype="multipart/form-data" id="uploadForm">
+                        {% csrf_token %}
+
+                        <!-- Drag & Drop Zone -->
+                        <div id="dropZone" class="text-center p-5 mb-4" style="
+                            border: 2px dashed var(--color-primary);
+                            border-radius: 16px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            background: rgba(var(--color-primary-rgb, 99,102,241), 0.04);
+                        ">
+                            <i class="fa fa-cloud-upload fa-4x text-gradient mb-3" style="display:block;"></i>
+                            <h5 class="font-weight-bold mb-2">Drag &amp; drop your report or click to upload</h5>
+                            <p class="text-muted mb-0">Supports PDF, PNG, JPG &bull; Max 10MB</p>
+                            <input type="file" name="report_file" id="reportFileInput"
+                                   accept=".pdf,.png,.jpg,.jpeg" class="d-none">
+                        </div>
+
+                        <!-- File Selected Feedback -->
+                        <div id="fileInfo" class="d-none mb-3">
+                            <div class="alert alert-info d-flex align-items-center" style="border-radius:12px;">
+                                <i class="fa fa-file fa-lg mr-3"></i>
+                                <span id="fileName" class="font-weight-bold"></span>
+                                <button type="button" id="clearFileBtn" class="btn btn-sm btn-link ml-auto text-danger">
+                                    <i class="fa fa-times"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Title Input -->
+                        <div class="form-group" id="titleGroup" style="display:none;">
+                            <label for="reportTitle" class="font-weight-bold">
+                                <i class="fa fa-tag mr-1"></i>Report Title
+                            </label>
+                            <input type="text" name="title" id="reportTitle"
+                                   class="form-control form-control-lg"
+                                   placeholder="e.g. Blood Test Results – June 2026"
+                                   style="border-radius:12px;">
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div id="submitGroup" style="display:none;" class="text-center">
+                            <button type="submit" class="btn btn-premium btn-primary-gradient btn-lg px-5 hover-scale"
+                                    style="border-radius:50px;">
+                                <i class="fa fa-cloud-upload mr-2"></i>Upload Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Reports Grid -->
+<section class="pb-5" data-aos="fade-up" data-aos-delay="200">
+    <div class="container">
+        <h3 class="font-weight-bold mb-4">
+            <i class="fa fa-folder-open-o mr-2 text-gradient"></i>Your Reports
+        </h3>
+
+        {% if reports %}
+        <div class="row">
+            {% for report in reports %}
+            <div class="col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1 }}00">
+                <div class="glass-panel p-4 shadow-soft hover-scale h-100 d-flex flex-column"
+                     style="border-radius:18px; transition: transform 0.3s ease;">
+
+                    <!-- Icon & Status Row -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            {% if report.file_type == 'pdf' %}
+                                <i class="fa fa-file-pdf-o fa-3x" style="color:#e74c3c;"></i>
+                            {% else %}
+                                <i class="fa fa-file-image-o fa-3x" style="color:#3498db;"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {% if report.status == 'analyzed' %}
+                                <span class="badge" style="background:rgba(40,167,69,0.15);color:#28a745;padding:6px 14px;border-radius:50px;font-size:0.8rem;">
+                                    <i class="fa fa-check-circle mr-1"></i>Analyzed
+                                </span>
+                            {% elif report.status == 'pending' %}
+                                <span class="badge" style="background:rgba(255,193,7,0.15);color:#d4a017;padding:6px 14px;border-radius:50px;font-size:0.8rem;">
+                                    <i class="fa fa-clock-o mr-1"></i>Pending
+                                </span>
+                            {% elif report.status == 'error' %}
+                                <span class="badge" style="background:rgba(220,53,69,0.15);color:#dc3545;padding:6px 14px;border-radius:50px;font-size:0.8rem;">
+                                    <i class="fa fa-exclamation-circle mr-1"></i>Error
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Title & Date -->
+                    <h5 class="font-weight-bold mb-1">{{ report.title }}</h5>
+                    <div class="mb-2">
+                        <span class="badge" style="background:rgba(99,102,241,0.15); color:#6366f1; padding:4px 10px; border-radius:50px; font-size:0.75rem;">
+                            <i class="fa fa-tag mr-1"></i>{{ report.get_report_type_display|default:"Other Report" }}
+                        </span>
+                    </div>
+                    <small class="text-muted mb-3 d-block">
+                        <i class="fa fa-calendar mr-1"></i>{{ report.uploaded_at|date:"M d, Y" }}
+                    </small>
+
+                    <!-- AI Summary -->
+                    {% if report.ai_summary %}
+                    <p class="text-muted small flex-grow-1" style="
+                        overflow:hidden;
+                        display:-webkit-box;
+                        -webkit-line-clamp:3;
+                        -webkit-box-orient:vertical;
+                    ">
+                        {{ report.ai_summary|truncatewords:25 }}
+                    </p>
+                    {% else %}
+                    <p class="text-muted small flex-grow-1 font-italic">
+                        No AI summary available yet.
+                    </p>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    <div class="mt-auto pt-3 d-flex justify-content-between align-items-center"
+                         style="border-top:1px solid rgba(0,0,0,0.08);">
+                        <a href="{% url 'appointment:report-detail' report.pk %}"
+                           class="btn btn-premium btn-primary-gradient btn-sm hover-scale"
+                           style="border-radius:50px;">
+                            <i class="fa fa-eye mr-1"></i>View Details
+                        </a>
+                        <form method="POST" action="{% url 'appointment:delete-report' report.pk %}"
+                              onsubmit="return confirm('Delete this report permanently?');" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger hover-scale"
+                                    style="border-radius:50px;">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="glass-panel text-center p-5 shadow-soft" style="border-radius:20px;">
+            <i class="fa fa-inbox fa-4x text-muted mb-3" style="display:block;opacity:0.4;"></i>
+            <h5 class="font-weight-bold text-muted">No reports uploaded yet</h5>
+            <p class="text-muted mb-0">Upload your first medical report above to get started.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+(function() {
+    const dropZone     = document.getElementById('dropZone');
+    const fileInput    = document.getElementById('reportFileInput');
+    const fileInfo     = document.getElementById('fileInfo');
+    const fileName     = document.getElementById('fileName');
+    const clearFileBtn = document.getElementById('clearFileBtn');
+    const titleGroup   = document.getElementById('titleGroup');
+    const submitGroup  = document.getElementById('submitGroup');
+    const MAX_SIZE     = 10 * 1024 * 1024; // 10 MB
+
+    // Click to upload
+    dropZone.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    // Drag over
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.style.borderColor = '#28a745';
+        dropZone.style.background  = 'rgba(40,167,69,0.08)';
+    });
+
+    // Drag leave
+    dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.style.borderColor = 'var(--color-primary)';
+        dropZone.style.background  = 'rgba(var(--color-primary-rgb,99,102,241),0.04)';
+    });
+
+    // Drop
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.style.borderColor = 'var(--color-primary)';
+        dropZone.style.background  = 'rgba(var(--color-primary-rgb,99,102,241),0.04)';
+
+        var files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
+    });
+
+    // File input change
+    fileInput.addEventListener('change', function() {
+        if (fileInput.files.length > 0) {
+            handleFile(fileInput.files[0]);
+        }
+    });
+
+    // Handle selected file
+    function handleFile(file) {
+        // Validate size
+        if (file.size > MAX_SIZE) {
+            alert('File size exceeds 10 MB. Please choose a smaller file.');
+            resetUpload();
+            return;
+        }
+
+        // Validate type
+        var allowed = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
+        if (allowed.indexOf(file.type) === -1) {
+            alert('Unsupported file type. Please upload a PDF, PNG, or JPG file.');
+            resetUpload();
+            return;
+        }
+
+        // Transfer files to input (for drag-drop)
+        if (fileInput.files.length === 0) {
+            var dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+        }
+
+        fileName.textContent = file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+        fileInfo.classList.remove('d-none');
+        dropZone.style.display = 'none';
+        titleGroup.style.display = 'block';
+        submitGroup.style.display = 'block';
+    }
+
+    // Clear file
+    clearFileBtn.addEventListener('click', function() {
+        resetUpload();
+    });
+
+    function resetUpload() {
+        fileInput.value = '';
+        fileInfo.classList.add('d-none');
+        dropZone.style.display = 'block';
+        titleGroup.style.display = 'none';
+        submitGroup.style.display = 'none';
+    }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,543 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Patient Registration - DocMed Premium{% endblock %}
+
+{% block styles %}
+<style>
+/* ── Patient Register — Premium Light Glassmorphism UI ──────── */
+:root {
+  --pat-primary:   #06B6D4;
+  --pat-secondary: #4F46E5;
+  --pat-accent:    #10B981;
+}
+
+/* Background */
+.pt-register-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #F0FDFE 0%, #E0F2FE 50%, #DCFCE7 100%);
+  position: relative;
+  overflow: hidden;
+  padding: 80px 0 60px;
+}
+
+/* Floating healthcare blobs */
+.pt-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.13;
+  pointer-events: none;
+  animation: ptBlobFloat 18s ease-in-out infinite;
+}
+.pt-blob-cyan  { width: 420px; height: 420px; background: #06b6d4; top: -80px;   right: -80px; animation-delay: 0s; }
+.pt-blob-green { width: 340px; height: 340px; background: #10b981; bottom: -60px; left: -60px; animation-delay: -6s; }
+.pt-blob-blue  { width: 280px; height: 280px; background: #3b82f6; top: 55%;     left: 55%;   animation-delay: -12s; }
+
+@keyframes ptBlobFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(-40px, 35px) scale(1.08); }
+  66%  { transform: translate(30px, -40px) scale(0.93); }
+}
+
+/* Floating medical icons */
+.pt-float-icons .pfi {
+  position: fixed;
+  font-size: 22px;
+  opacity: 0.07;
+  color: #06B6D4;
+  pointer-events: none;
+  animation: ptIconFloat 12s ease-in-out infinite;
+}
+.pfi-1 { top: 12%; right: 6%;  animation-delay: 0s;  }
+.pfi-2 { top: 35%; left: 8%;   animation-delay: -3s; }
+.pfi-3 { top: 68%; right: 5%;  animation-delay: -6s; }
+.pfi-4 { bottom: 15%; left: 5%; animation-delay: -9s; }
+
+@keyframes ptIconFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-18px); }
+}
+
+/* ── Animated Gradient Border (cyan/green/blue) ── */
+.pt-card-wrap {
+  position: relative;
+  border-radius: 28px;
+  padding: 3px;
+  background: linear-gradient(135deg, #06B6D4, #10B981, #4F46E5, #06B6D4);
+  background-size: 300% 300%;
+  animation: ptGradientBorder 5s ease infinite;
+  box-shadow: 0 25px 60px rgba(6,182,212,0.15), 0 8px 24px rgba(0,0,0,0.06);
+}
+@keyframes ptGradientBorder {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+
+/* ── Glass Card inner ── */
+.pt-glass-card {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border-radius: 26px;
+  padding: 48px 44px;
+}
+
+/* ── 3-Step Progress Indicator ── */
+.form-steps-bar {
+  display: flex;
+  gap: 0;
+  margin-bottom: 36px;
+  position: relative;
+}
+.form-steps-bar::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: 0; right: 0;
+  height: 2px;
+  background: rgba(6,182,212,0.14);
+  z-index: 0;
+}
+.step-indicator {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+.step-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  border: 2px solid rgba(6,182,212,0.20);
+  background: #fff;
+  color: #94a3b8;
+  transition: all 0.3s ease;
+}
+.step-indicator.active .step-dot,
+.step-indicator.done .step-dot {
+  background: linear-gradient(135deg, #06B6D4, #10B981);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(6,182,212,0.38);
+}
+.step-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+.step-indicator.active .step-label,
+.step-indicator.done .step-label {
+  color: #06B6D4;
+}
+
+/* ── Section Divider ── */
+.form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 28px 0 20px;
+  padding-bottom: 10px;
+  border-bottom: 1.5px solid rgba(6,182,212,0.12);
+}
+.form-section-title i { font-size: 18px; color: #06B6D4; }
+.form-section-title h6 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #0F172A;
+}
+
+/* ── Submit Button ── */
+.btn-pt-register {
+  background: linear-gradient(135deg, #06B6D4, #10B981);
+  color: #fff !important;
+  border: 0;
+  border-radius: 16px;
+  padding: 16px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  width: 100%;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(6,182,212,0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.btn-pt-register:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 14px 32px rgba(6,182,212,0.36);
+  color: #fff !important;
+}
+.btn-pt-register:active { transform: translateY(0) scale(0.99); }
+
+/* ── Text contrast ── */
+.reg-heading { color: #0F172A !important; font-weight: 800 !important; }
+.reg-sub     { color: #64748B !important; }
+.reg-label   { color: #334155 !important; font-weight: 600 !important; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Patient-themed input focus color override */
+.pt-register-page .form-floating-custom input:focus,
+.pt-register-page .form-floating-custom select:focus {
+  border-color: #06B6D4 !important;
+  box-shadow: 0 0 0 3.5px rgba(6,182,212,0.14) !important;
+}
+.pt-register-page .form-floating-custom input:focus ~ label,
+.pt-register-page .form-floating-custom input:not(:placeholder-shown) ~ label,
+.pt-register-page .form-floating-custom select:focus ~ label {
+  color: #06B6D4;
+}
+.pt-register-page .form-floating-custom:focus-within .input-icon { color: #06B6D4; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .pt-glass-card { padding: 32px 20px; }
+  .step-label { display: none; }
+}
+@media (max-width: 576px) {
+  .pt-register-page { padding: 60px 0 40px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- BG blobs -->
+<div class="pt-blob pt-blob-cyan"></div>
+<div class="pt-blob pt-blob-green"></div>
+<div class="pt-blob pt-blob-blue"></div>
+
+<!-- Floating icons -->
+<div class="pt-float-icons">
+  <span class="pfi pfi-1"><i class="fa fa-heartbeat"></i></span>
+  <span class="pfi pfi-2"><i class="fa fa-plus-circle"></i></span>
+  <span class="pfi pfi-3"><i class="fa fa-user-md"></i></span>
+  <span class="pfi pfi-4"><i class="fa fa-ambulance"></i></span>
+</div>
+
+<div class="pt-register-page">
+  <div class="container position-relative" style="z-index: 2;">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-10 col-xl-9">
+
+        <!-- Animated Gradient Border Card -->
+        <div class="pt-card-wrap" data-aos="zoom-in" data-aos-duration="800">
+          <div class="pt-glass-card">
+
+            <!-- Header -->
+            <div class="text-center mb-4">
+              <div class="d-inline-flex align-items-center justify-content-center mb-3"
+                   style="width:68px;height:68px;background:linear-gradient(135deg,rgba(6,182,212,.12),rgba(16,185,129,.12));border-radius:50%;border:2px solid rgba(6,182,212,.18);">
+                <i class="fa fa-user-plus fa-2x" style="color:#06B6D4;"></i>
+              </div>
+              <h2 class="reg-heading mb-1">Patient Registration</h2>
+              <p class="reg-sub mb-0">Join our premium healthcare network in a few simple steps.</p>
+            </div>
+
+            <!-- 3-Step Progress Bar -->
+            <div class="form-steps-bar mb-4">
+              <div class="step-indicator active" id="pt-step-1">
+                <div class="step-dot">1</div>
+                <span class="step-label">Account</span>
+              </div>
+              <div class="step-indicator" id="pt-step-2">
+                <div class="step-dot">2</div>
+                <span class="step-label">Personal</span>
+              </div>
+              <div class="step-indicator" id="pt-step-3">
+                <div class="step-dot">3</div>
+                <span class="step-label">Security</span>
+              </div>
+            </div>
+
+            <!-- Form -->
+            <form action="" method="POST" id="registerForm" data-loading>
+              {% csrf_token %}
+
+              {% if form.non_field_errors %}
+                <div class="alert alert-danger py-2 px-3 mb-4 rounded-lg small">
+                  {% for error in form.non_field_errors %}
+                    <p class="mb-0"><i class="fa fa-exclamation-circle mr-1"></i> {{ error }}</p>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+              <!-- ─── STEP 1: Account ───────────────────── -->
+              <div class="form-section-title mt-0">
+                <i class="fa fa-user-circle"></i>
+                <h6>Account Details</h6>
+              </div>
+              <div class="row">
+                {% for field in form %}
+                  {% if field.name == 'username' or field.name == 'email' %}
+                    <div class="col-12 col-md-6 mb-4">
+                      <label class="reg-label mb-1 d-block">{{ field.label }}</label>
+                      <div class="form-floating-custom position-relative">
+                        <input type="{% if field.name == 'email' %}email{% else %}text{% endif %}"
+                               name="{{ field.name }}"
+                               id="id_{{ field.name }}"
+                               placeholder=" "
+                               class="{% if field.errors %}is-invalid{% endif %}"
+                               value="{% if field.value %}{{ field.value }}{% endif %}"
+                               {% if field.field.required %}required{% endif %}>
+                        <i class="fa {% if field.name == 'email' %}fa-envelope{% else %}fa-user-circle{% endif %} input-icon"></i>
+                        <label for="id_{{ field.name }}">{{ field.label }}</label>
+                        {% if field.errors %}<div class="invalid-feedback d-block mt-1">{{ field.errors }}</div>{% endif %}
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+
+              <!-- ─── STEP 2: Personal ──────────────────── -->
+              <div class="form-section-title">
+                <i class="fa fa-user"></i>
+                <h6>Personal Details</h6>
+              </div>
+              <div class="row">
+                {% for field in form %}
+                  {% if field.name == 'first_name' or field.name == 'last_name' or field.name == 'phone_number' %}
+                    <div class="col-12 col-md-6 mb-4">
+                      <label class="reg-label mb-1 d-block">{{ field.label }}</label>
+                      <div class="form-floating-custom position-relative">
+                        <input type="text"
+                               name="{{ field.name }}"
+                               id="id_{{ field.name }}"
+                               placeholder=" "
+                               class="{% if field.errors %}is-invalid{% endif %}"
+                               value="{% if field.value %}{{ field.value }}{% endif %}"
+                               {% if field.field.required %}required{% endif %}>
+                        <i class="fa {% if field.name == 'phone_number' %}fa-phone{% else %}fa-user{% endif %} input-icon"></i>
+                        <label for="id_{{ field.name }}">{{ field.label }}</label>
+                        {% if field.errors %}<div class="invalid-feedback d-block mt-1">{{ field.errors }}</div>{% endif %}
+                      </div>
+                    </div>
+                  {% endif %}
+                  {% if field.name == 'gender' %}
+                    <div class="col-12 mb-4">
+                      <label class="reg-label mb-2 d-block"><i class="fa fa-venus-mars mr-1" style="color:#06B6D4;"></i> Gender</label>
+                      <div class="d-flex gap-4">
+                        <div class="custom-control custom-radio mr-4">
+                          <input class="custom-control-input" type="radio" name="gender" id="male" value="male" {% if field.value == 'male' %}checked{% endif %} required>
+                          <label class="custom-control-label font-weight-bold" for="male" style="cursor:pointer;color:#0F172A;">Male</label>
+                        </div>
+                        <div class="custom-control custom-radio">
+                          <input class="custom-control-input" type="radio" name="gender" id="female" value="female" {% if field.value == 'female' %}checked{% endif %} required>
+                          <label class="custom-control-label font-weight-bold" for="female" style="cursor:pointer;color:#0F172A;">Female</label>
+                        </div>
+                      </div>
+                      {% if field.errors %}<div class="invalid-feedback d-block mt-1">{{ field.errors }}</div>{% endif %}
+                    </div>
+                  {% endif %}
+                {% endfor %}
+
+                <!-- Extra fields: anything not in account or password group -->
+                {% for field in form %}
+                  {% if field.name != 'username' and field.name != 'email' and field.name != 'first_name' and field.name != 'last_name' and field.name != 'phone_number' and field.name != 'gender' and 'password' not in field.name %}
+                    <div class="col-12 col-md-6 mb-4">
+                      <label class="reg-label mb-1 d-block">{{ field.label }}</label>
+                      <div class="form-floating-custom position-relative">
+                        <input type="text"
+                               name="{{ field.name }}"
+                               id="id_{{ field.name }}"
+                               placeholder=" "
+                               class="{% if field.errors %}is-invalid{% endif %}"
+                               value="{% if field.value %}{{ field.value }}{% endif %}"
+                               {% if field.field.required %}required{% endif %}>
+                        <i class="fa fa-info-circle input-icon"></i>
+                        <label for="id_{{ field.name }}">{{ field.label }}</label>
+                        {% if field.errors %}<div class="invalid-feedback d-block mt-1">{{ field.errors }}</div>{% endif %}
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+
+              <!-- ─── STEP 3: Security (Password) ───────── -->
+              <div class="form-section-title">
+                <i class="fa fa-shield"></i>
+                <h6>Set Password</h6>
+              </div>
+              <div class="row">
+                {% for field in form %}
+                  {% if 'password' in field.name %}
+                    <div class="col-12 col-md-6 mb-4">
+                      <label class="reg-label mb-1 d-block">{{ field.label }}</label>
+                      <div class="form-floating-custom position-relative">
+                        <input type="password"
+                               name="{{ field.name }}"
+                               id="id_{{ field.name }}"
+                               placeholder=" "
+                               class="{% if field.errors %}is-invalid{% endif %}"
+                               {% if field.field.required %}required{% endif %}>
+                        <i class="fa fa-lock input-icon"></i>
+                        <label for="id_{{ field.name }}">{{ field.label }}</label>
+                        <i class="fa fa-eye password-eye" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);cursor:pointer;color:#94a3b8;z-index:10;"></i>
+
+                        {% if field.name == 'password1' %}
+                          <div class="password-strength-bar mt-2">
+                            <div class="progress" style="height:5px;background:rgba(0,0,0,0.06);border-radius:3px;">
+                              <div class="strength-fill progress-bar" style="width:0%;transition:width 0.3s ease;"></div>
+                            </div>
+                            <small class="strength-label font-weight-bold" style="font-size:0.72rem;"></small>
+                          </div>
+                          <div class="caps-warn alert alert-warning py-1 px-2 mt-2 mb-0 small" style="display:none;">
+                            <i class="fa fa-exclamation-triangle mr-1"></i> Caps Lock is ON
+                          </div>
+                        {% endif %}
+
+                        {% if field.errors %}<div class="invalid-feedback d-block mt-1">{{ field.errors }}</div>{% endif %}
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+
+              <!-- Submit -->
+              <div class="mt-3">
+                <button type="submit" class="btn-pt-register" id="registerBtn">
+                  <span class="btn-text"><i class="fa fa-check-circle"></i> Create My Account</span>
+                  <span class="btn-spinner spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display:none;"></span>
+                </button>
+              </div>
+            </form>
+
+            <!-- Login Link -->
+            <div class="text-center mt-4 pt-3" style="border-top:1px solid rgba(6,182,212,0.12);">
+              <span class="reg-sub small">Already have an account?</span>
+              <a href="{% url 'accounts:login' %}" class="ml-1 font-weight-bold small" style="color:#06B6D4;text-decoration:none;">
+                Log In Here <i class="fa fa-arrow-right fa-sm"></i>
+              </a>
+            </div>
+
+          </div><!-- /.pt-glass-card -->
+        </div><!-- /.pt-card-wrap -->
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const usernameInput = document.getElementById('id_username');
+  const emailInput    = document.getElementById('id_email');
+  const phoneInput    = document.getElementById('id_phone_number');
+  const passwordInput = document.getElementById('id_password1');
+  const confirmInput  = document.getElementById('id_password2');
+
+  /* ── Step indicator ── */
+  function updateSteps() {
+    const groups = [
+      { step: document.getElementById('pt-step-1'), fields: [usernameInput, emailInput] },
+      { step: document.getElementById('pt-step-2'), fields: [phoneInput] },
+      { step: document.getElementById('pt-step-3'), fields: [passwordInput] }
+    ];
+    groups.forEach(function(g, i) {
+      const filled = g.fields.some(function(f) { return f && f.value.trim().length > 0; });
+      if (filled) {
+        g.step.classList.add('done');
+        if (i + 1 < groups.length) groups[i+1].step.classList.add('active');
+      }
+    });
+  }
+  document.querySelectorAll('input').forEach(function(inp) { inp.addEventListener('input', updateSteps); });
+
+  /* ── Validation helper ── */
+  function setFieldState(inp, ok, msg) {
+    if (!inp) return;
+    const p = inp.closest('.form-floating-custom');
+    if (!p) return;
+    let fb = p.querySelector('.invalid-feedback');
+    if (!fb) { fb = document.createElement('div'); fb.className = 'invalid-feedback d-block mt-1'; p.appendChild(fb); }
+    if (ok) { inp.classList.remove('is-invalid'); inp.classList.add('is-valid'); fb.style.display = 'none'; }
+    else    { inp.classList.remove('is-valid');   inp.classList.add('is-invalid'); fb.textContent = msg; fb.style.display = 'block'; }
+  }
+
+  function debounce(fn, w) {
+    let t; return function() { const a = arguments, c = this; clearTimeout(t); t = setTimeout(() => fn.apply(c, a), w); };
+  }
+
+  if (usernameInput) usernameInput.addEventListener('input', debounce(function () {
+    const v = usernameInput.value.trim();
+    if (v.length < 3) { setFieldState(usernameInput, false, 'Min 3 characters.'); return; }
+    fetch('/check-username/?username=' + encodeURIComponent(v)).then(r => r.json())
+      .then(d => setFieldState(usernameInput, !d.exists, d.exists ? 'Username taken.' : ''));
+  }, 500));
+
+  if (emailInput) emailInput.addEventListener('input', debounce(function () {
+    const v = emailInput.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { setFieldState(emailInput, false, 'Invalid email.'); return; }
+    fetch('/check-email/?email=' + encodeURIComponent(v)).then(r => r.json())
+      .then(d => setFieldState(emailInput, !d.exists, d.exists ? 'Email already registered.' : ''));
+  }, 500));
+
+  if (phoneInput) phoneInput.addEventListener('input', function () {
+    const v = phoneInput.value.trim();
+    setFieldState(phoneInput, v.length === 0 || /^\+?[1-9]\d{1,14}$/.test(v), 'Enter a valid phone number.');
+  });
+
+  if (confirmInput && passwordInput) confirmInput.addEventListener('input', function () {
+    setFieldState(confirmInput, confirmInput.value === passwordInput.value, 'Passwords do not match.');
+  });
+
+  if (passwordInput) passwordInput.addEventListener('input', function () {
+    const v = passwordInput.value;
+    const bar = document.querySelector('.strength-fill'), label = document.querySelector('.strength-label');
+    if (!bar || !label) return;
+    let s = 0;
+    if (v.length >= 8) s++; if (/[A-Z]/.test(v)) s++; if (/[0-9]/.test(v)) s++; if (/[^A-Za-z0-9]/.test(v)) s++;
+    const lvl = [
+      { p:'20%', c:'#ef4444', t:'Very Weak' },
+      { p:'40%', c:'#f59e0b', t:'Weak' },
+      { p:'60%', c:'#f59e0b', t:'Fair' },
+      { p:'80%', c:'#10b981', t:'Strong' },
+      { p:'100%',c:'#10b981', t:'Very Strong' }
+    ][s] || { p:'20%', c:'#ef4444', t:'Very Weak' };
+    bar.style.width = lvl.p; bar.style.background = lvl.c; label.textContent = lvl.t; label.style.color = lvl.c;
+  });
+
+  document.querySelectorAll('input[type=password]').forEach(function (inp) {
+    inp.addEventListener('keyup', function (e) {
+      const w = inp.closest('.form-floating-custom') && inp.closest('.form-floating-custom').querySelector('.caps-warn');
+      if (w) w.style.display = e.getModifierState && e.getModifierState('CapsLock') ? 'block' : 'none';
+    });
+  });
+
+  document.querySelectorAll('.password-eye').forEach(function (eye) {
+    eye.addEventListener('click', function () {
+      const inp = eye.closest('.form-floating-custom').querySelector('input');
+      if (!inp) return;
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+      eye.classList.toggle('fa-eye'); eye.classList.toggle('fa-eye-slash');
+    });
+  });
+
+  const form = document.getElementById('registerForm');
+  if (form) form.addEventListener('submit', function () {
+    const btn = document.getElementById('registerBtn');
+    const txt = btn.querySelector('.btn-text'), spin = btn.querySelector('.btn-spinner');
+    if (txt) txt.style.display = 'none'; if (spin) spin.style.display = 'inline-block';
+    btn.disabled = true;
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,393 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="DocMed - Premium Healthcare Appointment Portal">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Title -->
+  <title>DocMed {% block title %} {% endblock %}</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="{% static 'img/core-img/favicon.ico' %}">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/design-tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/glass.css' %}">
+  <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  {% block styles %} {% endblock %}
+
+  <!-- External Libraries -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+  <!-- Page Loader (Optional) -->
+  <div class="page-loader" id="pageLoader">
+    <div class="skeleton" style="width: 100px; height: 100px; border-radius: 50%;"></div>
+  </div>
+
+  <!-- Animated Background Blobs -->
+  <div class="bg-blobs">
+    <div class="blob blob-primary"></div>
+    <div class="blob blob-secondary"></div>
+    <div class="blob blob-accent"></div>
+  </div>
+   {% include 'nav.html' %}
+
+  <!-- ════ Email Verification Banner ════ -->
+  {% if request.session.email_unverified %}
+  <div id="emailVerifyBanner" style="
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    background: linear-gradient(90deg, #4F46E5, #06B6D4);
+    color: #fff; font-size: 14px; font-weight: 500;
+    padding: 10px 20px; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px;
+    box-shadow: 0 2px 12px rgba(79,70,229,0.3);
+    animation: slideDown 0.4s ease;
+  ">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:18px;">✉️</span>
+      <span>
+        <strong>Welcome to DocMed.</strong>
+        Please verify your email to unlock all features
+        (appointments, payments, report uploads).
+      </span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
+      <a href="{% url 'accounts:resend-verification' %}" style="
+        background:rgba(255,255,255,0.2); color:#fff; text-decoration:none;
+        padding:6px 16px; border-radius:20px; font-size:13px; font-weight:600;
+        border:1px solid rgba(255,255,255,0.4);
+      ">Resend Email</a>
+      <button onclick="dismissVerifyBanner()" style="
+        background:none;border:none;color:rgba(255,255,255,0.7);
+        cursor:pointer;font-size:18px;line-height:1;
+      " aria-label="Dismiss">&times;</button>
+    </div>
+  </div>
+  <div style="height:44px;"></div><!-- spacer -->
+  <span id="dismissBannerUrl" data-url="{% url 'accounts:dismiss-verify-banner' %}" hidden></span>
+  {% endif %}
+
+  <!-- ════ Registration Success Modal (Confetti) ════ -->
+  {% if request.session.show_registration_success %}
+  <div id="regSuccessOverlay" style="
+    position:fixed;inset:0;z-index:99999;
+    background:rgba(15,23,42,0.6);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;
+    animation:fadeIn 0.3s ease;
+  ">
+    <!-- Confetti canvas -->
+    <canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:99998;"></canvas>
+
+    <div style="
+      background:#fff;border-radius:24px;padding:44px 40px;
+      max-width:460px;width:92%;text-align:center;
+      box-shadow:0 30px 80px rgba(79,70,229,0.2);
+      position:relative;z-index:99999;
+      animation:scaleIn 0.45s cubic-bezier(0.34,1.56,0.64,1);
+    ">
+      <!-- Success Ring -->
+      <div style="
+        width:90px;height:90px;border-radius:50%;
+        background:linear-gradient(135deg,#4F46E5,#06B6D4);
+        display:flex;align-items:center;justify-content:center;
+        margin:0 auto 20px;
+        box-shadow:0 10px 30px rgba(79,70,229,0.35);
+        animation:successPop 0.6s ease 0.2s both;
+      ">
+        <span style="font-size:40px;line-height:1;">✓</span>
+      </div>
+
+      <h2 style="font-size:26px;font-weight:800;color:#1e293b;margin-bottom:8px;">🎉 Welcome to DocMed</h2>
+      <p style="font-size:16px;color:#64748b;margin-bottom:6px;">Hello, <strong>{{ request.user.first_name|default:request.user.username }}</strong>!</p>
+      <p style="font-size:14px;color:#94a3b8;margin-bottom:28px;">Account connected successfully.</p>
+
+      <div style="
+        background:linear-gradient(135deg,#f0f4ff,#e0f2fe);
+        border-radius:12px;padding:14px 20px;margin-bottom:28px;
+      ">
+        <p style="font-size:13px;color:#475569;margin-bottom:4px;">Redirecting to your dashboard in</p>
+        <p id="regCountdown" style="font-size:36px;font-weight:800;color:#4F46E5;line-height:1;">5</p>
+        <p style="font-size:12px;color:#94a3b8;">seconds</p>
+      </div>
+
+      <button onclick="dismissRegSuccess()" style="
+        background:linear-gradient(135deg,#4F46E5,#06B6D4);
+        color:#fff;border:none;padding:13px 36px;
+        border-radius:50px;font-size:15px;font-weight:700;
+        cursor:pointer;width:100%;
+        box-shadow:0 6px 20px rgba(79,70,229,0.3);
+      ">Go to Dashboard &rarr;</button>
+    </div>
+  </div>
+  <span id="dismissRegUrl" data-url="{% url 'accounts:dismiss-reg-success' %}" hidden></span>
+  {% endif %}
+
+  <!-- ***** Header Area End ***** -->
+      {% block content %}
+  {% endblock  %}
+  <!-- ***** Welcome Area Start ***** -->
+
+  <!-- ***** Blog Area End ***** -->
+
+  <!-- ***** Modern Glass Footer Area Start ***** -->
+  <footer class="footer-area position-relative pt-5 pb-3 mt-5" style="background: linear-gradient(180deg, rgba(240, 245, 255, 0.5) 0%, rgba(225, 235, 255, 0.9) 100%); color: #475569; overflow: hidden;">
+    
+    <!-- Animated SVG Wave at the Top -->
+    <div class="custom-shape-divider-top" style="position: absolute; top: 0; left: 0; width: 100%; overflow: hidden; line-height: 0;">
+      <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" style="position: relative; display: block; width: calc(100% + 1.3px); height: 50px; transform: rotate(180deg);">
+        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="var(--color-bg)"></path>
+      </svg>
+    </div>
+
+    <div class="container pt-5 mt-4">
+      <div class="row">
+        <!-- Company Info -->
+        <div class="col-12 col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="100">
+          <h3 class="font-weight-bold mb-3" style="color: #0f172a;"><i class="fa fa-heartbeat text-primary"></i> DocMed</h3>
+          <p class="mb-4" style="color: #334155;">Premium healthcare portal providing easy access to great medical care globally.</p>
+          <div class="contact-info" style="color: #334155;">
+            <p class="mb-2"><i class="fa fa-map-marker text-accent mr-2"></i> Dhaka, Bangladesh</p>
+            <p class="mb-2"><i class="fa fa-phone text-accent mr-2"></i> +880 1798 128...</p>
+            <p class="mb-2"><i class="fa fa-envelope text-accent mr-2"></i> info.docmed@gmail.com</p>
+          </div>
+        </div>
+
+        <!-- Working Hours -->
+        <div class="col-12 col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="200">
+          <h5 class="mb-4" style="color: #0f172a; font-weight:700;">Working Hours</h5>
+          <ul class="list-unstyled">
+            <li class="d-flex justify-content-between mb-2 border-bottom border-light pb-1"><span>Mon-Wed</span> <span style="color: #0f172a; font-weight:600;">8AM - 10PM</span></li>
+            <li class="d-flex justify-content-between mb-2 border-bottom border-light pb-1"><span>Thu-Fri</span> <span style="color: #0f172a; font-weight:600;">8AM - 10PM</span></li>
+            <li class="d-flex justify-content-between mb-2 border-bottom border-light pb-1"><span>Sat</span> <span style="color: #0f172a; font-weight:600;">8AM - 10PM</span></li>
+            <li class="d-flex justify-content-between mb-2 border-bottom border-light pb-1"><span>Sun</span> <span style="color: #0f172a; font-weight:600;">8AM - 10PM</span></li>
+            <li class="d-flex justify-content-between mb-2 border-bottom border-light pb-1"><span>Holiday</span> <span class="text-danger" style="font-weight:600;">Closed</span></li>
+          </ul>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="col-12 col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="300">
+          <h5 class="mb-4" style="color: #0f172a; font-weight:700;">Departments</h5>
+          <ul class="list-unstyled row">
+            <li class="col-6 mb-2"><a href="#" style="color: #475569;" class="animated-link">Cardiology</a></li>
+            <li class="col-6 mb-2"><a href="#" style="color: #475569;" class="animated-link">Neurology</a></li>
+            <li class="col-6 mb-2"><a href="#" style="color: #475569;" class="animated-link">Orthopedics</a></li>
+            <li class="col-6 mb-2"><a href="#" style="color: #475569;" class="animated-link">Dentistry</a></li>
+            <li class="col-6 mb-2"><a href="#" style="color: #475569;" class="animated-link">Surgery</a></li>
+            <li class="col-6 mb-2"><a href="#" style="color: #475569;" class="animated-link">Pediatrics</a></li>
+          </ul>
+        </div>
+
+        <!-- Newsletter & Social -->
+        <div class="col-12 col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="400">
+          <h5 class="mb-4" style="color: #0f172a; font-weight:700;">Newsletter</h5>
+          <p style="color: #334155;">Subscribe for weekly medical news and offers.</p>
+          <form action="#" method="post" class="mb-4">
+            <div class="input-group">
+              <input type="email" class="form-control border-1 text-dark" placeholder="Email Address" style="background: rgba(0,0,0,0.05); border-color: rgba(79,70,229,0.15); border-radius: 20px 0 0 20px; color:#0f172a;" required>
+              <div class="input-group-append">
+                <button class="btn btn-premium btn-primary-gradient shadow-none m-0" type="submit" style="border-radius: 0 20px 20px 0; padding: 12px 20px;"><i class="fa fa-paper-plane"></i></button>
+              </div>
+            </div>
+          </form>
+          <div class="social-links">
+            <a href="https://www.facebook.com/" target="_blank" class="d-inline-flex align-items-center justify-content-center bg-white text-dark rounded-circle mr-2 hover-scale shadow-sm" style="width: 35px; height: 35px; border: 1px solid rgba(79,70,229,0.15);"><i class="fa fa-facebook"></i></a>
+            <a href="https://x.com/" target="_blank" class="d-inline-flex align-items-center justify-content-center bg-white text-dark rounded-circle mr-2 hover-scale shadow-sm" style="width: 35px; height: 35px; border: 1px solid rgba(79,70,229,0.15);"><i class="fa fa-twitter"></i></a>
+            <a href="https://www.linkedin.com/" target="_blank" class="d-inline-flex align-items-center justify-content-center bg-white text-dark rounded-circle mr-2 hover-scale shadow-sm" style="width: 35px; height: 35px; border: 1px solid rgba(79,70,229,0.15);"><i class="fa fa-linkedin"></i></a>
+            <a href="https://www.instagram.com/" target="_blank" class="d-inline-flex align-items-center justify-content-center bg-white text-dark rounded-circle hover-scale shadow-sm" style="width: 35px; height: 35px; border: 1px solid rgba(79,70,229,0.15);"><i class="fa fa-instagram"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Copyright Area -->
+    <div class="container mt-4 pt-3 border-top" style="border-color: rgba(0,0,0,0.08) !important;">
+      <div class="row align-items-center">
+        <div class="col-md-6 text-center text-md-left">
+          <p class="mb-0 small" style="color: #475569;">
+            Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | Premium UI by <a href="#" class="text-accent font-weight-bold">DocMed</a>
+          </p>
+        </div>
+        <div class="col-md-6 text-center text-md-right mt-2 mt-md-0">
+          <a href="#" class="small mr-3" style="color: #475569;">Privacy Policy</a>
+          <a href="#" class="small" style="color: #475569;">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <!-- ***** Modern Glass Footer Area End ***** -->
+
+  <!-- ******* All JS ******* -->
+  <!-- jQuery js -->
+  <script src="{% static 'js/jquery.min.js' %}"></script>
+  <!-- Popper js -->
+  <script src="{% static 'js/popper.min.js' %}"></script>
+  <!-- Bootstrap js -->
+  <script src="{% static 'js/bootstrap.min.js' %}"></script>
+  <!-- All js -->
+  <script src="{% static 'js/dento.bundle.js' %}"></script>
+  <!-- Active js -->
+  <script src="{% static 'js/default-assets/active.js' %}"></script>
+
+   <!-- Toast Messages -->
+   {% if messages %}
+    <div class="alert-messages" id="alertMessages">
+      {% for message in messages %}
+        <div class="alert-glass {{ message.tags }} hover-scale">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+   {% endif %}
+
+  <!-- Modern Floating AI Assistant Widget -->
+  <div class="ai-chat-widget">
+    <button id="aiChatToggle" class="btn-premium btn-primary-gradient animate-pulse-glow" aria-label="Open AI health assistant">
+      <i class="fa fa-commenting-o"></i>
+    </button>
+    
+    <div class="glass-panel ai-chat-window" id="aiChatWindow">
+      <!-- Header -->
+      <div class="ai-chat-header">
+        <h5><i class="fa fa-heartbeat"></i> DocMed AI</h5>
+        <button id="aiChatClose" class="ai-chat-close-btn" aria-label="Close chat"><i class="fa fa-times"></i></button>
+      </div>
+      
+      <!-- Messages Area -->
+      <div class="ai-chat-body" id="aiChatMessages">
+        <div class="chat-msg bot">
+          Hello! I'm your DocMed AI Assistant. How can I help you today?
+        </div>
+        <div class="suggested-questions">
+          <button class="suggestion-chip" data-msg="Book an appointment">Book an appointment</button>
+          <button class="suggestion-chip" data-msg="Find a Cardiologist">Find a Cardiologist</button>
+          <button class="suggestion-chip" data-msg="Working hours">Working hours</button>
+        </div>
+      </div>
+      
+      <!-- Input Area -->
+      <div class="ai-chat-input" style="display:flex; align-items:center;">
+        <button id="aiChatVoice" aria-label="Voice input" style="border:none;background:none;color:var(--color-primary);margin-right:8px;cursor:pointer;"><i class="fa fa-microphone"></i></button>
+        <input type="text" id="aiChatInput" placeholder="Type your message..." autocomplete="off" style="flex:1;">
+        <button id="aiChatSend" aria-label="Send message"><i class="fa fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+
+   {% block javascripts %} {% endblock %}
+
+   <!-- External JS Libraries -->
+   <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+
+   <!-- Project JS -->
+   <script src="{% static 'js/theme.js' %}"></script>
+   <script src="{% static 'js/auth.js' %}"></script>
+   <script src="{% static 'js/navbar.js' %}"></script>
+   <script src="{% static 'js/chatbot.js' %}"></script>
+   <script src="{% static 'js/main.js' %}"></script>
+
+   <!-- ════ Auth UX Scripts ════ -->
+   <style>
+     @keyframes slideDown { from { transform:translateY(-100%); } to { transform:translateY(0); } }
+     @keyframes fadeIn    { from { opacity:0; } to { opacity:1; } }
+     @keyframes scaleIn   { from { opacity:0; transform:scale(0.75); } to { opacity:1; transform:scale(1); } }
+     @keyframes successPop{ from { transform:scale(0); } to { transform:scale(1); } }
+   </style>
+
+   <script>
+   /* ── Email Verify Banner dismiss ── */
+   function dismissVerifyBanner() {
+     var b = document.getElementById('emailVerifyBanner');
+     var s = b && b.nextElementSibling; // spacer
+     if (b) { b.style.transition='opacity 0.3s'; b.style.opacity='0'; setTimeout(function(){ b.remove(); if(s && s.tagName !== 'SPAN') s.remove(); }, 300); }
+     var urlEl = document.getElementById('dismissBannerUrl');
+     var url = urlEl ? urlEl.dataset.url : '/accounts/dismiss-verify-banner/';
+     fetch(url, { method:'POST', headers:{'X-CSRFToken': getCsrfToken()} });
+   }
+
+   /* ── Registration success modal + confetti ── */
+   {% if request.session.show_registration_success %}
+   (function(){
+     /* Simple canvas confetti */
+     var canvas = document.getElementById('confettiCanvas');
+     if (!canvas) return;
+     var ctx = canvas.getContext('2d');
+     canvas.width = window.innerWidth;
+     canvas.height = window.innerHeight;
+     var pieces = [];
+     var colors = ['#4F46E5','#06B6D4','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899'];
+     for (var i = 0; i < 160; i++) {
+       pieces.push({
+         x: Math.random() * canvas.width,
+         y: Math.random() * canvas.height - canvas.height,
+         w: Math.random() * 10 + 5, h: Math.random() * 6 + 4,
+         color: colors[Math.floor(Math.random() * colors.length)],
+         r: Math.random() * Math.PI * 2,
+         dr: (Math.random() - 0.5) * 0.15,
+         dy: Math.random() * 3 + 2,
+         dx: (Math.random() - 0.5) * 1.5,
+       });
+     }
+     var animId;
+     function drawConfetti() {
+       ctx.clearRect(0, 0, canvas.width, canvas.height);
+       pieces.forEach(function(p) {
+         ctx.save();
+         ctx.translate(p.x + p.w/2, p.y + p.h/2);
+         ctx.rotate(p.r);
+         ctx.fillStyle = p.color;
+         ctx.globalAlpha = 0.85;
+         ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+         ctx.restore();
+         p.y += p.dy; p.x += p.dx; p.r += p.dr;
+         if (p.y > canvas.height) { p.y = -20; p.x = Math.random() * canvas.width; }
+       });
+       animId = requestAnimationFrame(drawConfetti);
+     }
+     drawConfetti();
+     setTimeout(function(){ cancelAnimationFrame(animId); ctx.clearRect(0,0,canvas.width,canvas.height); }, 5000);
+
+     /* Countdown */
+     var seconds = 5;
+     var el = document.getElementById('regCountdown');
+     var timer = setInterval(function(){
+       seconds--;
+       if (el) el.textContent = seconds;
+       if (seconds <= 0) { clearInterval(timer); dismissRegSuccess(); }
+     }, 1000);
+   })();
+   {% endif %}
+
+   function dismissRegSuccess() {
+     var overlay = document.getElementById('regSuccessOverlay');
+     if (overlay) { overlay.style.opacity='0'; overlay.style.transition='opacity 0.3s'; setTimeout(function(){ overlay.remove(); }, 300); }
+     var urlEl = document.getElementById('dismissRegUrl');
+     var url = urlEl ? urlEl.dataset.url : '/dismiss-reg-success/';
+     fetch(url, { method:'POST', headers:{'X-CSRFToken': getCsrfToken()} });
+   }
+
+   function getCsrfToken() {
+     var cookie = document.cookie.split(';').find(function(c){ return c.trim().startsWith('csrftoken='); });
+     return cookie ? cookie.split('=')[1].trim() : '';
+   }
+   </script>
+
+</body>
+
+</html>

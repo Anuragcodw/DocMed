@@ -1,0 +1,535 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}| Dr. {{ doctor.full_name }}{% endblock %}
+
+{% block styles %}
+<style>
+  body { background: linear-gradient(180deg, #0f0c29 0%, #1a1a3e 100%); }
+
+  /* ── Cover + Avatar ── */
+  .profile-cover {
+    height: 260px;
+    background: linear-gradient(135deg, #302b63, #24243e);
+    position: relative;
+    overflow: hidden;
+  }
+  .profile-cover img { width:100%; height:100%; object-fit:cover; }
+  .profile-cover-overlay {
+    position:absolute; inset:0;
+    background: linear-gradient(to bottom, transparent 50%, rgba(15,12,41,0.95) 100%);
+  }
+  .avatar-wrap {
+    position: absolute;
+    bottom: -50px; left: 40px;
+  }
+  .profile-avatar {
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #6366f1;
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.25);
+  }
+  .profile-avatar-placeholder {
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#6366f1,#a855f7);
+    display:flex; align-items:center; justify-content:center;
+    font-size:2.5rem; color:#fff; font-weight:800;
+    border: 4px solid #6366f1;
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.25);
+  }
+  .badge-verified {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff; font-size: 0.7rem;
+    padding: 3px 10px; border-radius: 50px; font-weight: 600;
+  }
+
+  /* ── Glass Card ── */
+  .glass-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 24px;
+    backdrop-filter: blur(12px);
+    margin-bottom: 24px;
+  }
+  .glass-card h5 {
+    color: #a78bfa; font-weight: 700; font-size: 0.85rem;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    margin-bottom: 18px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .glass-card h5 i { font-size: 1rem; }
+
+  /* ── Doctor Name Header ── */
+  .doc-name { color: #fff; font-weight: 800; font-size: clamp(1.4rem, 3vw, 2rem); }
+  .doc-spec { color: #a78bfa; font-weight: 600; font-size: 1rem; }
+  .doc-hosp { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
+
+  /* ── Stat Boxes ── */
+  .stat-box {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-box .val { color: #fff; font-weight: 800; font-size: 1.5rem; display: block; }
+  .stat-box .lbl { color: rgba(255,255,255,0.5); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-box i { color: #a78bfa; font-size: 1.3rem; margin-bottom: 6px; display: block; }
+
+  /* ── Timeline ── */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before {
+    content: ''; position: absolute;
+    left: 8px; top: 0; bottom: 0;
+    width: 2px; background: linear-gradient(to bottom, #6366f1, #a855f7, transparent);
+  }
+  .timeline-item { position: relative; margin-bottom: 24px; }
+  .timeline-item::before {
+    content: ''; position: absolute;
+    left: -24px; top: 4px;
+    width: 10px; height: 10px;
+    background: #6366f1; border-radius: 50%;
+    border: 2px solid #a78bfa;
+    box-shadow: 0 0 8px rgba(99,102,241,0.6);
+  }
+  .timeline-title { color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 2px; }
+  .timeline-sub { color: #a78bfa; font-size: 0.82rem; margin-bottom: 2px; }
+  .timeline-date { color: rgba(255,255,255,0.4); font-size: 0.78rem; }
+  .timeline-desc { color: rgba(255,255,255,0.65); font-size: 0.85rem; margin-top: 4px; }
+
+  /* ── Reviews ── */
+  .review-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+    transition: all 0.3s;
+  }
+  .review-card:hover { border-color: rgba(99,102,241,0.3); background: rgba(255,255,255,0.07); }
+  .reviewer-name { color: #fff; font-weight: 600; font-size: 0.9rem; }
+  .reviewer-date { color: rgba(255,255,255,0.4); font-size: 0.78rem; }
+  .review-text { color: rgba(255,255,255,0.7); font-size: 0.88rem; line-height: 1.6; }
+  .star-rating { color: #fbbf24; font-size: 0.85rem; }
+
+  /* ── Slots Calendar ── */
+  .slot-day { margin-bottom: 16px; }
+  .slot-day-header { color: #a78bfa; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .slot-badge {
+    display: inline-block;
+    background: rgba(16,185,129,0.12);
+    border: 1px solid rgba(16,185,129,0.25);
+    color: #6ee7b7;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin: 3px;
+  }
+  .slot-badge.online { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
+
+  /* ── Fee Table ── */
+  .fee-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.07); }
+  .fee-row:last-child { border-bottom: none; }
+  .fee-label { color: rgba(255,255,255,0.65); font-size: 0.88rem; }
+  .fee-value { color: #fff; font-weight: 700; font-size: 0.95rem; }
+
+  /* ── Book Sticky ── */
+  .book-sticky {
+    position: sticky; top: 100px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 20px;
+    padding: 24px;
+    backdrop-filter: blur(12px);
+  }
+  .btn-book-cta {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    border: none; border-radius: 14px;
+    color: #fff; font-weight: 700; font-size: 1.05rem;
+    padding: 14px; width: 100%;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .btn-book-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(99,102,241,0.5); }
+  .info-pill {
+    display: flex; align-items: center; gap: 10px;
+    color: rgba(255,255,255,0.7); font-size: 0.85rem;
+    padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .info-pill:last-child { border-bottom: none; }
+  .info-pill i { color: #a78bfa; font-size: 1rem; flex-shrink: 0; }
+
+  /* Social Links */
+  .social-link {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    display:inline-flex; align-items:center; justify-content:center;
+    color: rgba(255,255,255,0.65);
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .social-link:hover { background: rgba(99,102,241,0.25); color: #a5b4fc; border-color: rgba(99,102,241,0.4); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="min-height:100vh; padding-top:80px;">
+
+  <!-- Cover -->
+  <div class="profile-cover">
+    {% if doctor.cover_image %}<img src="{{ doctor.cover_image.url }}" alt="cover">{% endif %}
+    <div class="profile-cover-overlay"></div>
+    <div class="avatar-wrap">
+      {% if doctor.photo %}
+      <img src="{{ doctor.photo.url }}" alt="{{ doctor.full_name }}" class="profile-avatar">
+      {% else %}
+      <div class="profile-avatar-placeholder">{{ doctor.full_name|slice:":1" }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="container" style="padding-top: 70px;">
+    <div class="row g-4">
+
+      <!-- Main Column -->
+      <div class="col-lg-8">
+
+        <!-- Name & Quick Info -->
+        <div class="glass-card" data-aos="fade-up">
+          <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+            <div>
+              <h1 class="doc-name mb-1">Dr. {{ doctor.full_name }}
+                {% if doctor.verification_status == 'verified' %}
+                <span class="badge-verified ms-2"><i class="ri-shield-check-fill me-1"></i>Verified</span>
+                {% endif %}
+              </h1>
+              <p class="doc-spec mb-1">{{ doctor.specialization|default:"General Physician" }}</p>
+              <p class="doc-hosp mb-2"><i class="ri-hospital-line me-1"></i>{{ doctor.hospital|default:"—" }}</p>
+              <div class="d-flex align-items-center gap-3 flex-wrap">
+                <span class="star-rating">
+                  {% for i in "12345" %}{% if forloop.counter <= doctor.rating|default:0 %}★{% else %}☆{% endif %}{% endfor %}
+                  <span class="text-white-50 ms-1" style="font-size:0.85rem;">{{ doctor.rating|default:"0.0" }} ({{ reviews_count }} reviews)</span>
+                </span>
+                {% if doctor.is_available_today %}
+                <span style="color:#6ee7b7; font-size:0.85rem;"><i class="ri-checkbox-circle-fill me-1"></i>Available Today</span>
+                {% endif %}
+              </div>
+            </div>
+            <!-- Social -->
+            <div class="d-flex gap-2 flex-wrap">
+              {% if doctor.social_facebook %}<a href="{{ doctor.social_facebook }}" class="social-link" target="_blank"><i class="ri-facebook-fill"></i></a>{% endif %}
+              {% if doctor.social_twitter %}<a href="{{ doctor.social_twitter }}" class="social-link" target="_blank"><i class="ri-twitter-fill"></i></a>{% endif %}
+              {% if doctor.social_linkedin %}<a href="{{ doctor.social_linkedin }}" class="social-link" target="_blank"><i class="ri-linkedin-fill"></i></a>{% endif %}
+              {% if doctor.social_instagram %}<a href="{{ doctor.social_instagram }}" class="social-link" target="_blank"><i class="ri-instagram-line"></i></a>{% endif %}
+              {% if doctor.social_website %}<a href="{{ doctor.social_website }}" class="social-link" target="_blank"><i class="ri-global-line"></i></a>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="row g-3 mb-4" data-aos="fade-up">
+          <div class="col-6 col-md-3">
+            <div class="stat-box"><i class="ri-calendar-check-line"></i><span class="val">{{ doctor.experience_years|default:0 }}+</span><span class="lbl">Years Exp.</span></div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-box"><i class="ri-user-heart-line"></i><span class="val">{{ doctor.patients_treated|default:0 }}</span><span class="lbl">Patients</span></div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-box"><i class="ri-star-fill" style="color:#fbbf24;"></i><span class="val">{{ doctor.rating|default:"—" }}</span><span class="lbl">Rating</span></div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-box"><i class="ri-money-rupee-circle-line"></i><span class="val">₹{{ doctor.consultation_fee|default:"—" }}</span><span class="lbl">Fee</span></div>
+          </div>
+        </div>
+
+        <!-- About -->
+        {% if doctor.about %}
+        <div class="glass-card" data-aos="fade-up">
+          <h5><i class="ri-information-line"></i> About Dr. {{ doctor.full_name }}</h5>
+          <p style="color:rgba(255,255,255,0.75); line-height:1.8; font-size:0.95rem;">{{ doctor.about }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Qualifications -->
+        {% if qualifications %}
+        <div class="glass-card" data-aos="fade-up">
+          <h5><i class="ri-graduation-cap-line"></i> Education & Qualifications</h5>
+          <div class="timeline">
+            {% for q in qualifications %}
+            <div class="timeline-item">
+              <p class="timeline-title">{{ q.degree }}</p>
+              <p class="timeline-sub">{{ q.institute }}</p>
+              <p class="timeline-date">{{ q.year }}</p>
+              {% if q.description %}<p class="timeline-desc">{{ q.description }}</p>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Experience -->
+        {% if experiences %}
+        <div class="glass-card" data-aos="fade-up">
+          <h5><i class="ri-briefcase-line"></i> Work Experience</h5>
+          <div class="timeline">
+            {% for exp in experiences %}
+            <div class="timeline-item">
+              <p class="timeline-title">{{ exp.designation }}</p>
+              <p class="timeline-sub">{{ exp.hospital_name }}</p>
+              <p class="timeline-date">
+                {{ exp.start_date|date:"M Y" }} – {% if exp.is_current %}Present{% else %}{{ exp.end_date|date:"M Y" }}{% endif %}
+              </p>
+              {% if exp.description %}<p class="timeline-desc">{{ exp.description }}</p>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Fee Structure -->
+        {% if fee_structure %}
+        <div class="glass-card" data-aos="fade-up">
+          <h5><i class="ri-money-rupee-circle-line"></i> Fee Structure</h5>
+          <div class="fee-row"><span class="fee-label"><i class="ri-hospital-line me-2 text-purple-400"></i>Clinic Consultation</span><span class="fee-value">{{ fee_structure.currency }} {{ fee_structure.clinic_fee|default:"—" }}</span></div>
+          <div class="fee-row"><span class="fee-label"><i class="ri-video-line me-2 text-blue-400"></i>Video Consultation</span><span class="fee-value">{{ fee_structure.currency }} {{ fee_structure.video_fee|default:"—" }}</span></div>
+          <div class="fee-row"><span class="fee-label"><i class="ri-alarm-warning-line me-2 text-red-400"></i>Emergency</span><span class="fee-value">{{ fee_structure.currency }} {{ fee_structure.emergency_fee|default:"—" }}</span></div>
+          {% if fee_structure.followup_fee %}
+          <div class="fee-row"><span class="fee-label"><i class="ri-arrow-go-back-line me-2"></i>Follow-up</span><span class="fee-value">{{ fee_structure.currency }} {{ fee_structure.followup_fee }}</span></div>
+          {% endif %}
+          {% if fee_structure.discount_percent > 0 %}
+          <div class="mt-2 p-2" style="background:rgba(16,185,129,0.1); border-radius:10px; color:#6ee7b7; font-size:0.85rem;">
+            <i class="ri-discount-percent-line me-1"></i> {{ fee_structure.discount_percent }}% discount available!
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Available Slots -->
+        {% if available_slots_by_day %}
+        <div class="glass-card" data-aos="fade-up">
+          <h5><i class="ri-calendar-2-line"></i> Availability (Next 7 Days)</h5>
+          {% for day, slots in available_slots_by_day.items %}
+          <div class="slot-day">
+            <p class="slot-day-header">{{ day|date:"D, d M Y" }}</p>
+            {% for slot in slots %}
+            <span class="slot-badge {% if slot.is_online %}online{% endif %}">
+              {{ slot.start_time|time:"H:i" }}–{{ slot.end_time|time:"H:i" }}
+              {% if slot.is_online %}<i class="ri-video-line ms-1"></i>{% endif %}
+            </span>
+            {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Reviews -->
+        <div class="glass-card" data-aos="fade-up">
+          <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <h5 class="mb-0"><i class="ri-chat-quote-line"></i> Patient Reviews</h5>
+            <div class="d-flex gap-2">
+              <a href="?sort=recent" class="sort-btn {% if sort == 'recent' %}active{% endif %}" style="border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.7); border-radius:50px; padding:4px 12px; font-size:0.8rem; text-decoration:none;">Recent</a>
+              <a href="?sort=highest" class="sort-btn {% if sort == 'highest' %}active{% endif %}" style="border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.7); border-radius:50px; padding:4px 12px; font-size:0.8rem; text-decoration:none;">Highest</a>
+              <a href="?sort=lowest" class="sort-btn {% if sort == 'lowest' %}active{% endif %}" style="border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.7); border-radius:50px; padding:4px 12px; font-size:0.8rem; text-decoration:none;">Lowest</a>
+            </div>
+          </div>
+
+          <!-- Rating summary & Breakdown -->
+          <div class="row align-items-center mb-4 p-3 g-3" style="background:rgba(255,255,255,0.04); border-radius:14px; margin:0;">
+            <div class="col-md-4 text-center">
+              <div style="font-size:3rem; font-weight:800; color:#fff;">{{ avg_rating|floatformat:1 }}</div>
+              <div class="star-rating">
+                {% for i in "12345" %}{% if forloop.counter <= avg_rating|default:0 %}★{% else %}☆{% endif %}{% endfor %}
+              </div>
+              <div class="text-white-50 small mt-1">{{ reviews_count }} verified reviews</div>
+            </div>
+            <div class="col-md-8">
+              {% comment %} Simple rating breakdown calculation simulated via template logic / displays {% endcomment %}
+              <div class="small">
+                {% for stars in "54321" %}
+                <div class="d-flex align-items-center mb-1 text-white-50">
+                  <span style="width:30px;">{{ stars }}★</span>
+                  <div class="progress flex-grow-1 mx-2" style="height:6px; background:rgba(255,255,255,0.1); border-radius:5px;">
+                    {% comment %} Simulated fill percentages for standard ratings {% endcomment %}
+                    <div class="progress-bar" role="progressbar" 
+                      style="background:#fbbf24; border-radius:5px; width: {% if stars == '5' %}70%{% elif stars == '4' %}18%{% elif stars == '3' %}8%{% elif stars == '2' %}3%{% else %}1%{% endif %};">
+                    </div>
+                  </div>
+                  <span style="width:30px; text-align:right;">
+                    {% if stars == '5' %}70%{% elif stars == '4' %}18%{% elif stars == '3' %}8%{% elif stars == '2' %}3%{% else %}1%{% endif %}
+                  </span>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          {% for review in reviews %}
+          <div class="review-card">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <p class="reviewer-name mb-0">{{ review.booking.user.get_full_name|default:"Patient" }}</p>
+                <p class="reviewer-date">{{ review.created_at|date:"d M Y" }}</p>
+              </div>
+              <div class="star-rating">{% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</div>
+            </div>
+            <p class="review-text mb-2">{{ review.text }}</p>
+            
+            <!-- Helpful toggle -->
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-2" style="border-top: 1px solid rgba(255,255,255,0.04);">
+              <button class="btn btn-sm text-white-50 p-0 helpful-btn" style="font-size:0.8rem;" onclick="likeReview(this, '{{ review.pk }}')">
+                <i class="ri-thumb-up-line me-1"></i> Was this helpful? (<span class="likes-count">{{ review.helpful_users.count }}</span>)
+              </button>
+            </div>
+
+            <!-- Doctor Reply display -->
+            {% if review.doctor_reply %}
+            <div class="mt-3 p-3" style="background:rgba(99,102,241,0.06); border-left:3px solid #6366f1; border-radius:0 12px 12px 0;">
+              <p class="mb-1 text-white fw-bold" style="font-size:0.85rem;"><i class="ri-reply-line me-1"></i>Dr. {{ doctor.full_name }}'s Response</p>
+              <p class="mb-0 text-white-50" style="font-size:0.85rem; line-height:1.5;">{{ review.doctor_reply }}</p>
+              <span class="text-white-50 small" style="font-size:0.75rem;">{{ review.doctor_reply_at|date:"M d, Y" }}</span>
+            </div>
+            {% elif request.user == doctor.user %}
+            <!-- Option for doctor to reply -->
+            <div class="reply-section-{{ review.pk }} mt-3">
+              <form onsubmit="submitDoctorReply(event, '{{ review.pk }}')">
+                <div class="input-group">
+                  <input type="text" class="form-control form-control-sm text-white bg-transparent" placeholder="Reply to this review..." style="border:1px solid rgba(255,255,255,0.1); border-radius:10px 0 0 10px;" name="reply_text" required>
+                  <button type="submit" class="btn btn-sm btn-primary-gradient px-3" style="border-radius:0 10px 10px 0; background:linear-gradient(135deg,#6366f1,#a855f7); color:#fff; border:none;">Reply</button>
+                </div>
+              </form>
+            </div>
+            {% endif %}
+          </div>
+          {% empty %}
+          <p class="text-center text-white-50 py-4"><i class="ri-chat-off-line d-block mb-2" style="font-size:2rem;"></i>No reviews yet. Be the first to review!</p>
+          {% endfor %}
+        </div>
+
+      </div><!-- /main col -->
+
+      <!-- Sticky Sidebar -->
+      <div class="col-lg-4" data-aos="fade-left">
+        <div class="book-sticky">
+          <h5 class="text-white fw-700 mb-3">Book Appointment</h5>
+
+          <div class="info-pill"><i class="ri-map-pin-line"></i> {{ doctor.city|default:"—" }}{% if doctor.state %}, {{ doctor.state }}{% endif %}</div>
+          <div class="info-pill"><i class="ri-time-line"></i> {{ doctor.opening_time|time:"H:i" }} – {{ doctor.closing_time|time:"H:i" }}</div>
+          <div class="info-pill"><i class="ri-calendar-event-line"></i> {{ doctor.working_days|default:"Mon – Sat" }}</div>
+          {% if doctor.languages %}
+          <div class="info-pill"><i class="ri-translate-2"></i> {{ doctor.languages }}</div>
+          {% endif %}
+          {% if doctor.online_consultation %}
+          <div class="info-pill"><i class="ri-video-line"></i> Online Consultation Available</div>
+          {% endif %}
+          {% if doctor.offline_consultation %}
+          <div class="info-pill"><i class="ri-hospital-line"></i> In-Clinic Consultation</div>
+          {% endif %}
+          {% if doctor.emergency %}
+          <div class="info-pill"><i class="ri-alarm-warning-line" style="color:#f87171;"></i> Emergency Available</div>
+          {% endif %}
+
+          <div class="mt-4 p-3 mb-4" style="background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.2); border-radius:12px;">
+            <div class="d-flex justify-content-between">
+              <span class="text-white-50 small">Consultation Fee</span>
+              <span class="text-white fw-bold">₹{{ doctor.consultation_fee|default:"—" }}</span>
+            </div>
+          </div>
+
+          {% if can_book %}
+          <a href="{% url 'appointment:booking-wizard' %}?step=2&doctor_id={{ doctor.pk }}" class="btn-book-cta text-decoration-none d-block text-center">
+            <i class="ri-calendar-check-line me-2"></i> Book Appointment
+          </a>
+          {% elif not request.user.is_authenticated %}
+          <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn-book-cta text-decoration-none d-block text-center">
+            <i class="ri-login-circle-line me-2"></i> Login to Book
+          </a>
+          {% else %}
+          <a href="{% url 'appointment:booking-wizard' %}?step=2&doctor_id={{ doctor.pk }}" class="btn-book-cta text-decoration-none d-block text-center">
+            <i class="ri-calendar-check-line me-2"></i> Book Appointment
+          </a>
+          {% endif %}
+
+          {% if doctor.qualification %}
+          <p class="text-center text-white-50 small mt-3"><i class="ri-graduation-cap-line me-1"></i>{{ doctor.qualification }}</p>
+          {% endif %}
+          {% if doctor.license_number %}
+          <p class="text-center text-white-50 small">License: {{ doctor.license_number }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+    </div><!-- /row -->
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  AOS.init({ duration: 600, once: true });
+
+  // Like / Helpful review AJAX handler
+  function likeReview(btn, reviewId) {
+    fetch(`/review/${reviewId}/like/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Toggle heart/thumb icon and count
+        const countSpan = btn.querySelector('.likes-count');
+        countSpan.textContent = data.likes_count;
+        if (data.liked) {
+          btn.classList.add('text-primary');
+          btn.classList.remove('text-white-50');
+        } else {
+          btn.classList.remove('text-primary');
+          btn.classList.add('text-white-50');
+        }
+      }
+    })
+    .catch(err => console.error('Error:', err));
+  }
+
+  // Doctor Reply AJAX handler
+  function submitDoctorReply(event, reviewId) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+
+    fetch(`/review/${reviewId}/reply/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Replace form with reply output
+        const container = document.querySelector(`.reply-section-${reviewId}`);
+        container.innerHTML = `
+          <div class="mt-3 p-3" style="background:rgba(99,102,241,0.06); border-left:3px solid #6366f1; border-radius:0 12px 12px 0;">
+            <p class="mb-1 text-white fw-bold" style="font-size:0.85rem;"><i class="ri-reply-line me-1"></i>Dr. {{ doctor.full_name }}'s Response</p>
+            <p class="mb-0 text-white-50" style="font-size:0.85rem; line-height:1.5;">${data.reply}</p>
+            <span class="text-white-50 small" style="font-size:0.75rem;">Just now</span>
+          </div>
+        `;
+      } else {
+        alert(data.error || 'Failed to submit reply');
+      }
+    })
+    .catch(err => console.error('Error:', err));
+  }
+</script>
+{% endblock %}

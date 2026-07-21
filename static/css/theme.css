@@ -1,0 +1,688 @@
+/* ============================================================
+   theme.css — Premium DocMed Theme
+   ============================================================ */
+
+/* ── Navbar ─────────────────────────────────────────────── */
+.header-area {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+
+.navbar-brand h3 {
+  font-size: 24px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-main) !important;
+  letter-spacing: 0.3px;
+  transition: color 0.25s ease;
+  position: relative;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-pill);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 60%;
+}
+
+.nav-link:hover {
+  color: var(--color-primary) !important;
+}
+
+/* ── Top Header ─────────────────────────────────────────── */
+.top-header-area {
+  background: var(--color-dark) !important;
+  font-size: 13px;
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn-premium {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: var(--radius-pill);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-primary-gradient {
+  background: var(--gradient-primary);
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.35);
+}
+
+.btn-primary-gradient:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(79, 70, 229, 0.5);
+  color: #ffffff !important;
+}
+
+.shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+/* ── Glass Panel ─────────────────────────────────────────── */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float);
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  padding: 24px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-float);
+}
+
+/* ── Text Gradient ───────────────────────────────────────── */
+.text-gradient {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Animated Link ───────────────────────────────────────── */
+.animated-link {
+  position: relative;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.animated-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--gradient-primary);
+  transition: width 0.35s ease;
+}
+
+.animated-link:hover::after {
+  width: 100%;
+}
+
+/* ── Hover Scale ─────────────────────────────────────────── */
+.hover-scale {
+  transition: transform 0.3s ease !important;
+}
+
+.hover-scale:hover {
+  transform: translateY(-4px) scale(1.02) !important;
+}
+
+/* ── Shadow Utilities ────────────────────────────────────── */
+.shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+.shadow-float {
+  box-shadow: var(--shadow-float);
+}
+
+/* ── Badges ──────────────────────────────────────────────── */
+.badge-premium {
+  background: var(--gradient-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+}
+
+/* ── Skeleton Loader ─────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Page Loader ─────────────────────────────────────────── */
+.page-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  z-index: 99999;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.page-loader.loaded {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ── Dropdown Menu ───────────────────────────────────────── */
+.dropdown-menu.glass-panel {
+  min-width: 200px;
+}
+
+.dropdown-item {
+  border-radius: var(--radius-sm);
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.dropdown-item:hover {
+  background: rgba(79, 70, 229, 0.08);
+  color: var(--color-primary);
+}
+
+/* ── Alert Glass ─────────────────────────────────────────── */
+.alert-glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 14px 20px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  animation: slideInRight 0.4s ease;
+}
+
+.alert-messages {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  z-index: 9999;
+  max-width: 340px;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ── AI Chat Widget ──────────────────────────────────────── */
+.ai-chat-widget {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 9990;
+}
+
+.ai-chat-widget > button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+}
+
+.ai-chat-window {
+  position: absolute;
+  bottom: 75px;
+  right: 0;
+  width: 340px;
+  max-height: 480px;
+  display: none;
+  flex-direction: column;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.ai-chat-window.open {
+  display: flex;
+}
+
+.ai-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--gradient-primary);
+  color: #fff;
+}
+
+.ai-chat-header h5 {
+  margin: 0;
+  font-size: 16px;
+  color: #fff;
+}
+
+.ai-chat-close-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.ai-chat-close-btn:hover { opacity: 1; }
+
+.ai-chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--glass-bg);
+}
+
+.chat-msg {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.chat-msg.bot {
+  background: rgba(79, 70, 229, 0.1);
+  color: var(--color-text-main);
+  border-bottom-left-radius: 4px;
+  align-self: flex-start;
+}
+
+.chat-msg.user {
+  background: var(--gradient-primary);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+  align-self: flex-end;
+}
+
+.suggested-questions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.suggestion-chip {
+  background: rgba(79, 70, 229, 0.08);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  color: var(--color-primary);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.suggestion-chip:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.ai-chat-input {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 8px;
+  background: var(--glass-bg);
+  border-top: 1px solid var(--glass-border);
+}
+
+.ai-chat-input input {
+  flex: 1;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  padding: 8px 14px;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.5);
+  outline: none;
+  transition: border-color 0.25s ease;
+}
+
+.ai-chat-input input:focus {
+  border-color: var(--color-primary);
+}
+
+.ai-chat-input button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+.ai-chat-input button:hover {
+  transform: scale(1.1);
+}
+
+/* ── Background Blobs ────────────────────────────────────── */
+.bg-blobs {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+  animation: blobFloat 8s ease-in-out infinite;
+}
+
+.blob-primary {
+  width: 400px;
+  height: 400px;
+  background: var(--color-primary);
+  top: -100px;
+  right: -100px;
+}
+
+.blob-secondary {
+  width: 300px;
+  height: 300px;
+  background: var(--color-secondary);
+  bottom: 100px;
+  left: -80px;
+  animation-delay: 2s;
+}
+
+.blob-accent {
+  width: 250px;
+  height: 250px;
+  background: var(--color-accent);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: 4s;
+}
+
+@keyframes blobFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(20px, -20px) scale(1.05); }
+  66% { transform: translate(-15px, 15px) scale(0.95); }
+}
+
+/* ── Theme Toggle Button ─────────────────────────────────── */
+.theme-switch-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  cursor: pointer;
+}
+
+.theme-switch-btn:hover {
+  transform: rotate(20deg);
+  box-shadow: var(--shadow-glow);
+}
+
+/* ── Form Elements ───────────────────────────────────────── */
+.form-control {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  padding: 10px 16px;
+  font-size: 14px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.form-control:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  outline: none;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .ai-chat-window {
+    width: calc(100vw - 40px);
+    right: -10px;
+  }
+
+  .alert-messages {
+    max-width: calc(100vw - 40px);
+  }
+
+  .glass-panel {
+    border-radius: var(--radius-md);
+  }
+
+  /* Mobile: cap dropdown at 260px, prevent overflow */
+  .nav-dropdown-menu {
+    min-width: 260px !important;
+    max-width: 90vw !important;
+    right: 0 !important;
+  }
+}
+
+/* Desktop: capped at 300px for login, 260px for others (set inline) */
+@media (min-width: 992px) {
+  .login-dropdown-menu {
+    min-width: 300px !important;
+    max-width: 300px !important;
+  }
+}
+
+/* ── Login & Premium Buttons Hover / Active scale animation fix ── */
+.btn-premium:hover,
+.btn-primary-gradient:hover {
+  transition: all .25s ease !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 25px rgba(79, 70, 229, .25) !important;
+}
+
+.btn-premium:active,
+.btn-primary-gradient:active {
+  transform: translateY(0) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Floating Label Form System (auth pages: login, register)
+   Applies to .form-floating-custom with .input-icon
+   ═══════════════════════════════════════════════════════════ */
+.form-floating-custom {
+  position: relative;
+  margin-bottom: 0;
+}
+
+.form-floating-custom input,
+.form-floating-custom select,
+.form-floating-custom textarea {
+  width: 100%;
+  height: 58px;
+  padding: 22px 20px 8px 52px !important;
+  border: 1.5px solid rgba(79, 70, 229, 0.18);
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #0F172A !important;
+  transition: border-color 0.28s ease, box-shadow 0.28s ease;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.form-floating-custom input:focus,
+.form-floating-custom select:focus,
+.form-floating-custom textarea:focus {
+  border-color: #4F46E5 !important;
+  box-shadow: 0 0 0 3.5px rgba(79, 70, 229, 0.13) !important;
+  background: #ffffff !important;
+}
+
+.form-floating-custom input.is-invalid,
+.form-floating-custom select.is-invalid {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12) !important;
+}
+
+.form-floating-custom input.is-valid,
+.form-floating-custom select.is-valid {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12) !important;
+}
+
+/* Floating label */
+.form-floating-custom label {
+  position: absolute;
+  left: 52px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #94a3b8;
+  font-weight: 500;
+  pointer-events: none;
+  transition: all 0.22s ease;
+  background: transparent;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+/* Label moves up when input has content or is focused */
+.form-floating-custom input:focus ~ label,
+.form-floating-custom input:not(:placeholder-shown) ~ label,
+.form-floating-custom select:focus ~ label,
+.form-floating-custom textarea:focus ~ label,
+.form-floating-custom textarea:not(:placeholder-shown) ~ label {
+  top: 13px;
+  transform: translateY(0);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #4F46E5;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Left icon inside input */
+.form-floating-custom .input-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #94a3b8;
+  pointer-events: none;
+  z-index: 5;
+  transition: color 0.25s ease;
+}
+
+.form-floating-custom:focus-within .input-icon {
+  color: #4F46E5;
+}
+
+/* Password eye toggle sits right */
+.form-floating-custom .password-eye {
+  z-index: 10;
+  cursor: pointer;
+  color: #94a3b8;
+  transition: color 0.25s ease;
+}
+
+.form-floating-custom .password-eye:hover {
+  color: #4F46E5;
+}
+
+/* Textarea variant */
+.form-floating-custom textarea {
+  height: auto;
+  min-height: 100px;
+  padding-top: 28px !important;
+  resize: vertical;
+}
+
+.form-floating-custom textarea ~ label {
+  top: 20px;
+  transform: none;
+}
+
+.form-floating-custom textarea:focus ~ label,
+.form-floating-custom textarea:not(:placeholder-shown) ~ label {
+  top: 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #4F46E5;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive: single column on mobile */
+@media (max-width: 576px) {
+  .form-floating-custom input,
+  .form-floating-custom select {
+    height: 54px;
+    font-size: 14px;
+  }
+}

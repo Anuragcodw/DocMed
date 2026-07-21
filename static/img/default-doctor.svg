@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="doctorBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+    <linearGradient id="skin" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffedd5" />
+      <stop offset="100%" stop-color="#fed7aa" />
+    </linearGradient>
+  </defs>
+  <!-- Background Circle -->
+  <circle cx="60" cy="60" r="56" fill="url(#doctorBg)" />
+  <!-- Shoulders / Clothes -->
+  <path d="M25,98 C25,82 35,72 60,72 C85,72 95,82 95,98 L95,110 L25,110 Z" fill="#ffffff" />
+  <path d="M42,75 L60,94 L78,75 L70,72 L50,72 Z" fill="#e2e8f0" />
+  <!-- Scrub V-Neck -->
+  <path d="M48,72 L60,86 L72,72 Z" fill="#0ea5e9" />
+  <!-- Stethoscope -->
+  <path d="M38,72 C38,88 82,88 82,72" fill="none" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+  <circle cx="60" cy="92" r="6" fill="#94a3b8" />
+  <line x1="60" y1="86" x2="60" y2="92" stroke="#94a3b8" stroke-width="3" />
+  <!-- Neck -->
+  <path d="M50,55 L50,72 L70,72 L70,55 Z" fill="url(#skin)" />
+  <!-- Head -->
+  <circle cx="60" cy="45" r="18" fill="url(#skin)" />
+  <!-- Hair (Doctor Cap) -->
+  <path d="M40,40 C40,25 80,25 80,40 C80,40 40,40 40,40 Z" fill="#1e293b" />
+  <!-- Face Details (Glasses/Eyes) -->
+  <circle cx="53" cy="44" r="3" fill="#1e293b" />
+  <circle cx="67" cy="44" r="3" fill="#1e293b" />
+  <path d="M56,48 C58,50 62,50 64,48" fill="none" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round" />
+</svg>

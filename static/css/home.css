@@ -1,0 +1,151 @@
+.home-page {
+  overflow-x: hidden;
+}
+
+.home-page .hp-section {
+  overflow: visible;
+  min-height: auto;
+  padding-top: clamp(80px, 10vw, 100px);
+  padding-bottom: clamp(80px, 10vw, 100px);
+}
+
+.home-page .hp-section > .container {
+  overflow: visible;
+}
+
+.home-page .hp-section-title,
+.home-page .hp-section-sub,
+.home-page .hp-hero-title,
+.home-page .hp-hero-sub,
+.home-page .hp-hero-badge,
+.home-page .hp-search-title,
+.home-page .hp-search-field label,
+.home-page .hp-search-field input,
+.home-page .hp-search-field select,
+.home-page .hp-spec-card .hp-spec-title,
+.home-page .hp-spec-card .hp-spec-desc,
+.home-page .hp-doctor-name,
+.home-page .hp-doctor-meta li,
+.home-page .hp-doctor-footer,
+.home-page .hp-fee,
+.home-page .hp-book-btn,
+.home-page .hp-view-btn,
+.home-page .hp-review-text,
+.home-page .hp-review-meta-item,
+.home-page .hp-reviewer-name,
+.home-page .hp-reviewer-role,
+.home-page .hp-faq-card .card-body p,
+.home-page .hp-big-label,
+.home-page .hp-avail-badge,
+.home-page .hp-rating-badge {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+  text-overflow: initial;
+}
+
+.home-page .hp-hero-title,
+.home-page .hp-search-title,
+.home-page .hp-section-title {
+  line-height: 1.2;
+}
+
+.home-page .hp-hero-sub,
+.home-page .hp-section-sub,
+.home-page .hp-spec-card .hp-spec-desc,
+.home-page .hp-review-text,
+.home-page .hp-faq-card .card-body p {
+  line-height: 1.75;
+}
+
+.home-page .hp-search-panel {
+  overflow: visible;
+  padding: 40px 32px;
+}
+
+.home-page .hp-search-field {
+  min-width: 0;
+}
+
+.home-page .hp-search-field .field-icon {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.home-page .hp-search-field input,
+.home-page .hp-search-field select {
+  min-height: 48px;
+  height: auto;
+  padding: 14px 14px 14px 38px;
+  line-height: 1.5;
+}
+
+.home-page .hp-search-field label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.home-page .hp-spec-card,
+.home-page .hp-doctor-card,
+.home-page .hp-review-card,
+.home-page .hp-faq-card,
+.home-page .hp-big-stat,
+.home-page .hp-process-step {
+  height: auto;
+  min-height: auto;
+  overflow: visible;
+}
+
+.home-page .hp-doctor-body,
+.home-page .hp-doctor-footer {
+  min-height: auto;
+}
+
+.home-page .hp-doctor-meta li {
+  align-items: flex-start;
+  line-height: 1.5;
+}
+
+.home-page .hp-doctor-footer {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.home-page .hp-book-btn,
+.home-page .hp-view-btn {
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.home-page .hp-hero-btns {
+  align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+  .home-page .hp-section {
+    padding-top: 80px;
+    padding-bottom: 80px;
+  }
+
+  .home-page .hp-search-panel {
+    padding: 28px 20px;
+  }
+
+  .home-page .hp-hero-title {
+    font-size: clamp(1.9rem, 7vw, 2.8rem);
+  }
+
+  .home-page .hp-stats-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .home-page .hp-doctor-footer {
+    justify-content: center;
+  }
+
+  .home-page .hp-book-btn,
+  .home-page .hp-view-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

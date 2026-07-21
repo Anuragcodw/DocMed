@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Confirmed</title>
+</head>
+<body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f5f7; margin: 0; padding: 0;-webkit-font-smoothing: antialiased;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f4f5f7; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden;">
+                    <!-- Header -->
+                    <tr style="background-color: #06b6d4; color: #ffffff; text-align: center;">
+                        <td style="padding: 40px 20px;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: bold;">DocMed Healthcare</h1>
+                            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Payment Confirmation & Receipt</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px; color: #333333; line-height: 1.6;">
+                            <h2 style="margin-top: 0; font-size: 20px; color: #10b981;">Payment Confirmed ✅</h2>
+                            <p>Dear {{ booking.patient_name }},</p>
+                            <p>Thank you for choosing DocMed. Your payment has been successfully processed. Below are the transaction details and appointment summary:</p>
+                            
+                            <!-- Detail Box -->
+                            <table border="0" cellpadding="10" cellspacing="0" width="100%" style="background-color: #f8fafc; border-radius: 8px; margin: 25px 0;">
+                                <tr>
+                                    <td width="40%" style="color: #64748b; font-size: 14px;">Invoice Number:</td>
+                                    <td width="60%" style="font-weight: bold; font-size: 14px;">{{ invoice_number }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #64748b; font-size: 14px;">Transaction ID:</td>
+                                    <td style="font-family: monospace; font-size: 13px; color: #0f172a;">{{ payment.transaction_id }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #64748b; font-size: 14px;">Amount Paid:</td>
+                                    <td style="font-weight: bold; color: #06b6d4; font-size: 14px;">{{ amount }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #64748b; font-size: 14px;">Payment Method:</td>
+                                    <td style="font-size: 14px;">{{ gateway }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="border-top: 1px solid #e2e8f0; height: 1px; padding: 0;"></td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #64748b; font-size: 14px;">Doctor:</td>
+                                    <td style="font-weight: bold; font-size: 14px;">Dr. {{ doctor_name }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #64748b; font-size: 14px;">Hospital:</td>
+                                    <td style="font-size: 14px;">{{ hospital_name }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #64748b; font-size: 14px;">Date:</td>
+                                    <td style="font-size: 14px;">{{ date }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #64748b; font-size: 14px;">Time Slot:</td>
+                                    <td style="font-size: 14px;">{{ time }}</td>
+                                </tr>
+                            </table>
+
+                            <p style="margin-bottom: 0;">You can download your PDF invoice anytime from your dashboard. If you need any assistance, feel free to contact us at support@docmed.com.</p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr style="background-color: #f8fafc; color: #64748b; font-size: 12px; text-align: center; border-top: 1px solid #f1f5f9;">
+                        <td style="padding: 30px;">
+                            <p style="margin: 0;">&copy; {{ date|slice:"-4:" }} DocMed Healthcare. All rights reserved.</p>
+                            <p style="margin: 5px 0 0 0;">Dhaka, Bangladesh</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

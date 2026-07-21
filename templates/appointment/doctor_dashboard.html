@@ -1,0 +1,494 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Doctor Dashboard - DocMed Premium{% endblock %}
+
+{% block content %}
+<section class="section-padding-100" style="padding-top: 130px; min-height: 90vh; background: var(--color-bg);">
+  <div class="container">
+    
+    <!-- Top Dashboard Header -->
+    <div class="row align-items-center mb-5" data-aos="fade-up">
+      <div class="col-md-8">
+        <h2 style="font-weight: 800; color: var(--color-text-main);" class="mb-1">
+          Doctor Portal
+        </h2>
+        <p class="text-muted mb-0">Manage your consultation slots, review booking requests, and record medical notes.</p>
+      </div>
+      <div class="col-md-4 text-md-right mt-3 mt-md-0 d-flex justify-content-md-end align-items-center" style="gap: 12px;">
+        <!-- Online/Offline Status Indicator -->
+        <form action="{% url 'appointment:doctor-toggle-availability' %}" method="post" class="m-0">
+          {% csrf_token %}
+          <button type="submit" class="btn {% if stats.is_online %}btn-success{% else %}btn-secondary{% endif %} btn-sm font-weight-bold" style="border-radius: var(--radius-pill); padding: 6px 16px; border: none;">
+            <span class="available-dot mr-1" style="background-color: {% if stats.is_online %}#fff{% else %}#cbd5e1{% endif %};"></span>
+            {% if stats.is_online %}Online{% else %}Offline{% endif %}
+          </button>
+        </form>
+        <a href="{% url 'appointment:doctor-appointment-create' %}" class="btn-premium btn-primary-gradient px-4 py-2 hover-scale shadow-glow" style="display: inline-flex; align-items: center; gap: 8px;">
+          <i class="fa fa-plus-circle"></i> Create Slot
+        </a>
+      </div>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="row mb-5" data-aos="fade-up" data-aos-delay="100">
+      <div class="col-6 col-lg-3 mb-4">
+        <div class="glass-panel text-center p-3" style="border-radius: var(--radius-md); border-left: 4px solid var(--color-primary);">
+          <div style="font-size: 24px; font-weight: 800; color: var(--color-primary);">{{ stats.total_slots }}</div>
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">Operational Slots</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3 mb-4">
+        <div class="glass-panel text-center p-3" style="border-radius: var(--radius-md); border-left: 4px solid var(--color-warning);">
+          <div style="font-size: 24px; font-weight: 800; color: var(--color-warning);">{{ stats.pending }}</div>
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">Pending Approvals</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3 mb-4">
+        <div class="glass-panel text-center p-3" style="border-radius: var(--radius-md); border-left: 4px solid var(--color-success);">
+          <div style="font-size: 24px; font-weight: 800; color: var(--color-success);">{{ stats.patients }}</div>
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">Patients Treated</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3 mb-4">
+        <div class="glass-panel text-center p-3" style="border-radius: var(--radius-md); border-left: 4px solid var(--color-accent);">
+          <div style="font-size: 24px; font-weight: 800; color: var(--color-accent);">${{ stats.earnings }}</div>
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">Est. Earnings (${{ stats.fee }}/apt)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Visual Analytics Strip -->
+    <div class="row mb-5" data-aos="fade-up" data-aos-delay="150">
+      <div class="col-lg-8 mb-4">
+        <div class="glass-panel p-4" style="border-radius: var(--radius-lg); height: 350px; background: rgba(255, 255, 255, 0.45);">
+          <h5 style="font-weight: 700; color: var(--color-text-main);" class="mb-3"><i class="fa fa-line-chart text-primary"></i> Earnings & Consultations Trend</h5>
+          <div style="position: relative; height: 260px;">
+            <canvas id="doctorEarningsChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 mb-4">
+        <div class="glass-panel p-4" style="border-radius: var(--radius-lg); height: 350px; background: rgba(255, 255, 255, 0.45);">
+          <h5 style="font-weight: 700; color: var(--color-text-main);" class="mb-3"><i class="fa fa-pie-chart text-success"></i> Appointment Modes</h5>
+          <div style="position: relative; height: 260px;">
+            <canvas id="doctorModesChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid Layout -->
+    <div class="row">
+      
+      <!-- Right side: Bookings & Slots Management -->
+      <div class="col-lg-12">
+        <div class="glass-panel p-4" style="border-radius: var(--radius-lg);">
+          
+          <!-- Tabs -->
+          <ul class="nav nav-pills mb-4" id="doctorDashboardTabs" role="tablist" style="gap: 8px;">
+            <li class="nav-item">
+              <a class="nav-link active px-4 py-2 font-weight-bold" id="requests-tab" data-toggle="pill" href="#requests" role="tab" style="border-radius: var(--radius-pill); font-size:13px;">
+                <i class="fa fa-clock-o mr-1"></i> Pending Requests ({{ pending_bookings|length }})
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link px-4 py-2 font-weight-bold" id="upcoming-tab" data-toggle="pill" href="#upcoming" role="tab" style="border-radius: var(--radius-pill); font-size:13px;">
+                <i class="fa fa-calendar-check-o mr-1"></i> Upcoming ({{ upcoming_bookings|length }})
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link px-4 py-2 font-weight-bold" id="slots-tab" data-toggle="pill" href="#slots" role="tab" style="border-radius: var(--radius-pill); font-size:13px;">
+                <i class="fa fa-list mr-1"></i> My Operational Slots ({{ slots|length }})
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link px-4 py-2 font-weight-bold" id="history-tab" data-toggle="pill" href="#history" role="tab" style="border-radius: var(--radius-pill); font-size:13px;">
+                <i class="fa fa-history mr-1"></i> History ({{ past_bookings|length }})
+              </a>
+            </li>
+          </ul>
+
+          <div class="tab-content" id="doctorDashboardTabsContent">
+            
+            <!-- TAB 1: PENDING REQUESTS -->
+            <div class="tab-pane fade show active" id="requests" role="tabpanel">
+              {% if pending_bookings %}
+                <div class="glass-table-container">
+                  <table class="glass-table">
+                    <thead>
+                      <tr>
+                        <th>Patient Info</th>
+                        <th>Contact</th>
+                        <th>Preferred Time</th>
+                        <th>Message</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for booking in pending_bookings %}
+                        <tr>
+                          <td>
+                            <div style="font-weight: 700; color: var(--color-text-main);">{{ booking.full_name }}</div>
+                            <span class="text-muted small" style="font-size: 11px;">Registered Patient</span>
+                          </td>
+                          <td style="font-size: 13px;">{{ booking.phone_number }}</td>
+                          <td style="font-size: 12px; font-weight: 600;">
+                            {{ booking.date|date:"F d, Y" }}
+                            <div class="text-muted font-weight-normal" style="font-size: 11px;">{{ booking.appointment.start_time }} to {{ booking.appointment.end_time }}</div>
+                          </td>
+                          <td style="font-style: italic; max-width: 250px; font-size: 12px;">"{{ booking.message }}"</td>
+                          <td>
+                            <div class="d-flex align-items-center" style="gap: 6px;">
+                              <!-- Approve Action -->
+                              <form action="{% url 'appointment:approve-booking' booking.id %}" method="post" class="m-0">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success text-white py-1 px-2" style="border-radius: var(--radius-sm); font-size: 12px;">
+                                  <i class="fa fa-check"></i> Approve
+                                </button>
+                              </form>
+                              
+                              <!-- Reschedule Dropdown -->
+                              <div class="dropdown d-inline-block">
+                                <button class="btn btn-sm btn-info text-white py-1 px-2 dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: var(--radius-sm); font-size: 12px;">
+                                  <i class="fa fa-calendar"></i>
+                                </button>
+                                <div class="dropdown-menu p-3 glass-panel border-0 shadow-soft dropdown-menu-right" style="min-width: 240px; border-radius: var(--radius-md);">
+                                  <form action="{% url 'appointment:reschedule-booking' booking.id %}" method="post" class="m-0">
+                                    {% csrf_token %}
+                                    <label style="font-size: 11px; font-weight: 700; color: var(--color-text-main);" class="mb-1">Select New Date & Time</label>
+                                    <input type="datetime-local" name="new_date" class="form-control form-control-sm mb-2" required value="{{ booking.date|date:'Y-m-d\TH:i' }}">
+                                    <button type="submit" class="btn btn-xs btn-primary btn-block text-white" style="font-size:11px; height:32px;">Update Time</button>
+                                  </form>
+                                </div>
+                              </div>
+
+                              <!-- Reject Action -->
+                              <form action="{% url 'appointment:reject-booking' booking.id %}" method="post" class="m-0" onsubmit="return confirm('Are you sure you want to reject this request?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" style="border-radius: var(--radius-sm); font-size: 12px;" title="Reject">
+                                  <i class="fa fa-ban"></i>
+                                </button>
+                              </form>
+                            </div>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <div class="text-center py-5">
+                  <i class="fa fa-users text-muted mb-3" style="font-size: 40px;"></i>
+                  <h5 class="text-dark font-weight-bold">No Pending Booking Requests</h5>
+                  <p class="text-muted mb-0 small">Patient booking requests requiring your approval will appear here.</p>
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- TAB 2: UPCOMING APPOINTMENTS -->
+            <div class="tab-pane fade" id="upcoming" role="tabpanel">
+              {% if upcoming_bookings %}
+                <div class="glass-table-container">
+                  <table class="glass-table">
+                    <thead>
+                      <tr>
+                        <th>Patient Name</th>
+                        <th>Contact Info</th>
+                        <th>Appt Date & Time</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for booking in upcoming_bookings %}
+                        <tr>
+                          <td>
+                            <div style="font-weight: 700; color: var(--color-text-main);">{{ booking.full_name }}</div>
+                            <span class="text-muted small" style="font-size:11px;">Patient Profile</span>
+                          </td>
+                          <td style="font-size: 13px;">{{ booking.phone_number }}</td>
+                          <td style="font-size: 12px; font-weight: 600;">
+                            {{ booking.date|date:"l, F d, Y" }}
+                            <div class="text-muted font-weight-normal" style="font-size: 11px;">{{ booking.appointment.start_time }} to {{ booking.appointment.end_time }}</div>
+                          </td>
+                          <td>
+                            {% if booking.status == 'approved' %}
+                              <span class="badge badge-success" style="border-radius: 4px; font-size:10px;"><i class="fa fa-check"></i> Confirmed</span>
+                            {% elif booking.status == 'rescheduled' %}
+                              <span class="badge badge-info" style="border-radius: 4px; font-size:10px;"><i class="fa fa-calendar"></i> Rescheduled</span>
+                            {% endif %}
+                          </td>
+                          <td>
+                            <div class="d-flex align-items-center" style="gap: 8px;">
+                              <!-- Jitsi Meeting controls -->
+                              {% if booking.meeting_url %}
+                                <a href="{% url 'appointment:join-meeting' booking.id %}" class="btn btn-sm btn-info text-white py-1 px-2 font-weight-bold" style="border-radius: var(--radius-sm); font-size: 11px;">
+                                  <i class="fa fa-video-camera"></i> Join Call
+                                </a>
+                              {% else %}
+                                <form action="{% url 'appointment:create-meeting' booking.id %}" method="post" class="m-0">
+                                  {% csrf_token %}
+                                  <button type="submit" class="btn btn-sm btn-outline-info py-1 px-2 font-weight-bold" style="border-radius: var(--radius-sm); font-size: 11px;">
+                                    <i class="fa fa-video-camera"></i> Create Call
+                                  </button>
+                                </form>
+                              {% endif %}
+
+                              <!-- Complete Trigger (Dropdown Form) -->
+                              <div class="dropdown d-inline-block">
+                                <button class="btn btn-sm btn-success text-white py-1 px-2 dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: var(--radius-sm); font-size: 12px;">
+                                  <i class="fa fa-stethoscope"></i> Complete
+                                </button>
+                                <div class="dropdown-menu p-3 glass-panel border-0 shadow-soft dropdown-menu-right" style="min-width: 300px; border-radius: var(--radius-md);">
+                                  <form action="{% url 'appointment:complete-booking' booking.id %}" method="post" class="m-0">
+                                    {% csrf_token %}
+                                    <label style="font-size: 11px; font-weight: 700; color: var(--color-text-main);" class="mb-1">Clinical / Medical Notes</label>
+                                    <textarea name="doctor_notes" class="form-control form-control-sm mb-3" rows="3" placeholder="Write prescription instructions, clinical notes etc." required></textarea>
+                                    <button type="submit" class="btn btn-sm btn-success btn-block text-white" style="font-size: 11px;">
+                                      <i class="fa fa-check-circle"></i> Save & Complete
+                                    </button>
+                                  </form>
+                                </div>
+                              </div>
+
+                              <!-- Cancel Action -->
+                              <form action="{% url 'appointment:cancel-booking' booking.id %}" method="post" class="m-0" onsubmit="return confirm('Cancel this confirmed appointment?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" style="border-radius: var(--radius-sm); font-size: 12px;" title="Cancel Booking">
+                                  <i class="fa fa-times"></i>
+                                </button>
+                              </form>
+
+                              <!-- Missed Action -->
+                              <form action="{% url 'appointment:missed-booking' booking.id %}" method="post" class="m-0" onsubmit="return confirm('Mark this appointment as Missed?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-dark py-1 px-2" style="border-radius: var(--radius-sm); font-size: 12px;" title="Mark Missed">
+                                  <i class="fa fa-exclamation-triangle"></i>
+                                </button>
+                              </form>
+
+                            </div>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <div class="text-center py-5">
+                  <i class="fa fa-calendar-check-o text-muted mb-3" style="font-size: 40px;"></i>
+                  <h5 class="text-dark font-weight-bold">No Upcoming Confirmed Consultations</h5>
+                  <p class="text-muted mb-0 small">Approved and scheduled appointments will appear here.</p>
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- TAB 3: OPERATIONAL SLOTS -->
+            <div class="tab-pane fade" id="slots" role="tabpanel">
+              {% if slots %}
+                <div class="row">
+                  {% for apt in slots %}
+                    <div class="col-12 col-md-6 col-lg-4 mb-4">
+                      <div class="doctor-grid-card hover-scale" style="background: rgba(255,255,255,0.5);">
+                        <div class="doctor-card-details p-3">
+                          <div class="doctor-card-dept font-weight-bold text-accent">{{ apt.department }}</div>
+                          <h5 class="font-weight-bold my-1">Dr. {{ apt.full_name }}</h5>
+                          <p class="doctor-card-text text-muted small my-2" style="line-height: 1.4;">
+                            <i class="fa fa-graduation-cap text-primary mr-1"></i> {{ apt.qualification_name }}, {{ apt.institute_name }}<br>
+                            <i class="fa fa-hospital-o text-primary mr-1"></i> {{ apt.hospital_name }}<br>
+                            <i class="fa fa-clock-o text-primary mr-1"></i> Hours: {{ apt.start_time }} to {{ apt.end_time }}
+                          </p>
+                          <div class="doctor-card-footer d-flex align-items-center justify-content-between pt-2 border-top">
+                            <span class="small text-muted"><i class="fa fa-map-marker"></i> {{ apt.location }}</span>
+                            <a href="{% url 'appointment:delete-appointment' apt.id %}" class="text-danger font-weight-bold small" onclick="return confirm('Delete this operational slot?');">
+                              <i class="fa fa-trash"></i> Delete Slot
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="text-center py-5">
+                  <i class="fa fa-list text-muted mb-3" style="font-size: 40px;"></i>
+                  <h5 class="text-dark font-weight-bold">No Operational Slots Created</h5>
+                  <p class="text-muted mb-4 small">Post operational slot hours so patients can find and book you.</p>
+                  <a href="{% url 'appointment:doctor-appointment-create' %}" class="btn btn-primary text-white"><i class="fa fa-plus-circle"></i> Create First Slot</a>
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- TAB 4: HISTORY -->
+            <div class="tab-pane fade" id="history" role="tabpanel">
+              {% if past_bookings %}
+                <div class="glass-table-container">
+                  <table class="glass-table">
+                    <thead>
+                      <tr>
+                        <th>Patient Name</th>
+                        <th>Contact</th>
+                        <th>Scheduled Date</th>
+                        <th>Status</th>
+                        <th>Clinical Documentation</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for booking in past_bookings %}
+                        <tr>
+                          <td>
+                            <div style="font-weight: 700; color: var(--color-text-main);">{{ booking.full_name }}</div>
+                            <span class="text-muted small" style="font-size:11px;">Patient Profile</span>
+                          </td>
+                          <td style="font-size: 13px;">{{ booking.phone_number }}</td>
+                          <td style="font-size: 12px; font-weight: 600;">
+                            {{ booking.date|date:"M d, Y" }}
+                            <div class="text-muted font-weight-normal" style="font-size: 11px;">{{ booking.appointment.start_time }} - {{ booking.appointment.end_time }}</div>
+                          </td>
+                          <td>
+                            {% if booking.status == 'completed' %}
+                              <span class="badge badge-success" style="border-radius: 4px; font-size:10px;"><i class="fa fa-check-circle"></i> Completed</span>
+                            {% elif booking.status == 'cancelled' %}
+                              <span class="badge badge-danger" style="border-radius: 4px; font-size:10px;"><i class="fa fa-times-circle"></i> Cancelled</span>
+                            {% elif booking.status == 'rejected' %}
+                              <span class="badge badge-secondary" style="border-radius: 4px; font-size:10px;"><i class="fa fa-ban"></i> Rejected</span>
+                            {% elif booking.status == 'missed' %}
+                              <span class="badge badge-dark" style="border-radius: 4px; font-size:10px;"><i class="fa fa-exclamation-triangle"></i> Missed</span>
+                            {% endif %}
+                          </td>
+                          <td style="font-size: 12px; max-width: 250px;">
+                            {% if booking.doctor_notes %}
+                              <div class="p-2 rounded bg-light mb-2" style="border-left: 3px solid var(--color-success);">
+                                <strong>Clinical Notes:</strong><br>
+                                <span class="text-dark">"{{ booking.doctor_notes }}"</span>
+                              </div>
+                            {% endif %}
+                            
+                            {% if booking.status == 'completed' %}
+                              <div class="mt-1">
+                                {% if booking.prescription %}
+                                  <a href="{% url 'appointment:prescription-detail' booking.id %}" class="btn btn-sm btn-outline-primary py-1 px-2 font-weight-bold" style="border-radius: var(--radius-sm); font-size: 10px;">
+                                    <i class="fa fa-file-text-o"></i> View Prescription
+                                  </a>
+                                {% else %}
+                                  <a href="{% url 'appointment:create-prescription' booking.id %}" class="btn btn-sm btn-primary-gradient text-white py-1 px-2 font-weight-bold" style="border-radius: var(--radius-sm); font-size: 10px;">
+                                    <i class="fa fa-pencil-square-o"></i> Write Prescription
+                                  </a>
+                                {% endif %}
+                              </div>
+                            {% elif not booking.doctor_notes %}
+                              <span class="text-muted italic">No notes added.</span>
+                            {% endif %}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <div class="text-center py-5">
+                  <i class="fa fa-history text-muted mb-3" style="font-size: 40px;"></i>
+                  <h5 class="text-dark font-weight-bold">No Consultation Records</h5>
+                  <p class="text-muted mb-0 small">Your completed, cancelled, or missed consult history will be stored here.</p>
+                </div>
+              {% endif %}
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+      
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  AOS.init({ duration: 600, once: true });
+
+  document.addEventListener("DOMContentLoaded", function() {
+    // 1. Doctor Earnings & Consultations Chart
+    const earningsCtx = document.getElementById('doctorEarningsChart').getContext('2d');
+    new Chart(earningsCtx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        datasets: [
+          {
+            label: 'Monthly Earnings (₹)',
+            data: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 35000, 39000, 42000, 40000, 45000],
+            borderColor: '#6366f1',
+            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+            fill: true,
+            tension: 0.3,
+            borderWidth: 3
+          },
+          {
+            label: 'Consultations',
+            data: [24, 38, 30, 50, 44, 60, 56, 70, 78, 84, 80, 90],
+            borderColor: '#ec4899',
+            backgroundColor: 'transparent',
+            tension: 0.3,
+            borderWidth: 2,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { color: '#475569' } }
+        },
+        scales: {
+          y: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: { color: '#475569' }
+          },
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            grid: { drawOnChartArea: false },
+            ticks: { color: '#475569' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#475569' }
+          }
+        }
+      }
+    });
+
+    // 2. Appointment Modes Chart
+    const modesCtx = document.getElementById('doctorModesChart').getContext('2d');
+    new Chart(modesCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['In-Clinic', 'Video Consultation', 'Emergency'],
+        datasets: [{
+          data: [65, 25, 10],
+          backgroundColor: ['#10b981', '#3b82f6', '#ef4444'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#475569' } }
+        },
+        cutout: '70%'
+      }
+    });
+  });
+</script>
+{% endblock %}

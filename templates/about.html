@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us - DocMed Premium{% endblock %}
+
+{% block styles %}
+<style>
+/* ── About Page Premium Styling ──────── */
+.about-page {
+  --ap-primary: #4F46E5;
+  --ap-secondary: #06B6D4;
+  --ap-accent: #8B5CF6;
+  --ap-text-main: #0F172A;
+  --ap-text-sub: #64748B;
+  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 50%, #EFF6FF 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background floating blobs */
+.ap-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 0;
+  animation: apBlobFloat 20s ease-in-out infinite;
+}
+.ap-blob-1 { width: 500px; height: 500px; background: var(--ap-primary); top: -100px; left: -100px; }
+.ap-blob-2 { width: 400px; height: 400px; background: var(--ap-secondary); bottom: 100px; right: -100px; animation-delay: -5s; }
+.ap-blob-3 { width: 300px; height: 300px; background: var(--ap-accent); top: 40%; left: 50%; animation-delay: -10s; }
+
+@keyframes apBlobFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(50px, -50px) scale(1.1); }
+}
+
+/* Hero Section */
+.ap-hero {
+  padding: 140px 0 100px;
+  position: relative;
+}
+.ap-hero-title {
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  color: var(--ap-text-main);
+  line-height: 1.15;
+}
+.ap-hero-gradient {
+  background: linear-gradient(90deg, var(--ap-primary), var(--ap-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.ap-hero-sub {
+  font-size: 1.1rem;
+  color: var(--ap-text-sub);
+  line-height: 1.7;
+}
+
+/* Glass Cards */
+.ap-glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 28px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+.ap-glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 30px 60px rgba(79, 70, 229, 0.1);
+}
+
+/* Statistics */
+.ap-stat-card {
+  text-align: center;
+  padding: 30px;
+}
+.ap-stat-num {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--ap-primary);
+}
+
+/* Sections */
+.ap-section {
+  padding: 80px 0;
+  position: relative;
+  z-index: 1;
+}
+.ap-section-title {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: var(--ap-text-main);
+}
+.ap-section-sub {
+  color: var(--ap-text-sub);
+  font-size: 1rem;
+}
+
+/* Hover illustration shadow-glow effect */
+.ap-ill-container img {
+  filter: drop-shadow(0 15px 30px rgba(79, 70, 229, 0.12));
+  transition: transform 0.4s ease;
+}
+.ap-ill-container:hover img {
+  transform: translateY(-8px);
+}
+
+.ap-team-img{
+    max-height:420px;
+    border-radius:35px;
+    border:4px solid rgba(79,70,229,.15);
+    box-shadow:0 25px 60px rgba(79,70,229,.18);
+    padding:15px;
+    background:rgba(255,255,255,.7);
+    backdrop-filter:blur(20px);
+    transition:all .4s ease;
+}
+
+.ap-team-img:hover{
+    transform:translateY(-8px);
+    box-shadow:0 35px 80px rgba(79,70,229,.28);
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="about-page">
+  <!-- Blobs -->
+  <div class="ap-blob ap-blob-1"></div>
+  <div class="ap-blob ap-blob-2"></div>
+  <div class="ap-blob ap-blob-3"></div>
+
+  <!-- ── HERO BANNER ──────────────────────────────────────── -->
+  <section class="ap-hero" data-aos="fade-up">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-12 col-lg-6" data-aos="fade-right">
+          <span class="badge px-3 py-2 mb-3" style="background: rgba(79, 70, 229, 0.08); color: var(--ap-primary); border-radius: 50px; font-weight:700; font-size:12px; letter-spacing:1px; text-transform:uppercase;">Who We Are</span>
+          <h1 class="ap-hero-title mb-4">
+            We Are Redefining<br>
+            <span class="ap-hero-gradient">Modern Healthcare</span>
+          </h1>
+          <p class="ap-hero-sub mb-5">
+            DocMed is a premium healthcare appointment portal connecting patients to world-class qualified doctors. We deliver an intuitive booking platform paired with cutting-edge medical consultation technology.
+          </p>
+        </div>
+        <div class="col-12 col-lg-6 text-center ap-ill-container" data-aos="fade-left">
+          <img src="{% static 'img/why_choose_us.jpg' %}"
+               alt="DocMed Team"
+               class="img-fluid rounded-4 shadow-lg ap-team-img">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── OUR MISSION & VISION ─────────────────────────────── -->
+  <section class="ap-section">
+    <div class="container">
+      <div class="row" style="row-gap: 30px;">
+        <div class="col-12 col-md-6" data-aos="fade-up" data-aos-delay="100">
+          <div class="ap-glass-card p-5 h-100">
+            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-4" 
+                 style="width:60px; height:60px; background: rgba(79, 70, 229, 0.1); color: var(--ap-primary);">
+              <i class="fa fa-heartbeat fa-2x"></i>
+            </div>
+            <h3 class="font-weight-bold mb-3" style="color: var(--ap-text-main);">Our Mission</h3>
+            <p style="color: var(--ap-text-sub); line-height: 1.6;">
+              To make high-quality medical care accessible and seamless for everyone. By leveraging modern technology, we close the distance between top healthcare providers and patients who need them most.
+            </p>
+          </div>
+        </div>
+        <div class="col-12 col-md-6" data-aos="fade-up" data-aos-delay="200">
+          <div class="ap-glass-card p-5 h-100">
+            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-4" 
+                 style="width:60px; height:60px; background: rgba(6, 182, 212, 0.1); color: var(--ap-secondary);">
+              <i class="fa fa-eye fa-2x"></i>
+            </div>
+            <h3 class="font-weight-bold mb-3" style="color: var(--ap-text-main);">Our Vision</h3>
+            <p style="color: var(--ap-text-sub); line-height: 1.6;">
+              To establish the world's most trusted digital healthcare network, ensuring secure, transparent, and immediate medical consultations for every individual globally.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── STATISTICS ───────────────────────────────────────── -->
+  <section class="ap-section" style="background: rgba(255,255,255,0.4);">
+    <div class="container">
+      <div class="row justify-content-center text-center mb-5">
+        <div class="col-12 col-md-8">
+          <h2 class="ap-section-title">DocMed In Numbers</h2>
+          <p class="ap-section-sub">Delivering outstanding health assistance metrics daily.</p>
+        </div>
+      </div>
+      <div class="row" style="row-gap: 25px;">
+        <div class="col-6 col-md-3" data-aos="zoom-in" data-aos-delay="100">
+          <div class="ap-glass-card ap-stat-card">
+            <div class="ap-stat-num">500+</div>
+            <div class="font-weight-bold mt-2" style="color: var(--ap-text-main); font-size:14px; text-transform:uppercase;">Specialists</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3" data-aos="zoom-in" data-aos-delay="200">
+          <div class="ap-glass-card ap-stat-card">
+            <div class="ap-stat-num">10k+</div>
+            <div class="font-weight-bold mt-2" style="color: var(--ap-text-main); font-size:14px; text-transform:uppercase;">Patients Served</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3" data-aos="zoom-in" data-aos-delay="300">
+          <div class="ap-glass-card ap-stat-card">
+            <div class="ap-stat-num">25k+</div>
+            <div class="font-weight-bold mt-2" style="color: var(--ap-text-main); font-size:14px; text-transform:uppercase;">Appointments</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3" data-aos="zoom-in" data-aos-delay="400">
+          <div class="ap-glass-card ap-stat-card">
+            <div class="ap-stat-num">99%</div>
+            <div class="font-weight-bold mt-2" style="color: var(--ap-text-main); font-size:14px; text-transform:uppercase;">Satisfaction</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── WHY CHOOSE US ────────────────────────────────────── -->
+  <section class="ap-section">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-12 col-lg-6 order-2 order-lg-1 ap-ill-container" data-aos="fade-right">
+          <img src="{% static 'img/why_choose_us.jpg' %}"
+               alt="Choose DocMed" class="img-fluid rounded-4 shadow-lg ap-team-img">
+        </div>
+        <div class="col-12 col-lg-6 order-1 order-lg-2" data-aos="fade-left">
+          <h2 class="ap-section-title mb-4">Why Patients Trust Us</h2>
+          <div class="d-flex mb-4">
+            <div class="mr-3" style="color: var(--ap-primary); font-size: 20px;"><i class="fa fa-check-circle"></i></div>
+            <div>
+              <h5 class="font-weight-bold mb-1" style="color: var(--ap-text-main);">Vetted Medical Experts</h5>
+              <p style="color: var(--ap-text-sub); font-size: 14px;">Every doctor profile is manually verified for credentials, certifications, and experience.</p>
+            </div>
+          </div>
+          <div class="d-flex mb-4">
+            <div class="mr-3" style="color: var(--ap-secondary); font-size: 20px;"><i class="fa fa-check-circle"></i></div>
+            <div>
+              <h5 class="font-weight-bold mb-1" style="color: var(--ap-text-main);">Secure Health Vault</h5>
+              <p style="color: var(--ap-text-sub); font-size: 14px;">Your medical records and consultation history are safeguarded with full end-to-end encryption.</p>
+            </div>
+          </div>
+          <div class="d-flex mb-4">
+            <div class="mr-3" style="color: var(--ap-accent); font-size: 20px;"><i class="fa fa-check-circle"></i></div>
+            <div>
+              <h5 class="font-weight-bold mb-1" style="color: var(--ap-text-main);">Unified Health Ecosystem</h5>
+              <p style="color: var(--ap-text-sub); font-size: 14px;">Manage digital prescriptions, video calls, payments, and medical reports in one premium platform.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TECHNOLOGY STACK ─────────────────────────────────── -->
+  <section class="ap-section" style="background: rgba(255,255,255,0.4);">
+    <div class="container">
+      <div class="row justify-content-center text-center mb-5">
+        <div class="col-12 col-md-8">
+          <h2 class="ap-section-title">Built with Advanced Technology</h2>
+          <p class="ap-section-sub">A secure, scalable stack delivering rapid and reliable digital care.</p>
+        </div>
+      </div>
+      <div class="row justify-content-center" style="row-gap: 20px;">
+        <div class="col-6 col-md-3 col-lg-2 text-center" data-aos="zoom-in" data-aos-delay="100">
+          <div class="ap-glass-card p-4">
+            <i class="fa fa-code fa-2x mb-2" style="color: #4F46E5;"></i>
+            <div class="font-weight-bold" style="font-size:13px; color: var(--ap-text-main);">Django</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3 col-lg-2 text-center" data-aos="zoom-in" data-aos-delay="200">
+          <div class="ap-glass-card p-4">
+            <i class="fa fa-database fa-2x mb-2" style="color: #06B6D4;"></i>
+            <div class="font-weight-bold" style="font-size:13px; color: var(--ap-text-main);">MySQL</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3 col-lg-2 text-center" data-aos="zoom-in" data-aos-delay="300">
+          <div class="ap-glass-card p-4">
+            <i class="fa fa-mobile fa-2x mb-2" style="color: #8B5CF6;"></i>
+            <div class="font-weight-bold" style="font-size:13px; color: var(--ap-text-main);">Bootstrap</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3 col-lg-2 text-center" data-aos="zoom-in" data-aos-delay="400">
+          <div class="ap-glass-card p-4">
+            <i class="fa fa-bolt fa-2x mb-2" style="color: #f59e0b;"></i>
+            <div class="font-weight-bold" style="font-size:13px; color: var(--ap-text-main);">Speech API</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3 col-lg-2 text-center" data-aos="zoom-in" data-aos-delay="500">
+          <div class="ap-glass-card p-4">
+            <i class="fa fa-video-camera fa-2x mb-2" style="color: #10b981;"></i>
+            <div class="font-weight-bold" style="font-size:13px; color: var(--ap-text-main);">WebRTC</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CALL TO ACTION ───────────────────────────────────── -->
+  <section class="ap-section">
+    <div class="container">
+      <div class="ap-glass-card p-5 text-center" 
+           style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.05), rgba(6, 182, 212, 0.05)); border: 2px solid rgba(79, 70, 229, 0.15);">
+        <h2 class="font-weight-bold mb-3" style="color: var(--ap-text-main);">Ready to Consult a Specialist?</h2>
+        <p class="mb-4" style="color: var(--ap-text-sub); max-width: 600px; margin: 0 auto;">
+          Take control of your health today. Connect with verified medical experts in a matter of seconds.
+        </p>
+        <div>
+          <a href="{% url 'appointment:doctor-list' %}" class="btn px-4 py-3 text-white font-weight-bold" 
+             style="background: linear-gradient(135deg, var(--ap-primary), var(--ap-secondary)); border-radius: 50px; border:0; box-shadow: 0 10px 25px rgba(79,70,229,0.3);">
+            <i class="fa fa-calendar-check-o mr-2"></i> Book Appointment Now
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
