@@ -71,6 +71,7 @@ urlpatterns = [
     path('api/doctors/nearby/', DoctorsNearbyAPIView.as_view(), name='api-doctors-nearby'),
     path('api/doctors/<int:pk>/slots/', DoctorSlotAvailabilityAPIView.as_view(), name='api-doctor-slots'),
     path('api/ai/chat/', AIChatView.as_view(), name='api-ai-chat'),
+    path('api/chatbot/', AIChatView.as_view(), name='api-chatbot'),
     path('api/ai/risk-assessment/', AIRiskAssessmentView.as_view(), name='api-ai-risk-assessment'),
 
     # ── Doctor Directory & Public Profile ─────────────────────────────────────
