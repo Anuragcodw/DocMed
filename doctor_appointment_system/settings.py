@@ -371,10 +371,10 @@ UPI_ID = os.environ.get('UPI_ID', 'your_upi_id@bank')  # e.g. docmed@upi
 UPI_MERCHANT_NAME = os.environ.get('UPI_MERCHANT_NAME', 'DocMed Healthcare')
 
 # ---------------------------------------------------------------------------
-# AI Report Analysis
+# AI Report Analysis & Chatbot
 # ---------------------------------------------------------------------------
 # ⚠️  Get your free Gemini API key at https://aistudio.google.com/app/apikey
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'YOUR_GEMINI_API_KEY')
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
 GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-1.5-flash')
 
 # AI Analysis Feature flag (set to False to disable AI and use text extraction only)

@@ -14,6 +14,9 @@
   <!-- Favicon -->
   <link rel="icon" href="{% static 'img/core-img/favicon.ico' %}">
 
+  <!-- Auth state for chatbot.js (no server call needed) -->
+  <meta name="user-authenticated" content="{% if request.user.is_authenticated %}true{% else %}false{% endif %}">
+
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -270,12 +273,15 @@
       <!-- Messages Area -->
       <div class="ai-chat-body" id="aiChatMessages">
         <div class="chat-msg bot">
-          Hello! I'm your DocMed AI Assistant. How can I help you today?
+          Hello! 👋 Welcome to DocMed.<br>
+          How can I assist you today?
+          {% if not request.user.is_authenticated %}<br><small style="opacity:0.75;">💡 <a href="{% url 'accounts:login' %}" style="color:#4f46e5;">Log in</a> for full AI responses.</small>{% endif %}
         </div>
         <div class="suggested-questions">
-          <button class="suggestion-chip" data-msg="Book an appointment">Book an appointment</button>
-          <button class="suggestion-chip" data-msg="Find a Cardiologist">Find a Cardiologist</button>
+          <button class="suggestion-chip" data-msg="Book an appointment">Book appointment</button>
+          <button class="suggestion-chip" data-msg="Find a Cardiologist">Find a doctor</button>
           <button class="suggestion-chip" data-msg="Working hours">Working hours</button>
+          <button class="suggestion-chip" data-msg="I have a fever">Fever help</button>
         </div>
       </div>
       

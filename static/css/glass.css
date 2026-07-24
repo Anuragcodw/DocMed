@@ -442,16 +442,97 @@
 }
 .tts-btn:hover { color: #4f46e5 !important; }
 
+
 /* ---- Mobile Responsive ---- */
+
+/* 320px - 425px: very small phones */
 @media (max-width: 480px) {
   .ai-chat-widget {
     bottom: 16px;
-    right: 16px;
+    right: 12px;
+    z-index: 10000;
   }
+
+  #aiChatToggle {
+    width: 50px;
+    height: 50px;
+    font-size: 18px;
+  }
+
   .ai-chat-window {
-    width: calc(100vw - 32px);
-    height: 75vh;
+    width: calc(100vw - 24px);
+    max-width: 100vw;
+    height: 70vh;
+    max-height: calc(100vh - 100px);
     border-radius: 16px;
+    /* Align to right edge */
+    margin-right: 0;
+  }
+
+  .ai-chat-body {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .chat-msg {
+    font-size: 13px;
+    padding: 9px 12px;
+  }
+
+  #aiChatInput {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  #aiChatSend {
+    width: 34px;
+    height: 34px;
+    font-size: 13px;
+  }
+
+  .ai-chat-header h5 {
+    font-size: 14px;
+  }
+
+  .suggestion-chip {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+}
+
+/* 375px - standard phones */
+@media (min-width: 375px) and (max-width: 480px) {
+  .ai-chat-window {
+    width: calc(100vw - 28px);
+  }
+}
+
+/* 425px - large phones */
+@media (min-width: 425px) and (max-width: 767px) {
+  .ai-chat-window {
+    width: 360px;
+    height: 72vh;
+  }
+}
+
+/* 768px - tablets */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .ai-chat-widget {
+    bottom: 20px;
+    right: 20px;
+  }
+
+  .ai-chat-window {
+    width: 360px;
+    height: 500px;
+  }
+}
+
+/* Safe area inset for modern iOS/Android */
+@supports (padding: max(0px)) {
+  .ai-chat-widget {
+    bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    right: max(12px, env(safe-area-inset-right, 12px));
   }
 }
 
@@ -459,6 +540,7 @@
 @media print {
   .ai-chat-widget { display: none !important; }
 }
+
 
 /* ── Button hover scale fix ── */
 .btn-premium:hover,
