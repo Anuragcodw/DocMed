@@ -412,3 +412,22 @@ GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', '')
 # ---------------------------------------------------------------------------
 POPPLER_PATH = os.environ.get('POPPLER_PATH', r"C:\Users\user\Downloads\Release-26.02.0-0\poppler-26.02.0\Library\bin" if os.name == 'nt' else None)
 TESSERACT_CMD = os.environ.get('TESSERACT_CMD', r"C:\Program Files\Tesseract-OCR\tesseract.exe" if os.name == 'nt' else None)
+
+# ---------------------------------------------------------------------------
+# Python 3.14 + Django 4.2 Template Context Compatibility Patch
+# ---------------------------------------------------------------------------
+# In Python 3.14, copy(super()) inside Django 4.2's BaseContext.__copy__ returns
+# a super proxy object, raising AttributeError: 'super' object has no attribute 'dicts'
+# during template rendering (e.g. Django Admin change forms / inclusion tags).
+try:
+    from django.template.context import BaseContext
+
+    def _base_context_copy(self):
+        duplicate = object.__new__(type(self))
+        duplicate.__dict__.update(self.__dict__)
+        duplicate.dicts = self.dicts[:]
+        return duplicate
+
+    BaseContext.__copy__ = _base_context_copy
+except Exception:
+    pass
