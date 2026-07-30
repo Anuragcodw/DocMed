@@ -129,23 +129,35 @@ TEMPLATES = [
 # ---------------------------------------------------------------------------
 # Database
 # ---------------------------------------------------------------------------
+# Local development: SQLite (no DATABASE_URL needed)
+# Production (Render): PostgreSQL via DATABASE_URL environment variable
+#
+# On Render, set DATABASE_URL to your PostgreSQL Internal/External URL.
+# Format: postgres://USER:PASSWORD@HOST:PORT/DBNAME
+# ---------------------------------------------------------------------------
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+import dj_database_url
+
+DATABASE_URL = os.environ.get('DATABASE_URL', '')
+
+if DATABASE_URL:
+    # Production: PostgreSQL on Render with SSL and connection pooling
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=not DEBUG,
+        )
     }
-}
-
-# Override with DATABASE_URL if available (e.g. Heroku/production)
-try:
-    import dj_database_url
-
-    db_from_env = dj_database_url.config(conn_max_age=600)
-    if db_from_env:
-        DATABASES['default'].update(db_from_env)
-except ImportError:
-    pass
+else:
+    # Local development: SQLite fallback
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # ---------------------------------------------------------------------------
