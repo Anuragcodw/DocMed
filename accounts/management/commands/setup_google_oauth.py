@@ -10,7 +10,7 @@ class Command(BaseCommand):
     help = "Production-ready automated setup for Google OAuth and Site domain configuration."
 
     def handle(self, *args, **options):
-        self.stdout.write("================================================")
+        self.stdout.write("==================================================")
         self.stdout.write("Creating Site...")
 
         # 1. Read and validate environment variables
@@ -36,7 +36,7 @@ class Command(BaseCommand):
                     "\nPlease set GOOGLE_CLIENT_ID and GOOGLE_SECRET_KEY in your environment or Render dashboard."
                 )
             )
-            self.stdout.write("================================================")
+            self.stdout.write("==================================================")
             return
 
         try:
@@ -58,13 +58,11 @@ class Command(BaseCommand):
                 # 3. Create or Update Google SocialApp
                 self.stdout.write("\nCreating Google SocialApp...")
 
-                # Look for existing SocialApp by provider or name
                 existing_apps = list(
                     SocialApp.objects.filter(provider='google') | SocialApp.objects.filter(name='Google OAuth')
                 )
 
                 if existing_apps:
-                    # Update primary app record
                     app = existing_apps[0]
                     app.provider = 'google'
                     app.name = 'Google OAuth'
@@ -72,13 +70,12 @@ class Command(BaseCommand):
                     app.secret = secret_key
                     app.save()
 
-                    # Clean up any duplicate records if they exist
+                    # Clean up any extra duplicate apps
                     for dup_app in existing_apps[1:]:
                         dup_app.delete()
 
                     self.stdout.write("Google SocialApp updated.")
                 else:
-                    # Create new SocialApp
                     app = SocialApp.objects.create(
                         provider='google',
                         name='Google OAuth',
@@ -88,12 +85,12 @@ class Command(BaseCommand):
                     self.stdout.write("Google SocialApp created.")
 
                 # 4. Attach Site(id=1) to SocialApp
+                self.stdout.write("\nAttaching Site...")
                 if not app.sites.filter(id=site.id).exists():
                     app.sites.add(site)
 
-                self.stdout.write("Site attached.")
                 self.stdout.write(self.style.SUCCESS("\nGoogle OAuth setup completed successfully."))
-                self.stdout.write("================================================")
+                self.stdout.write("==================================================")
 
         except ValidationError as e:
             self.stderr.write(self.style.ERROR(f"[ERROR] Validation error during OAuth setup: {e}"))
