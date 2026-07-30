@@ -290,6 +290,12 @@ PASSWORD_RESET_TIMEOUT = int(os.environ.get('PWD_RESET_TIMEOUT', 86400))
 # These flags are auto-enabled in production (when DEBUG=False).
 # In local development they remain off to avoid HTTPS enforcement.
 if not DEBUG:
+    # Render (and most PaaS) terminate SSL at the load balancer/proxy.
+    # This tells Django to trust the X-Forwarded-Proto header from the proxy,
+    # so it knows the original request was HTTPS.
+    # WITHOUT this: SESSION_COOKIE_SECURE and CSRF_COOKIE_SECURE break admin login
+    # because Django thinks the request is HTTP and refuses to set secure cookies.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 3600
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
