@@ -2,6 +2,7 @@ from django.urls import path
 from accounts.views import (
     LoginView,
     LogoutView,
+    RegisterView,
     AdminLoginView,
     DoctorLoginView,
     PatientLoginView,
@@ -26,7 +27,9 @@ from appointment.views import EditDoctorProfileView, EditPatientProfileView
 app_name = 'accounts'
 
 urlpatterns = [
-    # Registration
+    # Unified Registration
+    path('register', RegisterView.as_view(), name='register'),
+    path('register/', RegisterView.as_view(), name='register-slash'),
     path('patient/register', RegisterPatientView.as_view(), name='patient-register'),
     path('doctor/register', RegisterDoctorView.as_view(), name='doctor-register'),
 
@@ -34,13 +37,17 @@ urlpatterns = [
     path('patient/profile/update/', EditPatientProfileView.as_view(), name='patient-profile-update'),
     path('doctor/profile/update/', EditDoctorProfileView.as_view(), name='doctor-profile-update'),
 
-    # Authentication
+    # Unified Authentication
     path('login', LoginView.as_view(), name='login'),
+    path('login/', LoginView.as_view(), name='login-slash'),
     path('logout', LogoutView.as_view(), name='logout'),
+    path('logout/', LogoutView.as_view(), name='logout-slash'),
+
+    # Legacy redirects
     path('admin-login/', AdminLoginView.as_view(), name='admin-login'),
     path('doctor-login/', DoctorLoginView.as_view(), name='doctor-login'),
     path('patient-login/', PatientLoginView.as_view(), name='patient-login'),
-    
+
     # SMS/Phone OTP Login
     path('otp/login', RequestOTPView.as_view(), name='otp-login'),
     path('otp/verify', VerifyOTPView.as_view(), name='otp-verify'),

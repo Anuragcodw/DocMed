@@ -106,13 +106,7 @@
       <!-- Sign Up Redirect -->
       <div class="text-center pt-3 border-top small font-weight-bold" style="border-color: rgba(0,0,0,0.08) !important;">
         <span class="text-muted">Don't have an account?</span> 
-        <div class="dropdown d-inline-block ml-1">
-          <a href="#" class="text-primary dropdown-toggle" data-toggle="dropdown" style="color: #4f46e5;">Register Now</a>
-          <div class="dropdown-menu dropdown-menu-right glass-panel border-0 shadow-soft mt-2 p-2" style="min-width: 150px; border-radius: 12px; background: white; border: 1px solid rgba(0,0,0,0.08);">
-            <a class="dropdown-item py-2 rounded font-weight-bold text-dark" href="{% url 'accounts:patient-register' %}"><i class="fa fa-user mr-2 text-primary"></i> As Patient</a>
-            <a class="dropdown-item py-2 rounded font-weight-bold text-dark" href="{% url 'accounts:doctor-register' %}"><i class="fa fa-user-md mr-2 text-accent"></i> As Doctor</a>
-          </div>
-        </div>
+        <a href="{% url 'accounts:register' %}" class="text-primary hover-scale font-weight-bold ml-1" style="color: #4f46e5;">Register Now</a>
       </div>
 
     </div>

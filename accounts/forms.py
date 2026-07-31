@@ -51,6 +51,122 @@ def validate_strong_password(password):
 # Registration forms
 # ---------------------------------------------------------------------------
 
+REGISTRATION_ROLE_CHOICES = (
+    ('patient', 'Patient'),
+    ('doctor', 'Doctor'),
+)
+
+
+class UnifiedRegistrationForm(UserCreationForm):
+    """
+    Single unified registration form where users select their account role
+    (Patient or Doctor only). Admin registration is strictly prohibited.
+    """
+    role = forms.ChoiceField(
+        choices=REGISTRATION_ROLE_CHOICES,
+        widget=forms.RadioSelect,
+        initial='patient',
+        label='Register As',
+        error_messages={'required': 'Please select your account type (Patient or Doctor).'}
+    )
+
+    PLACEHOLDERS = {
+        'username': 'Enter Username',
+        'first_name': 'Enter First Name',
+        'last_name': 'Enter Last Name',
+        'email': 'Enter Email',
+        'phone_number': 'Enter Phone Number (e.g. +1234567890)',
+        'password1': 'Enter Password',
+        'password2': 'Confirm Password',
+    }
+
+    class Meta:
+        model = User
+        fields = [
+            'role', 'username', 'first_name', 'last_name', 'email',
+            'phone_number', 'password1', 'password2', 'gender',
+        ]
+        error_messages = {
+            'username': {
+                'required': 'Username is required',
+                'unique': 'A user with that username already exists.',
+            },
+            'first_name': {'required': 'First name is required'},
+            'last_name': {'required': 'Last name is required'},
+            'gender': {'required': 'Gender is required'},
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['gender'].required = True
+        self.fields['username'].label = 'Username'
+        self.fields['first_name'].label = 'First Name'
+        self.fields['last_name'].label = 'Last Name'
+        self.fields['email'].label = 'Email'
+        self.fields['phone_number'].label = 'Phone Number'
+        self.fields['password1'].label = 'Password'
+        self.fields['password2'].label = 'Confirm Password'
+        for fieldname in ['password1', 'password2']:
+            self.fields[fieldname].help_text = None
+        _apply_placeholders(self.fields, self.PLACEHOLDERS)
+
+    def clean_role(self):
+        role = self.cleaned_data.get('role')
+        if role not in ['patient', 'doctor']:
+            raise forms.ValidationError('Invalid role. Registration is restricted to Patients and Doctors only.')
+        return role
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username', '').strip()
+        if not username:
+            raise forms.ValidationError('Username is required.')
+        if User.objects.filter(username__iexact=username).exists():
+            raise forms.ValidationError('A user with that username already exists.')
+        if not re.match(r'^[\w.@+-]+$', username):
+            raise forms.ValidationError('Username can only contain alphanumeric characters, underscores, hyphens, dots, and @.')
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip()
+        if not email:
+            raise forms.ValidationError('Email is required.')
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError('A user with that email already exists.')
+        return email
+
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get('phone_number', '').strip()
+        if not phone_number:
+            raise forms.ValidationError('Phone number is required.')
+        if User.objects.filter(phone_number=phone_number).exists():
+            raise forms.ValidationError('A user with that phone number already exists.')
+        if not re.match(r'^\+?[1-9]\d{1,14}$', phone_number):
+            raise forms.ValidationError('Enter a valid phone number (e.g. +1234567890).')
+        return phone_number
+
+    def clean_gender(self):
+        gender = self.cleaned_data.get('gender')
+        if not gender:
+            raise forms.ValidationError('Gender is required.')
+        return gender
+
+    def clean_password1(self):
+        password = self.cleaned_data.get('password1')
+        validate_strong_password(password)
+        return password
+
+    def save(self, commit=True):
+        from appointment.models import DoctorProfile, PatientProfile
+        user = super(UserCreationForm, self).save(commit=False)
+        user.role = self.cleaned_data.get('role', 'patient')
+        if commit:
+            user.save()
+            if user.role == 'doctor':
+                DoctorProfile.objects.get_or_create(user=user)
+            else:
+                PatientProfile.objects.get_or_create(user=user)
+        return user
+
 
 class PatientRegistrationForm(UserCreationForm):
     """Registration form for patient users."""

@@ -11,7 +11,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode, url_has_allowed_host_and_scheme
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.views import View
@@ -20,6 +20,7 @@ from django.urls import reverse
 from django.conf import settings
 
 from accounts.forms import (
+    UnifiedRegistrationForm,
     DoctorRegistrationForm,
     PatientRegistrationForm,
     UserLoginForm,
@@ -157,104 +158,86 @@ def send_reset_email(user, link):
 # ---------------------------------------------------------------------------
 # Base registration view
 # ---------------------------------------------------------------------------
+# Registration views
+# ---------------------------------------------------------------------------
 
-class BaseRegisterView(CreateView):
+class RegisterView(CreateView):
     """
-    Shared base class for patient and doctor registration.
+    Single unified registration view allowing users to register as Patient or Doctor.
+    Admin registration is strictly prohibited.
     """
     model = User
-    success_url = '/login'
+    form_class = UnifiedRegistrationForm
+    template_name = 'accounts/register.html'
     extra_context = {'title': 'Register'}
 
     def dispatch(self, request, *args, **kwargs):
         if self.request.user.is_authenticated:
-            user = self.request.user
-            if user.is_superuser or user.is_staff:
-                return redirect('appointment:admin-dashboard')
-            elif user.role == 'doctor':
-                return redirect('appointment:doctor-appointment')
-            else:
-                return redirect('appointment:patient-bookings')
+            return self._redirect_authenticated(self.request.user)
         return super().dispatch(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
-        form = self.form_class(data=request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            password = form.cleaned_data.get('password1')
-            user.set_password(password)
+    def _redirect_authenticated(self, user):
+        if user.is_superuser or user.is_staff:
+            return redirect('appointment:admin-dashboard')
+        elif getattr(user, 'role', '') == 'doctor':
+            return redirect('appointment:doctor-dashboard')
+        return redirect('appointment:patient-dashboard')
 
-            # --- NEW FLOW: Activate immediately, send email in background ---
-            user.is_active = True
-            user.save()
+    def get_initial(self):
+        initial = super().get_initial()
+        role = self.request.GET.get('role', '').lower()
+        if role in ['patient', 'doctor']:
+            initial['role'] = role
+        return initial
 
-            # Allauth EmailAddress record (unverified until they click link)
-            try:
-                from allauth.account.models import EmailAddress
-                EmailAddress.objects.create(
-                    user=user,
-                    email=user.email,
-                    primary=True,
-                    verified=False,
-                )
-            except Exception:
-                pass
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        password = form.cleaned_data.get('password1')
+        user.set_password(password)
+        user.is_active = True
+        user.save()
 
-            # Send welcome + verify email in background (never blocks the request)
-            send_welcome_email_background(user, request)
+        # Re-save form so save() executes profile creation
+        form.save(commit=True)
 
-            return self._post_registration_response(request, user)
+        try:
+            from allauth.account.models import EmailAddress
+            EmailAddress.objects.create(
+                user=user,
+                email=user.email,
+                primary=True,
+                verified=False,
+            )
+        except Exception:
+            pass
 
-        return render(request, self.template_name, {'form': form})
+        send_welcome_email_background(user, self.request)
 
-    def _post_registration_response(self, request, user):
-        """
-        Override in subclasses for role-specific post-registration behaviour.
-        Default: auto-login the user and redirect to their dashboard.
-        """
-        # Auto-login
-        auth.login(request, user, backend='accounts.backends.MultiFieldBackend')
+        # Auto-login after registration
+        auth.login(self.request, user, backend='accounts.backends.MultiFieldBackend')
+        self.request.session.cycle_key()
+        self.request.session['show_registration_success'] = True
+        self.request.session['registration_role'] = user.role
+        self.request.session['email_unverified'] = True
 
-        # Store flag so dashboard can show the success modal + confetti
-        request.session['show_registration_success'] = True
-        request.session['registration_role'] = user.role
-
-        # Persistent verification banner flag
-        request.session['email_unverified'] = True
-
-        messages.success(request, f'Registration Successful 🎉 Welcome to DocMed, {user.first_name or user.username}!')
-        return self._get_dashboard_redirect(user)
-
-    def _get_dashboard_redirect(self, user):
-        if user.role == 'doctor':
-            return redirect('appointment:doctor-appointment')
-        return redirect('appointment:patient-bookings')
+        messages.success(self.request, f'Registration Successful 🎉 Welcome to DocMed, {user.first_name or user.username}!')
+        return self._redirect_authenticated(user)
 
 
-class RegisterPatientView(BaseRegisterView):
-    """Register a new patient account."""
-    form_class = PatientRegistrationForm
-    template_name = 'accounts/patient/register.html'
+class RegisterPatientView(RedirectView):
+    """Backward compatibility redirect to unified registration page."""
+    permanent = False
+
+    def get_redirect_url(self, *args, **kwargs):
+        return reverse('accounts:register') + '?role=patient'
 
 
-class RegisterDoctorView(BaseRegisterView):
-    """Register a new doctor account."""
-    form_class = DoctorRegistrationForm
-    template_name = 'accounts/doctor/register.html'
+class RegisterDoctorView(RedirectView):
+    """Backward compatibility redirect to unified registration page."""
+    permanent = False
 
-    def _post_registration_response(self, request, user):
-        """
-        Doctors are NOT auto-logged in; their profile is under admin review.
-        Show a confirmation message and redirect to login.
-        """
-        # Send welcome email in background
-        send_welcome_email_background(user, request)
-        messages.success(
-            request,
-            'Profile submitted successfully 🩺 Your verification is under review. '
-            'You will receive a confirmation email once approved.'
-        )
-        return redirect('accounts:login')
+    def get_redirect_url(self, *args, **kwargs):
+        return reverse('accounts:register') + '?role=doctor'
 
 # ---------------------------------------------------------------------------
 # AJAX Live Validation Checks
@@ -338,7 +321,11 @@ class VerifyEmailView(View):
 # ---------------------------------------------------------------------------
 
 class LoginView(FormView):
-    """Authenticate a user with username/email/phone and password."""
+    """
+    Single unified login view for all users (Patient, Doctor, Admin).
+    Supports Email/Username/Phone + Password and Google Sign In.
+    Redirects dynamically based on user role upon successful login.
+    """
     form_class = UserLoginForm
     template_name = 'accounts/login.html'
     extra_context = {'title': 'Login'}
@@ -349,31 +336,32 @@ class LoginView(FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        next_url = self.request.GET.get('next', '')
-        if next_url:
+        next_url = self.request.GET.get('next', '').strip()
+        if next_url and url_has_allowed_host_and_scheme(url=next_url, allowed_hosts={self.request.get_host()}):
             return next_url
-            
+
         user = self.request.user
         if user.is_superuser or user.is_staff:
             return reverse('appointment:admin-dashboard')
-        elif user.role == 'doctor':
-            return reverse('appointment:doctor-appointment')
-        elif user.role == 'patient':
-            return reverse('appointment:patient-bookings')
+        elif getattr(user, 'role', '') == 'doctor':
+            return reverse('appointment:doctor-dashboard')
+        elif getattr(user, 'role', '') == 'patient':
+            return reverse('appointment:patient-dashboard')
         return '/'
 
     def form_valid(self, form):
         user = form.get_user()
         auth.login(self.request, user, backend='accounts.backends.MultiFieldBackend')
 
-        # Session Management / Remember Me checkbox
+        # Rotate session key to prevent session fixation attacks
+        self.request.session.cycle_key()
+
         remember_me = form.cleaned_data.get('remember_me')
         if not remember_me:
-            self.request.session.set_expiry(0)  # Session expires on browser close
+            self.request.session.set_expiry(0)
         else:
             self.request.session.set_expiry(settings.SESSION_COOKIE_AGE)
 
-        # Email-unverified banner flag
         try:
             from allauth.account.models import EmailAddress
             ea = EmailAddress.objects.filter(user=user, primary=True).first()
@@ -382,9 +370,7 @@ class LoginView(FormView):
         except Exception:
             pass
 
-        # Send login notification email in background
         send_login_notification_background(user, self.request)
-
         messages.success(self.request, f"Welcome back, {user.first_name or user.username}! 👋")
         return HttpResponseRedirect(self.get_success_url())
 
@@ -403,43 +389,28 @@ class LogoutView(RedirectView):
         return redirect('/')
 
 
-class AdminLoginView(LoginView):
-    """Authenticate an Admin."""
-    template_name = 'accounts/admin_login.html'
-    extra_context = {'title': 'Admin Login'}
+class AdminLoginView(RedirectView):
+    """Backward compatibility redirect to unified login view."""
+    permanent = False
 
-    def form_valid(self, form):
-        user = form.get_user()
-        if not (user.is_superuser or user.is_staff):
-            form.add_error(None, 'Access denied. This login is for Administrators only.')
-            return self.form_invalid(form)
-        return super().form_valid(form)
+    def get_redirect_url(self, *args, **kwargs):
+        return reverse('accounts:login')
 
 
-class DoctorLoginView(LoginView):
-    """Authenticate a Doctor."""
-    template_name = 'accounts/doctor_login.html'
-    extra_context = {'title': 'Doctor Login'}
+class DoctorLoginView(RedirectView):
+    """Backward compatibility redirect to unified login view."""
+    permanent = False
 
-    def form_valid(self, form):
-        user = form.get_user()
-        if user.role != 'doctor':
-            form.add_error(None, 'Access denied. This login is for Doctors only.')
-            return self.form_invalid(form)
-        return super().form_valid(form)
+    def get_redirect_url(self, *args, **kwargs):
+        return reverse('accounts:login')
 
 
-class PatientLoginView(LoginView):
-    """Authenticate a Patient."""
-    template_name = 'accounts/patient_login.html'
-    extra_context = {'title': 'Patient Login'}
+class PatientLoginView(RedirectView):
+    """Backward compatibility redirect to unified login view."""
+    permanent = False
 
-    def form_valid(self, form):
-        user = form.get_user()
-        if user.role != 'patient':
-            form.add_error(None, 'Access denied. This login is for Patients only.')
-            return self.form_invalid(form)
-        return super().form_valid(form)
+    def get_redirect_url(self, *args, **kwargs):
+        return reverse('accounts:login')
 
 # ---------------------------------------------------------------------------
 # Custom OTP Login views (Phone SMS Based)

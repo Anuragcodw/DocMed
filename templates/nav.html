@@ -62,14 +62,10 @@
                             </a>
                         </li>
                         {% if not request.user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle font-weight-bold animated-link-navbar" href="#" id="registerDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: #10b981;">
+                        <li class="nav-item">
+                            <a class="nav-link font-weight-bold animated-link-navbar" href="{% url 'accounts:register' %}" style="color: #10b981;">
                                 <i class="fa fa-user-plus mr-1"></i> Register
                             </a>
-                            <div class="dropdown-menu nav-dropdown-menu p-3" aria-labelledby="registerDropdown" style="min-width: 260px;">
-                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'accounts:doctor-register' %}"><i class="fa fa-user-md text-info mr-2"></i> Register as Doctor</a>
-                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'accounts:patient-register' %}"><i class="fa fa-user text-primary mr-2"></i> Register as Patient</a>
-                            </div>
                         </li>
                         {% endif %}
                     </ul>
@@ -78,21 +74,10 @@
                     <div class="d-flex align-items-center animate__animated animate__fadeInRight nav-action-right" style="gap: 12px;">
                         
                         {% if not request.user.is_authenticated %}
-                        <!-- Guest User: Show Login portals and Register dropdown -->
-                        <div class="dropdown">
-                            <button class="btn btn-login-nav dropdown-toggle" type="button" id="loginDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fa fa-sign-in mr-2"></i> Login
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right nav-dropdown-menu login-dropdown-menu p-3" aria-labelledby="loginDropdown" style="min-width: 300px;">
-                                <div class="login-drop-header px-2 pb-3 mb-1">
-                                    <p class="mb-0" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;">Sign in as</p>
-                                </div>
-                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'accounts:patient-login' %}"><i class="fa fa-user text-primary mr-2"></i> Patient Login</a>
-                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'accounts:doctor-login' %}"><i class="fa fa-user-md text-info mr-2"></i> Doctor Login</a>
-                                <div class="dropdown-divider" style="border-color:rgba(79,70,229,0.08);"></div>
-                                <a class="dropdown-item nav-drop-item font-weight-bold" href="{% url 'accounts:admin-login' %}"><i class="fa fa-shield text-warning mr-2"></i> Admin Login</a>
-                            </div>
-                        </div>
+                        <!-- Guest User: Single Direct Login Button -->
+                        <a href="{% url 'accounts:login' %}" class="btn btn-login-nav">
+                            <i class="fa fa-sign-in mr-2"></i> Login
+                        </a>
                         {% else %}
                         
                         <!-- Notification Bell (Auth Only) -->
