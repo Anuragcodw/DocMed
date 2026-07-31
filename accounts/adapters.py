@@ -17,7 +17,20 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     3. Generate unique username if collision occurs.
     4. Auto-create PatientProfile and save Google profile avatar photo.
     5. Handle role-based redirects post-login.
+    6. Safely return a fallback SocialApp for unconfigured providers to prevent SocialApp.DoesNotExist crashes.
     """
+
+    def get_app(self, request, provider, client_id=None):
+        from allauth.socialaccount.models import SocialApp
+        try:
+            return super().get_app(request, provider=provider, client_id=client_id)
+        except SocialApp.DoesNotExist:
+            return SocialApp(
+                provider=provider,
+                name=provider.capitalize(),
+                client_id='unconfigured',
+                secret='unconfigured'
+            )
 
     def populate_user(self, request, sociallogin, data):
         user = super().populate_user(request, sociallogin, data)
@@ -83,7 +96,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         # Create or fetch PatientProfile safely
         profile, created = PatientProfile.objects.get_or_create(user=user)
 
-        # Retrieve Google or GitHub profile picture URL
+        # Retrieve Google profile picture URL
         extra_data = sociallogin.account.extra_data
         avatar_url = extra_data.get('picture') or extra_data.get('avatar_url')
 

@@ -61,7 +61,6 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.github',
 
     # Django REST Framework (for JWT API endpoints)
     'rest_framework',
@@ -271,9 +270,6 @@ SOCIALACCOUNT_PROVIDERS = {
         'SCOPE': ['profile', 'email'],
         'AUTH_PARAMS': {'access_type': 'online'},
         'FETCH_USERINFO': True,
-    },
-    'github': {
-        'SCOPE': ['user:email'],
     },
 }
 

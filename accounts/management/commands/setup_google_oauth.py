@@ -84,11 +84,11 @@ class Command(BaseCommand):
                     )
                     self.stdout.write("Google SocialApp created.")
 
-                # 4. Attach Site(id=1) to SocialApp
-                self.stdout.write("\nAttaching Site...")
+                # Attach Site(id=1) to Google SocialApp
                 if not app.sites.filter(id=site.id).exists():
                     app.sites.add(site)
 
+                self.stdout.write("\nAttaching Site...")
                 self.stdout.write(self.style.SUCCESS("\nGoogle OAuth setup completed successfully."))
                 self.stdout.write("==================================================")
 
