@@ -58,23 +58,23 @@ class AIChatView(View):
         session = None
         chat_history_list = []
         try:
+            session_id = f"user_{user.id}" if user and user.is_authenticated else f"anon_{request.session.session_key or 'default'}"
             session, _ = AIChatSession.objects.get_or_create(
-                user=user,
-                is_active=True,
-                defaults={'title': message_text[:50]}
+                user=user if user and user.is_authenticated else None,
+                session_id=session_id
             )
 
             AIChatMessage.objects.create(
                 session=session,
                 sender='user',
-                message=message_text
+                message_text=message_text
             )
 
             history = list(
-                session.messages.order_by('created_at').values('sender', 'message')
+                session.messages.order_by('timestamp').values('sender', 'message_text')
             )
             chat_history_list = [
-                {'role': m['sender'], 'content': m['message']} for m in history
+                {'role': m['sender'], 'content': m['message_text']} for m in history
             ]
         except Exception as e:
             logger.error(f"[AIChatView] Database session save error: {e}")
@@ -95,8 +95,8 @@ class AIChatView(View):
             try:
                 AIChatMessage.objects.create(
                     session=session,
-                    sender='model',
-                    message=ai_response
+                    sender='ai',
+                    message_text=ai_response
                 )
             except Exception as e:
                 logger.error(f"[AIChatView] Failed to save AI response message: {e}")
