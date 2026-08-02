@@ -6,6 +6,7 @@ from datetime import timedelta
 from django.contrib import auth, messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
@@ -18,6 +19,8 @@ from django.views import View
 from django.views.generic import CreateView, FormView, RedirectView
 from django.urls import reverse
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 from accounts.forms import (
     UnifiedRegistrationForm,
@@ -28,6 +31,26 @@ from accounts.forms import (
 )
 from accounts.models import User, EmailVerification, PhoneOTP, OTPCode
 from accounts.services import OTPService
+
+
+# ---------------------------------------------------------------------------
+# Utility: centralised role-based redirect
+# ---------------------------------------------------------------------------
+
+def redirect_by_role(user, next_url=None, allowed_hosts=None):
+    """
+    Return the appropriate redirect URL based on the user's role.
+    Respects a safe `next_url` if provided.
+    """
+    if next_url and allowed_hosts and url_has_allowed_host_and_scheme(url=next_url, allowed_hosts=allowed_hosts):
+        return next_url
+    if user.is_superuser or user.is_staff:
+        return reverse('appointment:admin-dashboard')
+    elif getattr(user, 'role', '') == 'doctor':
+        return reverse('appointment:doctor-dashboard')
+    elif getattr(user, 'role', '') == 'patient':
+        return reverse('appointment:patient-dashboard')
+    return '/'
 
 # ---------------------------------------------------------------------------
 # Helper functions for stubbing Email & SMS deliveries
@@ -177,11 +200,7 @@ class RegisterView(CreateView):
         return super().dispatch(request, *args, **kwargs)
 
     def _redirect_authenticated(self, user):
-        if user.is_superuser or user.is_staff:
-            return redirect('appointment:admin-dashboard')
-        elif getattr(user, 'role', '') == 'doctor':
-            return redirect('appointment:doctor-dashboard')
-        return redirect('appointment:patient-dashboard')
+        return HttpResponseRedirect(redirect_by_role(user))
 
     def get_initial(self):
         initial = super().get_initial()
@@ -332,22 +351,16 @@ class LoginView(FormView):
 
     def dispatch(self, request, *args, **kwargs):
         if self.request.user.is_authenticated:
-            return HttpResponseRedirect(self.get_success_url())
+            return HttpResponseRedirect(redirect_by_role(self.request.user))
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         next_url = self.request.GET.get('next', '').strip()
-        if next_url and url_has_allowed_host_and_scheme(url=next_url, allowed_hosts={self.request.get_host()}):
-            return next_url
-
-        user = self.request.user
-        if user.is_superuser or user.is_staff:
-            return reverse('appointment:admin-dashboard')
-        elif getattr(user, 'role', '') == 'doctor':
-            return reverse('appointment:doctor-dashboard')
-        elif getattr(user, 'role', '') == 'patient':
-            return reverse('appointment:patient-dashboard')
-        return '/'
+        return redirect_by_role(
+            self.request.user,
+            next_url=next_url,
+            allowed_hosts={self.request.get_host()}
+        )
 
     def form_valid(self, form):
         user = form.get_user()
@@ -376,6 +389,57 @@ class LoginView(FormView):
 
     def form_invalid(self, form):
         return self.render_to_response(self.get_context_data(form=form))
+
+
+# ---------------------------------------------------------------------------
+# Complete Social Registration (first-time Google users pick a role)
+# ---------------------------------------------------------------------------
+
+@method_decorator(login_required, name='dispatch')
+class CompleteSocialRegistrationView(View):
+    """
+    Shown to first-time Google-login users so they can choose Patient or Doctor.
+    Only accessible while the `social_complete_registration` session flag is set.
+    """
+    template_name = 'accounts/complete_social_registration.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        # If flag is gone (user already completed or tried to revisit), redirect by role
+        if not request.session.get('social_complete_registration'):
+            return HttpResponseRedirect(redirect_by_role(request.user))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, {
+            'title': 'Complete Your Registration',
+            'user': request.user,
+        })
+
+    def post(self, request, *args, **kwargs):
+        role = request.POST.get('role', '').strip().lower()
+        if role not in ('patient', 'doctor'):
+            messages.error(request, 'Please select a valid role: Patient or Doctor.')
+            return render(request, self.template_name, {'title': 'Complete Your Registration', 'user': request.user})
+
+        user = request.user
+        old_role = getattr(user, 'role', None)
+        user.role = role
+        user.save(update_fields=['role'])
+
+        # If role changed from patient to doctor, create a DoctorProfile
+        if role == 'doctor':
+            from appointment.models import DoctorProfile
+            DoctorProfile.objects.get_or_create(user=user)
+        else:
+            from appointment.models import PatientProfile
+            PatientProfile.objects.get_or_create(user=user)
+
+        # Clear the session flag — role selection is done
+        request.session.pop('social_complete_registration', None)
+        request.session.pop('social_user_id', None)
+
+        messages.success(request, f'Welcome to DocMed, {user.first_name or user.username}! 🎉 Your account is ready.')
+        return HttpResponseRedirect(redirect_by_role(user))
 
 
 class LogoutView(RedirectView):

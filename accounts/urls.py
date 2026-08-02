@@ -20,6 +20,7 @@ from accounts.views import (
     ResendVerificationView,
     DismissVerifyBannerView,
     DismissRegSuccessView,
+    CompleteSocialRegistrationView,
 )
 from appointment.views import EditDoctorProfileView, EditPatientProfileView
 
@@ -70,4 +71,7 @@ urlpatterns = [
     path('resend-verification/', ResendVerificationView.as_view(), name='resend-verification'),
     path('dismiss-verify-banner/', DismissVerifyBannerView.as_view(), name='dismiss-verify-banner'),
     path('dismiss-reg-success/', DismissRegSuccessView.as_view(), name='dismiss-reg-success'),
+
+    # Social registration completion (role selection for first-time Google users)
+    path('complete-social-registration/', CompleteSocialRegistrationView.as_view(), name='complete_social_registration'),
 ]

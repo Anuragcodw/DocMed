@@ -13,7 +13,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     """
     Custom adapter for allauth to:
     1. Auto-link existing accounts with matching email.
-    2. Set 'patient' role by default for new social signups.
+    2. Intercept first-time social signups and force role selection.
     3. Generate unique username if collision occurs.
     4. Auto-create PatientProfile and save Google profile avatar photo.
     5. Handle role-based redirects post-login.
@@ -34,10 +34,6 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
 
     def populate_user(self, request, sociallogin, data):
         user = super().populate_user(request, sociallogin, data)
-
-        # Default new social signups to patient role
-        if not user.role:
-            user.role = 'patient'
 
         # Extract name fields
         extra_data = sociallogin.account.extra_data
@@ -85,27 +81,45 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
 
     def save_user(self, request, sociallogin, form=None):
         """
-        Save custom user object, create PatientProfile, and fetch avatar picture.
+        Save custom user object. For first-time social signups, defer role
+        assignment and redirect to the role selection page instead.
+        Creates PatientProfile temporarily and fetches Google avatar.
         """
+        is_new = not sociallogin.is_existing
         user = super().save_user(request, sociallogin, form)
 
-        if not user.role:
-            user.role = 'patient'
-            user.save(update_fields=['role'])
+        if is_new:
+            # New user: store flag so get_login_redirect_url routes them to role selection
+            request.session['social_complete_registration'] = True
+            request.session['social_user_id'] = str(user.pk)
+            # Ensure account is active immediately
+            user.is_active = True
+            user.save(update_fields=['is_active'])
+        else:
+            # Returning user: ensure they have a role (fallback to patient)
+            if not getattr(user, 'role', None):
+                user.role = 'patient'
+                user.save(update_fields=['role'])
 
-        # Create or fetch PatientProfile safely
-        profile, created = PatientProfile.objects.get_or_create(user=user)
+        # Create profile based on current role (temp patient for new users)
+        if getattr(user, 'role', '') == 'doctor':
+            from appointment.models import DoctorProfile
+            DoctorProfile.objects.get_or_create(user=user)
+        else:
+            PatientProfile.objects.get_or_create(user=user)
 
         # Retrieve Google profile picture URL
         extra_data = sociallogin.account.extra_data
         avatar_url = extra_data.get('picture') or extra_data.get('avatar_url')
 
-        if avatar_url and not profile.photo:
+        if avatar_url:
             try:
-                response = requests.get(avatar_url, timeout=8)
-                if response.status_code == 200:
-                    file_name = f"social_avatar_{user.id}.jpg"
-                    profile.photo.save(file_name, ContentFile(response.content), save=True)
+                profile = PatientProfile.objects.filter(user=user).first()
+                if profile and not profile.photo:
+                    response = requests.get(avatar_url, timeout=8)
+                    if response.status_code == 200:
+                        file_name = f"social_avatar_{user.id}.jpg"
+                        profile.photo.save(file_name, ContentFile(response.content), save=True)
             except Exception as e:
                 print(f"[SOCIAL ADAPTER] Failed to fetch avatar: {e}")
 
@@ -114,6 +128,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     def get_login_redirect_url(self, request):
         """
         Role-based redirect post-login:
+        - New social user (no role) -> /accounts/complete-social-registration/
         - Admin -> /admin-dashboard/
         - Doctor -> /doctor/dashboard/
         - Patient -> /patient/dashboard/
@@ -122,6 +137,10 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         user = request.user
         if not user.is_authenticated:
             return '/'
+
+        # First-time social user: send them to role selection
+        if request.session.get('social_complete_registration'):
+            return reverse('accounts:complete_social_registration')
 
         if user.is_superuser or user.is_staff:
             return reverse('appointment:admin-dashboard')

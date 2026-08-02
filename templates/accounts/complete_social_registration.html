@@ -1,0 +1,397 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}— Complete Registration{% endblock %}
+
+{% block styles %}
+<style>
+  /* ── Page Layout ── */
+  .complete-reg-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #0c1445 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Animated background blobs */
+  .complete-reg-page .blob-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .complete-reg-page .blob-bg span {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.35;
+    animation: blobFloat 8s ease-in-out infinite alternate;
+  }
+  .complete-reg-page .blob-bg span:nth-child(1) {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, #4f46e5, transparent);
+    top: -120px; left: -100px;
+    animation-delay: 0s;
+  }
+  .complete-reg-page .blob-bg span:nth-child(2) {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, #06b6d4, transparent);
+    bottom: -80px; right: -80px;
+    animation-delay: -3s;
+  }
+  .complete-reg-page .blob-bg span:nth-child(3) {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, #8b5cf6, transparent);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation-delay: -6s;
+  }
+  @keyframes blobFloat {
+    0%   { transform: scale(1) translate(0, 0); }
+    100% { transform: scale(1.15) translate(20px, -20px); }
+  }
+
+  /* ── Card ── */
+  .role-card {
+    position: relative;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 28px;
+    padding: 56px 52px 48px;
+    width: 100%;
+    max-width: 600px;
+    box-shadow:
+      0 30px 80px rgba(0, 0, 0, 0.45),
+      0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+      0 1px 0 rgba(255, 255, 255, 0.15) inset;
+    animation: cardSlideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes cardSlideUp {
+    from { opacity: 0; transform: translateY(40px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0)   scale(1); }
+  }
+
+  /* ── Header ── */
+  .role-card .avatar-ring {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 28px rgba(79, 70, 229, 0.5);
+    overflow: hidden;
+  }
+  .role-card .avatar-ring img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .role-card .avatar-ring .avatar-icon {
+    font-size: 36px;
+    color: #fff;
+  }
+
+  .role-card h1 {
+    font-family: 'Inter', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #f1f5f9;
+    text-align: center;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+  .role-card .subtitle {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.55);
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .role-card .user-greeting {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .role-card .user-greeting strong {
+    color: #a5b4fc;
+  }
+
+  /* ── Role Option Cards ── */
+  .role-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 32px;
+  }
+
+  .role-option {
+    position: relative;
+  }
+  .role-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .role-option label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 28px 20px 24px;
+    border-radius: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-align: center;
+    min-height: 180px;
+  }
+  .role-option label:hover {
+    border-color: rgba(79, 70, 229, 0.6);
+    background: rgba(79, 70, 229, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(79, 70, 229, 0.25);
+  }
+  .role-option input[type="radio"]:checked + label {
+    border-color: #4f46e5;
+    background: rgba(79, 70, 229, 0.18);
+    box-shadow:
+      0 0 0 4px rgba(79, 70, 229, 0.2),
+      0 16px 40px rgba(79, 70, 229, 0.3);
+    transform: translateY(-4px);
+  }
+
+  .role-option .role-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    transition: transform 0.3s ease;
+  }
+  .role-option label:hover .role-icon,
+  .role-option input[type="radio"]:checked + label .role-icon {
+    transform: scale(1.1) rotate(-5deg);
+  }
+  .role-option.patient .role-icon {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+  }
+  .role-option.doctor .role-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  }
+
+  .role-option .role-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #f1f5f9;
+    letter-spacing: -0.2px;
+  }
+  .role-option .role-desc {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.5;
+  }
+
+  /* Check mark when selected */
+  .role-option .check-mark {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #4f46e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-size: 13px;
+    color: #fff;
+  }
+  .role-option input[type="radio"]:checked ~ .check-mark {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* ── Submit Button ── */
+  .btn-complete {
+    width: 100%;
+    padding: 16px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(79, 70, 229, 0.4);
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-complete::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .btn-complete:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 36px rgba(79, 70, 229, 0.55);
+  }
+  .btn-complete:hover::before { opacity: 1; }
+  .btn-complete:active { transform: translateY(0); }
+  .btn-complete:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* ── Messages / Errors ── */
+  .role-error {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #fca5a5;
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 520px) {
+    .role-card { padding: 40px 24px 36px; }
+    .role-card h1 { font-size: 22px; }
+    .role-options { grid-template-columns: 1fr; }
+    .role-option label { min-height: 120px; flex-direction: row; text-align: left; gap: 16px; }
+    .role-option .role-icon { width: 52px; height: 52px; font-size: 22px; flex-shrink: 0; }
+    .role-option .check-mark { top: 12px; right: 12px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="complete-reg-page">
+  <!-- Animated background blobs -->
+  <div class="blob-bg">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <!-- Role Selection Card -->
+  <div class="role-card">
+
+    <!-- Avatar -->
+    <div class="avatar-ring">
+      {% if request.user.patient_profile.photo %}
+        <img src="{{ request.user.patient_profile.photo.url }}" alt="{{ request.user.get_full_name }}">
+      {% else %}
+        <span class="avatar-icon">🧑‍⚕️</span>
+      {% endif %}
+    </div>
+
+    <h1>One Last Step</h1>
+    <p class="subtitle">Tell us how you'll be using DocMed</p>
+
+    {% if user.first_name %}
+      <p class="user-greeting">Welcome, <strong>{{ user.first_name }}</strong>! Choose your account type to get started.</p>
+    {% else %}
+      <p class="user-greeting">Welcome to <strong>DocMed</strong>! Choose your account type to get started.</p>
+    {% endif %}
+
+    <!-- Error messages -->
+    {% if messages %}
+      {% for message in messages %}
+        {% if message.tags == 'error' %}
+          <div class="role-error">{{ message }}</div>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    <!-- Role Selection Form -->
+    <form method="post" id="roleSelectionForm">
+      {% csrf_token %}
+
+      <div class="role-options">
+
+        <!-- Patient Option -->
+        <div class="role-option patient">
+          <input type="radio" id="role_patient" name="role" value="patient" required>
+          <label for="role_patient">
+            <div class="role-icon">🏥</div>
+            <div>
+              <div class="role-title">Patient</div>
+              <div class="role-desc">Book appointments, manage health records, consult doctors online</div>
+            </div>
+          </label>
+          <div class="check-mark">✓</div>
+        </div>
+
+        <!-- Doctor Option -->
+        <div class="role-option doctor">
+          <input type="radio" id="role_doctor" name="role" value="doctor" required>
+          <label for="role_doctor">
+            <div class="role-icon">👨‍⚕️</div>
+            <div>
+              <div class="role-title">Doctor</div>
+              <div class="role-desc">Manage your practice, schedule appointments, view patient records</div>
+            </div>
+          </label>
+          <div class="check-mark">✓</div>
+        </div>
+
+      </div>
+
+      <button type="submit" class="btn-complete" id="completeBtn" disabled>
+        Complete Registration →
+      </button>
+    </form>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+  (function () {
+    var radios = document.querySelectorAll('input[name="role"]');
+    var btn = document.getElementById('completeBtn');
+
+    radios.forEach(function (radio) {
+      radio.addEventListener('change', function () {
+        // Enable button once a role is selected
+        btn.disabled = false;
+        btn.textContent = 'Continue as ' + (this.value === 'doctor' ? 'Doctor' : 'Patient') + ' →';
+      });
+    });
+
+    document.getElementById('roleSelectionForm').addEventListener('submit', function () {
+      btn.disabled = true;
+      btn.textContent = 'Setting up your account…';
+    });
+  })();
+</script>
+{% endblock %}
