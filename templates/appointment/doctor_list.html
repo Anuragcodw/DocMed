@@ -163,6 +163,19 @@
     font-size: 0.72rem;
     padding: 3px 10px;
   }
+  .badge-nmc-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, rgba(16,185,129,0.18), rgba(6,182,212,0.12));
+    border: 1px solid rgba(16,185,129,0.4);
+    color: #6ee7b7;
+    font-size: 0.68rem;
+    padding: 3px 9px;
+    border-radius: 50px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
   .star-rating { color: #fbbf24; font-size: 0.85rem; }
   .btn-view-profile {
     background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.2));
@@ -381,7 +394,10 @@
                 <div class="doctor-card-img-placeholder">{{ doctor.full_name|slice:":1" }}</div>
                 {% endif %}
                 <div class="flex-grow-1 min-w-0">
-                  <p class="doctor-name text-truncate">{{ doctor.full_name }}</p>
+                  <p class="doctor-name text-truncate">
+                    {{ doctor.full_name }}
+                    {% if doctor.is_verified %}<span title="NMC Verified Doctor" style="color:#10b981; font-size:0.9rem;">✔</span>{% endif %}
+                  </p>
                   <p class="doctor-spec text-truncate">{{ doctor.specialization|default:"General Physician" }}</p>
                   <p class="doctor-hospital text-truncate"><i class="ri-hospital-line me-1"></i>{{ doctor.hospital|default:"—" }}</p>
                   <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
@@ -389,6 +405,9 @@
                     <span class="badge-avail"><i class="ri-checkbox-circle-fill me-1"></i>Available</span>
                     {% else %}
                     <span class="badge-busy"><i class="ri-time-line me-1"></i>Busy</span>
+                    {% endif %}
+                    {% if doctor.is_verified %}
+                    <span class="badge-nmc-verified">✔ NMC Verified</span>
                     {% endif %}
                   </div>
                 </div>

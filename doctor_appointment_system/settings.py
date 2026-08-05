@@ -428,11 +428,19 @@ POPPLER_PATH = os.environ.get('POPPLER_PATH', r"C:\Users\user\Downloads\Release-
 TESSERACT_CMD = os.environ.get('TESSERACT_CMD', r"C:\Program Files\Tesseract-OCR\tesseract.exe" if os.name == 'nt' else None)
 
 # ---------------------------------------------------------------------------
-# Python 3.14 + Django 4.2 Template Context Compatibility Patch
+# Firebase Authentication Configuration
 # ---------------------------------------------------------------------------
-# In Python 3.14, copy(super()) inside Django 4.2's BaseContext.__copy__ returns
-# a super proxy object, raising AttributeError: 'super' object has no attribute 'dicts'
-# during template rendering (e.g. Django Admin change forms / inclusion tags).
+FIREBASE_API_KEY = os.environ.get('FIREBASE_API_KEY', '')
+FIREBASE_AUTH_DOMAIN = os.environ.get('FIREBASE_AUTH_DOMAIN', '')
+FIREBASE_PROJECT_ID = os.environ.get('FIREBASE_PROJECT_ID', '')
+FIREBASE_STORAGE_BUCKET = os.environ.get('FIREBASE_STORAGE_BUCKET', '')
+FIREBASE_MESSAGING_SENDER_ID = os.environ.get('FIREBASE_MESSAGING_SENDER_ID', '')
+FIREBASE_APP_ID = os.environ.get('FIREBASE_APP_ID', '')
+FIREBASE_MEASUREMENT_ID = os.environ.get('FIREBASE_MEASUREMENT_ID', '')
+FIREBASE_SERVICE_ACCOUNT_JSON = os.environ.get('FIREBASE_SERVICE_ACCOUNT_JSON', '')
+FIREBASE_SERVICE_ACCOUNT_PATH = os.environ.get('FIREBASE_SERVICE_ACCOUNT_PATH', '')
+
+# Python 3.14 + Django 4.2 Template Context Compatibility Patch
 try:
     from django.template.context import BaseContext
 

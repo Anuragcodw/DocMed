@@ -46,7 +46,11 @@ class DoctorListView(ListView):
     paginate_by = 12
 
     def get_queryset(self):
-        qs = DoctorProfile.objects.select_related('user').order_by('-rating', '-patients_treated')
+        # Only show NMC-verified doctors in the public directory
+        qs = DoctorProfile.objects.select_related('user').filter(
+            verification_status='verified',
+            is_verified=True,
+        ).order_by('-rating', '-patients_treated')
 
         q = self.request.GET.get('q', '').strip()
         department = self.request.GET.get('department', '').strip()
@@ -94,8 +98,9 @@ class DoctorListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['dept_choices'] = DEPARTMENT_CHOICES
-        context['total_doctors'] = DoctorProfile.objects.count()
-        context['available_count'] = sum(1 for d in DoctorProfile.objects.all() if d.is_available_now)
+        verified_qs = DoctorProfile.objects.filter(verification_status='verified', is_verified=True)
+        context['total_doctors'] = verified_qs.count()
+        context['available_count'] = sum(1 for d in verified_qs if d.is_available_now)
         context['current_filters'] = {
             'q': self.request.GET.get('q', ''),
             'department': self.request.GET.get('department', ''),

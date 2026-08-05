@@ -1,208 +1,704 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load socialaccount %}
 
-{% block title %}Create Account - DocMed AI Health{% endblock %}
+{% block title %}Register Account — DocMed AI Healthcare{% endblock %}
 
 {% block styles %}
 <style>
-.auth-wrapper {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #F8FBFF 0%, #E1EBFF 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 0;
-}
-.role-card-label {
-  cursor: pointer;
-  width: 100%;
-}
-.role-card-label input[type="radio"] {
-  display: none;
-}
-.role-card {
-  border: 2px solid rgba(0,0,0,0.08);
-  border-radius: 16px;
-  padding: 18px 20px;
-  background: white;
-  transition: all 0.25s ease;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.role-card-label input[type="radio"]:checked + .role-card {
-  border-color: #4f46e5;
-  background: rgba(79, 70, 229, 0.04);
-  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.12);
-  transform: translateY(-2px);
-}
-.role-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-}
-.role-icon-patient {
-  background: rgba(6, 182, 212, 0.12);
-  color: #06b6d4;
-}
-.role-icon-doctor {
-  background: rgba(79, 70, 229, 0.12);
-  color: #4f46e5;
-}
+  .reg-wrapper {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0c1445 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .reg-glass-card {
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+    width: 100%;
+    max-width: 820px;
+    padding: 44px 40px;
+    animation: cardIn 0.5s ease both;
+  }
+
+  /* ── Role Selector Screen ── */
+  .role-select-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 28px 0;
+  }
+  .role-card-btn {
+    border: 2px solid rgba(79, 70, 229, 0.15);
+    border-radius: 20px;
+    padding: 32px 24px;
+    background: rgba(248, 250, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-align: center;
+  }
+  .role-card-btn:hover, .role-card-btn.active {
+    border-color: #4f46e5;
+    background: rgba(79, 70, 229, 0.08);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 36px rgba(79, 70, 229, 0.2);
+  }
+  .role-card-btn .role-icon {
+    width: 68px; height: 68px;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+  }
+  .role-card-btn.patient .role-icon { background: linear-gradient(135deg, #06b6d4, #0891b2); color: #fff; }
+  .role-card-btn.doctor .role-icon { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; }
+
+  /* ── Wizard Stepper Header ── */
+  .stepper-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .stepper-bar-bg {
+    position: absolute;
+    top: 50%; left: 0; right: 0;
+    height: 4px;
+    background: #e2e8f0;
+    z-index: 1;
+    transform: translateY(-50%);
+  }
+  .stepper-bar-fill {
+    position: absolute;
+    top: 50%; left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #4f46e5, #06b6d4);
+    z-index: 2;
+    transform: translateY(-50%);
+    transition: width 0.4s ease;
+  }
+  .step-node {
+    position: relative;
+    z-index: 3;
+    background: #fff;
+    border: 3px solid #cbd5e1;
+    border-radius: 50%;
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 15px; color: #64748b;
+    transition: all 0.3s ease;
+  }
+  .step-node.active {
+    border-color: #4f46e5;
+    background: #4f46e5;
+    color: #fff;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2);
+  }
+  .step-node.completed {
+    border-color: #10b981;
+    background: #10b981;
+    color: #fff;
+  }
+
+  .form-section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(79,70,229,0.1);
+  }
+
+  .file-upload-box {
+    border: 2px dashed rgba(79, 70, 229, 0.25);
+    border-radius: 14px;
+    padding: 16px;
+    background: rgba(248, 250, 255, 0.6);
+    text-align: center;
+    transition: all 0.25s;
+  }
+  .file-upload-box:hover {
+    border-color: #4f46e5;
+    background: rgba(79, 70, 229, 0.04);
+  }
+
+  @media (max-width: 576px) {
+    .role-select-cards { grid-template-columns: 1fr; }
+    .reg-glass-card { padding: 32px 20px; }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="auth-wrapper">
-  <div class="container" style="max-width: 680px; z-index: 10;">
-    <div class="card p-4 p-md-5 border-0 shadow-lg" style="background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(20px); border-radius: 24px;">
-      
-      <!-- Card Header -->
-      <div class="text-center mb-4">
-        <div class="d-inline-flex align-items-center justify-content-center mb-2" style="width: 56px; height: 56px; background: rgba(79, 70, 229, 0.1); border-radius: 50%;">
-          <i class="fa fa-user-plus fa-2x text-primary" style="color: #4f46e5 !important;"></i>
-        </div>
-        <h3 class="font-weight-bold text-dark mb-1">Create Your Account</h3>
-        <p class="text-muted small">Join DocMed AI Healthcare System</p>
+<div class="reg-wrapper">
+  <div class="reg-glass-card">
+
+    {# ── Card Header ── #}
+    <div class="text-center mb-4">
+      <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, rgba(79,70,229,.15), rgba(6,182,212,.15)); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 26px; color: #4f46e5;">
+        🏥
       </div>
+      <h2 class="font-weight-bold text-dark mb-1" style="font-size: 1.7rem;">Create Your Account</h2>
+      <p class="text-muted small mb-0">Join DocMed AI Healthcare Portal</p>
+    </div>
 
-      <!-- Registration Form -->
-      <form action="" method="POST" id="registerForm">
-        {% csrf_token %}
-
-        {% if form.non_field_errors %}
-          <div class="alert alert-danger py-2 px-3 mb-4 rounded-lg small">
-            {% for error in form.non_field_errors %}
-              <p class="mb-0"><i class="fa fa-exclamation-circle mr-1"></i> {{ error }}</p>
-            {% endfor %}
-          </div>
-        {% endif %}
-
-        <!-- Role Selection -->
-        <label class="font-weight-bold text-dark small mb-2 d-block">Account Type <span class="text-danger">*</span></label>
-        <div class="row mb-4">
-          <div class="col-6">
-            <label class="role-card-label mb-0">
-              <input type="radio" name="role" value="patient" {% if form.role.value == 'patient' or not form.role.value %}checked{% endif %}>
-              <div class="role-card">
-                <div class="role-icon role-icon-patient">
-                  <i class="fa fa-user"></i>
-                </div>
-                <div>
-                  <h6 class="font-weight-bold mb-0 text-dark">Patient</h6>
-                  <small class="text-muted d-none d-sm-inline">Book & consult</small>
-                </div>
-              </div>
-            </label>
-          </div>
-          <div class="col-6">
-            <label class="role-card-label mb-0">
-              <input type="radio" name="role" value="doctor" {% if form.role.value == 'doctor' %}checked{% endif %}>
-              <div class="role-card">
-                <div class="role-icon role-icon-doctor">
-                  <i class="fa fa-user-md"></i>
-                </div>
-                <div>
-                  <h6 class="font-weight-bold mb-0 text-dark">Doctor</h6>
-                  <small class="text-muted d-none d-sm-inline">Manage patients</small>
-                </div>
-              </div>
-            </label>
-          </div>
-        </div>
-        {% for error in form.role.errors %}
-          <div class="invalid-feedback d-block mb-3">{{ error }}</div>
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger py-2 px-3 mb-4 rounded-lg small">
+        {% for error in form.non_field_errors %}
+          <p class="mb-0"><i class="fa fa-exclamation-circle mr-1"></i> {{ error }}</p>
         {% endfor %}
+      </div>
+    {% endif %}
 
-        <!-- Personal Info Fields -->
+    {# ── Role Selection Screen (Shown First) ── #}
+    <div id="roleSelectorScreen" style="{% if form.errors or request.GET.role %}display: none;{% endif %}">
+      <h5 class="text-center font-weight-bold text-dark mb-3">Choose Account Type</h5>
+      <div class="role-select-cards">
+        <div class="role-card-btn patient" onclick="selectRole('patient')">
+          <div class="role-icon">🧑‍⚕️</div>
+          <h5 class="font-weight-bold text-dark mb-1">Patient</h5>
+          <p class="text-muted small mb-0">Book appointments, consult doctors online, access health records</p>
+        </div>
+        <div class="role-card-btn doctor" onclick="selectRole('doctor')">
+          <div class="role-icon">👨‍⚕️</div>
+          <h5 class="font-weight-bold text-dark mb-1">Doctor</h5>
+          <p class="text-muted small mb-0">Professional 2-step registration & hospital verification</p>
+        </div>
+      </div>
+    </div>
+
+    {# ── Unified Form Container ── #}
+    <form action="" method="POST" id="mainRegisterForm" enctype="multipart/form-data" style="{% if not form.errors and not request.GET.role %}display: none;{% endif %}">
+      {% csrf_token %}
+      <input type="hidden" name="role" id="selectedRoleInput" value="{{ form.role.value|default:'patient' }}">
+
+      {# ────────────────────────── PATIENT FORM ────────────────────────── #}
+      <div id="patientFormFields" style="{% if form.role.value == 'doctor' %}display: none;{% endif %}">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="form-section-title mb-0">Patient Account Information</h5>
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="resetRoleSelection()">Change Role</button>
+        </div>
+
         <div class="row">
           <div class="col-md-6 mb-3">
             <label class="small font-weight-bold text-dark">First Name <span class="text-danger">*</span></label>
-            <input type="text" name="first_name" class="form-control form-control-lg rounded-lg {% if form.first_name.errors %}is-invalid{% endif %}" placeholder="First Name" required value="{{ form.first_name.value|default:'' }}">
-            {% for error in form.first_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            <input type="text" name="first_name" class="form-control rounded-lg" required value="{{ form.first_name.value|default:'' }}">
           </div>
           <div class="col-md-6 mb-3">
             <label class="small font-weight-bold text-dark">Last Name <span class="text-danger">*</span></label>
-            <input type="text" name="last_name" class="form-control form-control-lg rounded-lg {% if form.last_name.errors %}is-invalid{% endif %}" placeholder="Last Name" required value="{{ form.last_name.value|default:'' }}">
-            {% for error in form.last_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            <input type="text" name="last_name" class="form-control rounded-lg" required value="{{ form.last_name.value|default:'' }}">
           </div>
         </div>
 
         <div class="row">
           <div class="col-md-6 mb-3">
             <label class="small font-weight-bold text-dark">Username <span class="text-danger">*</span></label>
-            <input type="text" name="username" class="form-control form-control-lg rounded-lg {% if form.username.errors %}is-invalid{% endif %}" placeholder="Username" required value="{{ form.username.value|default:'' }}">
-            {% for error in form.username.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            <input type="text" name="username" class="form-control rounded-lg" required value="{{ form.username.value|default:'' }}">
           </div>
           <div class="col-md-6 mb-3">
             <label class="small font-weight-bold text-dark">Gender <span class="text-danger">*</span></label>
-            <select name="gender" class="form-control form-control-lg rounded-lg {% if form.gender.errors %}is-invalid{% endif %}" required>
-              <option value="">Select Gender</option>
-              <option value="male" {% if form.gender.value == 'male' %}selected{% endif %}>Male</option>
-              <option value="female" {% if form.gender.value == 'female' %}selected{% endif %}>Female</option>
+            <select name="gender" class="form-control rounded-lg">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
             </select>
-            {% for error in form.gender.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
           </div>
         </div>
 
         <div class="row">
           <div class="col-md-6 mb-3">
             <label class="small font-weight-bold text-dark">Email Address <span class="text-danger">*</span></label>
-            <input type="email" name="email" class="form-control form-control-lg rounded-lg {% if form.email.errors %}is-invalid{% endif %}" placeholder="Email Address" required value="{{ form.email.value|default:'' }}">
-            {% for error in form.email.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            <input type="email" name="email" class="form-control rounded-lg" required value="{{ form.email.value|default:'' }}">
           </div>
           <div class="col-md-6 mb-3">
             <label class="small font-weight-bold text-dark">Phone Number <span class="text-danger">*</span></label>
-            <input type="text" name="phone_number" class="form-control form-control-lg rounded-lg {% if form.phone_number.errors %}is-invalid{% endif %}" placeholder="+1234567890" required value="{{ form.phone_number.value|default:'' }}">
-            {% for error in form.phone_number.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            <input type="tel" name="phone_number" class="form-control rounded-lg" placeholder="+1234567890" required value="{{ form.phone_number.value|default:'' }}">
           </div>
         </div>
 
         <div class="row mb-4">
           <div class="col-md-6 mb-3">
             <label class="small font-weight-bold text-dark">Password <span class="text-danger">*</span></label>
-            <input type="password" name="password1" class="form-control form-control-lg rounded-lg {% if form.password1.errors %}is-invalid{% endif %}" placeholder="Password" required>
-            {% for error in form.password1.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            <input type="password" name="password1" class="form-control rounded-lg" required>
           </div>
           <div class="col-md-6 mb-3">
             <label class="small font-weight-bold text-dark">Confirm Password <span class="text-danger">*</span></label>
-            <input type="password" name="password2" class="form-control form-control-lg rounded-lg {% if form.password2.errors %}is-invalid{% endif %}" placeholder="Confirm Password" required>
-            {% for error in form.password2.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            <input type="password" name="password2" class="form-control rounded-lg" required>
           </div>
         </div>
 
-        <!-- Submit Button -->
-        <button type="submit" class="btn btn-primary btn-block py-3 font-weight-bold shadow-glow" style="background: linear-gradient(135deg, #4f46e5, #06b6d4); color: white; border: 0; border-radius: 12px; font-size: 16px;">
-          <i class="fa fa-user-plus mr-2"></i> Register Account
+        <button type="submit" class="btn btn-primary btn-block py-3 font-weight-bold rounded-lg shadow-sm" style="background: linear-gradient(135deg, #4f46e5, #06b6d4); border: 0;">
+          Complete Patient Registration →
         </button>
-
-      </form>
-
-      <!-- Divider -->
-      <div class="position-relative text-center my-4">
-        <hr style="border-color: rgba(0,0,0,0.08);">
-        <span class="position-absolute px-3 small font-weight-bold text-muted" style="top: -10px; left: 50%; transform: translateX(-50%); background: white; border-radius: 20px;">OR</span>
       </div>
 
-      <!-- Google Sign In Button -->
-      <div class="mb-4">
-        <a href="{% provider_login_url 'google' %}" class="btn btn-light btn-block font-weight-bold text-dark shadow-sm border py-2 hover-scale d-flex align-items-center justify-content-center" style="border-radius: 12px; background: white; border-color: rgba(0,0,0,0.08) !important;">
-          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo" width="18" class="mr-2"> Continue with Google
-        </a>
-      </div>
 
-      <!-- Login Link -->
-      <div class="text-center pt-3 border-top small font-weight-bold" style="border-color: rgba(0,0,0,0.08) !important;">
-        <span class="text-muted">Already have an account?</span>
-        <a href="{% url 'accounts:login' %}" class="text-primary font-weight-bold ml-1" style="color: #4f46e5;">Sign In</a>
-      </div>
+      {# ────────────────────────── DOCTOR WIZARD (2 STEPS) ────────────────────────── #}
+      <div id="doctorWizardContainer" style="{% if form.role.value != 'doctor' %}display: none;{% endif %}">
+        
+        {# Stepper Header #}
+        <div class="stepper-header mb-4">
+          <div class="stepper-bar-bg"></div>
+          <div class="stepper-bar-fill" id="stepperBarFill" style="width: 0%;"></div>
+          
+          <div class="step-node active" id="nodeStep1">1</div>
+          <div class="step-node" id="nodeStep2">2</div>
+        </div>
+        <div class="d-flex justify-content-between mb-4 small font-weight-bold text-muted">
+          <span>Step 1: Personal Info</span>
+          <span>Step 2: Professional Details & Uploads</span>
+        </div>
 
+        {# ── DOCTOR STEP 1: Personal Info ── #}
+        <div id="doctorStep1">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="form-section-title mb-0">Step 1 — Personal Details</h5>
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="resetRoleSelection()">Change Role</button>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">First Name <span class="text-danger">*</span></label>
+              <input type="text" name="first_name" id="doc_first_name" class="form-control rounded-lg" value="{{ form.first_name.value|default:'' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Last Name <span class="text-danger">*</span></label>
+              <input type="text" name="last_name" id="doc_last_name" class="form-control rounded-lg" value="{{ form.last_name.value|default:'' }}">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Username <span class="text-danger">*</span></label>
+              <input type="text" name="username" id="doc_username" class="form-control rounded-lg" value="{{ form.username.value|default:'' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Gender <span class="text-danger">*</span></label>
+              <select name="gender" class="form-control rounded-lg">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Email Address <span class="text-danger">*</span></label>
+              <input type="email" name="email" id="doc_email" class="form-control rounded-lg" value="{{ form.email.value|default:'' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Phone Number <span class="text-danger">*</span></label>
+              <input type="tel" name="phone_number" id="doc_phone" class="form-control rounded-lg" placeholder="+1234567890" value="{{ form.phone_number.value|default:'' }}">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Date of Birth</label>
+              <input type="date" name="date_of_birth" class="form-control rounded-lg">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Profile Photo</label>
+              <input type="file" name="photo" accept="image/*" class="form-control-file">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Password <span class="text-danger">*</span></label>
+              <input type="password" name="password1" id="doc_pwd1" class="form-control rounded-lg">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Confirm Password <span class="text-danger">*</span></label>
+              <input type="password" name="password2" id="doc_pwd2" class="form-control rounded-lg">
+            </div>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Address</label>
+              <input type="text" name="address" class="form-control rounded-lg" placeholder="Street / Full Address">
+            </div>
+            <div class="col-md-2 mb-3">
+              <label class="small font-weight-bold text-dark">City</label>
+              <input type="text" name="city" class="form-control rounded-lg">
+            </div>
+            <div class="col-md-2 mb-3">
+              <label class="small font-weight-bold text-dark">State</label>
+              <input type="text" name="state" class="form-control rounded-lg">
+            </div>
+            <div class="col-md-2 mb-3">
+<div class="row mb-4">
+              <div class="col-md-6 mb-3">
+                <label class="small font-weight-bold text-dark">Address</label>
+                <input type="text" name="address" class="form-control rounded-lg" placeholder="Street / Full Address">
+              </div>
+              <div class="col-md-2 mb-3">
+                <label class="small font-weight-bold text-dark">City</label>
+                <input type="text" name="city" class="form-control rounded-lg">
+              </div>
+              <div class="col-md-2 mb-3">
+                <label class="small font-weight-bold text-dark">State</label>
+                <input type="text" name="state" class="form-control rounded-lg">
+              </div>
+              <div class="col-md-2 mb-3">
+                <label class="small font-weight-bold text-dark">Country</label>
+                <input type="text" name="country" class="form-control rounded-lg" value="USA">
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-primary btn-block py-3 font-weight-bold rounded-lg" style="background: linear-gradient(135deg, #4f46e5, #06b6d4); border: 0;" onclick="goToDoctorStep2()">
+              Next: Professional Details & Documents →
+            </button>
+          </div>
+
+
+          {# ── DOCTOR STEP 2: Professional Info & Verification Uploads ── #}
+        <div id="doctorStep2" style="display: none;">
+          <h5 class="form-section-title">Step 2 — NMC Credentials &amp; Verification Documents</h5>
+
+          {# ─── NMC / Medical Council Section ─── #}
+          <div class="mb-3 p-3 rounded-lg" style="background:rgba(79,70,229,0.08); border:1px solid rgba(79,70,229,0.2);">
+            <p class="small font-weight-bold text-primary mb-2" style="color:#4f46e5!important;">
+              <i class="ri-shield-check-line mr-1"></i> National Medical Commission (NMC) Credentials
+            </p>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="small font-weight-bold text-dark">NMC Registration Number <span class="text-danger">*</span></label>
+                <input type="text" name="nmc_registration_number" id="nmc_reg_number" class="form-control rounded-lg"
+                       placeholder="e.g. MH/12345/2020" required oninput="validateNMCNumber(this)">
+                <div id="nmc_feedback" class="small mt-1" style="display:none;"></div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="small font-weight-bold text-dark">State Medical Council <span class="text-danger">*</span></label>
+                <select name="state_medical_council" class="form-control rounded-lg" required>
+                  <option value="">— Select State Medical Council —</option>
+                  <option value="Maharashtra Medical Council">Maharashtra Medical Council</option>
+                  <option value="Delhi Medical Council">Delhi Medical Council</option>
+                  <option value="Karnataka Medical Council">Karnataka Medical Council</option>
+                  <option value="Tamil Nadu Medical Council">Tamil Nadu Medical Council</option>
+                  <option value="Andhra Pradesh Medical Council">Andhra Pradesh Medical Council</option>
+                  <option value="Kerala Medical Council">Kerala Medical Council</option>
+                  <option value="Gujarat Medical Council">Gujarat Medical Council</option>
+                  <option value="Rajasthan Medical Council">Rajasthan Medical Council</option>
+                  <option value="Uttar Pradesh Medical Council">Uttar Pradesh Medical Council</option>
+                  <option value="West Bengal Medical Council">West Bengal Medical Council</option>
+                  <option value="Punjab Medical Council">Punjab Medical Council</option>
+                  <option value="Madhya Pradesh Medical Council">Madhya Pradesh Medical Council</option>
+                  <option value="Bihar Medical Council">Bihar Medical Council</option>
+                  <option value="Odisha Council of Medical Registration">Odisha Council of Medical Registration</option>
+                  <option value="Telangana State Medical Council">Telangana State Medical Council</option>
+                  <option value="Assam Medical Council">Assam Medical Council</option>
+                  <option value="Haryana Medical Council">Haryana Medical Council</option>
+                  <option value="Himachal Pradesh Medical Council">Himachal Pradesh Medical Council</option>
+                  <option value="Chhattisgarh Medical Council">Chhattisgarh Medical Council</option>
+                  <option value="Jharkhand Medical Council">Jharkhand Medical Council</option>
+                  <option value="Uttarakhand Medical Council">Uttarakhand Medical Council</option>
+                  <option value="Manipur Medical Council">Manipur Medical Council</option>
+                  <option value="Goa Medical Council">Goa Medical Council</option>
+                  <option value="National Medical Commission">National Medical Commission (NMC)</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="small font-weight-bold text-dark">Medical Council Registration Year <span class="text-danger">*</span></label>
+                <input type="number" name="medical_council_registration_year" class="form-control rounded-lg"
+                       placeholder="e.g. 2015" min="1950" max="2030" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="small font-weight-bold text-dark">Medical Registration Number</label>
+                <input type="text" name="medical_registration_number" class="form-control rounded-lg" placeholder="e.g. MED-987654">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-0">
+                <label class="small font-weight-bold text-dark">Medical License Number</label>
+                <input type="text" name="license_number" class="form-control rounded-lg" placeholder="e.g. LIC-123456">
+              </div>
+              <div class="col-md-6 mb-0">
+                <label class="small font-weight-bold text-dark">Medical Council / Organization</label>
+                <input type="text" name="medical_council" class="form-control rounded-lg" placeholder="e.g. MCI / NMC">
+              </div>
+            </div>
+          </div>
+
+          {# ─── Qualifications ─── #}
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Degree &amp; Qualification <span class="text-danger">*</span></label>
+              <input type="text" name="qualification" class="form-control rounded-lg" placeholder="e.g. MBBS, MD, FCPS" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Super Specialization (Optional)</label>
+              <input type="text" name="super_specialization" class="form-control rounded-lg" placeholder="e.g. Interventional Cardiology">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Specialization <span class="text-danger">*</span></label>
+              <select name="specialization" class="form-control rounded-lg" required>
+                <option value="Cardiology">Cardiology</option>
+                <option value="Neurology">Neurology</option>
+                <option value="Orthopedics">Orthopedics</option>
+                <option value="Dentistry">Dentistry</option>
+                <option value="ENT Specialists">ENT Specialists</option>
+                <option value="Pediatrics">Pediatrics</option>
+                <option value="Physical Therapy">Physical Therapy</option>
+                <option value="General Medicine">General Medicine</option>
+                <option value="Dermatology">Dermatology</option>
+                <option value="Psychiatry">Psychiatry</option>
+                <option value="Oncology">Oncology</option>
+                <option value="Radiology">Radiology</option>
+              </select>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="small font-weight-bold text-dark">Years of Experience</label>
+              <input type="number" name="experience_years" class="form-control rounded-lg" value="5" min="0">
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="small font-weight-bold text-dark">Consultation Fee (₹)</label>
+              <input type="number" step="0.01" name="consultation_fee" class="form-control rounded-lg" value="500">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Current Hospital / Clinic</label>
+              <input type="text" name="hospital" class="form-control rounded-lg" placeholder="Hospital Name">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Previous Hospital</label>
+              <input type="text" name="previous_hospital" class="form-control rounded-lg" placeholder="Previous Hospital">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Working Days</label>
+              <input type="text" name="working_days" class="form-control rounded-lg" value="Monday, Wednesday, Friday">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="small font-weight-bold text-dark">Available Time Slots</label>
+              <input type="text" name="available_time_slots" class="form-control rounded-lg" value="09:00 AM - 05:00 PM">
+            </div>
+          </div>
+
+          {# ─── Document Uploads ─── #}
+          <h6 class="font-weight-bold text-dark mt-3 mb-1">
+            <i class="ri-file-upload-line mr-1"></i> Verification Documents
+            <span class="small font-weight-normal text-muted ml-2">PDF / JPG / PNG, Max 10MB each</span>
+          </h6>
+          <p class="small text-muted mb-3">All documents are stored securely and only accessible by you and our verification admin.</p>
+
+          <div class="row mb-2">
+            <div class="col-md-6 mb-3">
+              <div class="file-upload-box">
+                <label class="small font-weight-bold text-dark mb-1 d-block">
+                  MBBS Degree Certificate <span class="text-danger">*</span>
+                </label>
+                <input type="file" name="mbbs_degree_certificate" accept=".pdf,.jpg,.jpeg,.png" required class="form-control-file">
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="file-upload-box">
+                <label class="small font-weight-bold text-dark mb-1 d-block">
+                  Additional Qualification Certificates
+                  <span class="small text-muted font-weight-normal">(MD/MS/DM/MCh etc.)</span>
+                </label>
+                <input type="file" name="additional_qualification_certificates" accept=".pdf,.jpg,.jpeg,.png" class="form-control-file">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-md-6 mb-3">
+              <div class="file-upload-box">
+                <label class="small font-weight-bold text-dark mb-1 d-block">
+                  Medical Registration Certificate <span class="text-danger">*</span>
+                  <span class="small text-muted font-weight-normal">(NMC / State Council)</span>
+                </label>
+                <input type="file" name="license_document" accept=".pdf,.jpg,.jpeg,.png" required class="form-control-file">
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="file-upload-box">
+                <label class="small font-weight-bold text-dark mb-1 d-block">
+                  Government Photo ID <span class="text-danger">*</span>
+                </label>
+                <div class="d-flex gap-2 align-items-center mb-2" style="gap:8px;">
+                  <select name="govt_photo_id_type" class="form-control form-control-sm rounded-lg" style="max-width:160px;" required>
+                    <option value="">ID Type…</option>
+                    <option value="aadhaar">Aadhaar Card</option>
+                    <option value="passport">Passport</option>
+                    <option value="driving_license">Driving License</option>
+                    <option value="voter_id">Voter ID</option>
+                    <option value="pan_card">PAN Card</option>
+                  </select>
+                </div>
+                <input type="file" name="govt_id_document" accept=".pdf,.jpg,.jpeg,.png" required class="form-control-file">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6 mb-3">
+              <div class="file-upload-box">
+                <label class="small font-weight-bold text-dark mb-1 d-block">
+                  Degree Certificate <span class="text-muted font-weight-normal small">(optional duplicate)</span>
+                </label>
+                <input type="file" name="degree_certificate" accept=".pdf,.jpg,.jpeg,.png" class="form-control-file">
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="file-upload-box">
+                <label class="small font-weight-bold text-dark mb-1 d-block">
+                  Selfie / Profile Photo <span class="text-danger">*</span>
+                  <span class="small text-muted font-weight-normal">(recent, clear face)</span>
+                </label>
+                <input type="file" name="selfie_photo" accept=".jpg,.jpeg,.png" required class="form-control-file">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-12">
+              <div class="file-upload-box">
+                <label class="small font-weight-bold text-dark mb-1 d-block">
+                  Additional Documents <span class="text-muted font-weight-normal small">(awards, fellowships, other)</span>
+                </label>
+                <input type="file" name="additional_documents" accept=".pdf,.jpg,.jpeg,.png" class="form-control-file">
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="small font-weight-bold text-dark">Doctor Biography</label>
+            <textarea name="bio" rows="3" class="form-control rounded-lg" placeholder="Brief about your medical experience and background..."></textarea>
+          </div>
+
+          <div class="form-group form-check mb-4">
+            <input type="checkbox" class="form-check-input" id="termsCheck" required>
+            <label class="form-check-label small text-muted" for="termsCheck">
+              I certify that all NMC registration details, medical credentials, and uploaded documents are genuine and accurate. I agree to the hospital's verification and data security policies.
+            </label>
+          </div>
+
+          <div class="d-flex gap-3">
+            <button type="button" class="btn btn-outline-secondary py-3 px-4 font-weight-bold rounded-lg" onclick="backToDoctorStep1()">
+              ← Back to Step 1
+            </button>
+            <button type="submit" class="btn btn-primary flex-grow-1 py-3 font-weight-bold rounded-lg" style="background: linear-gradient(135deg, #4f46e5, #06b6d4); border: 0;">
+              <i class="ri-shield-check-line mr-1"></i> Submit for NMC Verification →
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </form>
+
+    <div class="text-center pt-3 border-top small font-weight-bold mt-4" style="border-color: rgba(0,0,0,0.08) !important;">
+      <span class="text-muted">Already have an account?</span>
+      <a href="{% url 'accounts:login' %}" class="text-primary font-weight-bold ml-1" style="color: #4f46e5;">Sign In</a>
     </div>
+
   </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  function selectRole(role) {
+    document.getElementById('selectedRoleInput').value = role;
+    document.getElementById('roleSelectorScreen').style.display = 'none';
+    document.getElementById('mainRegisterForm').style.display = 'block';
+
+    if (role === 'doctor') {
+      document.getElementById('patientFormFields').style.display = 'none';
+      document.getElementById('doctorWizardContainer').style.display = 'block';
+    } else {
+      document.getElementById('doctorWizardContainer').style.display = 'none';
+      document.getElementById('patientFormFields').style.display = 'block';
+    }
+  }
+
+  function resetRoleSelection() {
+    document.getElementById('mainRegisterForm').style.display = 'none';
+    document.getElementById('roleSelectorScreen').style.display = 'block';
+  }
+
+  function goToDoctorStep2() {
+    // Validate Step 1 basic inputs
+    var fn = document.getElementById('doc_first_name').value.trim();
+    var ln = document.getElementById('doc_last_name').value.trim();
+    var un = document.getElementById('doc_username').value.trim();
+    var em = document.getElementById('doc_email').value.trim();
+    var ph = document.getElementById('doc_phone').value.trim();
+    var p1 = document.getElementById('doc_pwd1').value;
+    var p2 = document.getElementById('doc_pwd2').value;
+
+    if (!fn || !ln || !un || !em || !ph || !p1 || !p2) {
+      Swal.fire({ icon: 'warning', title: 'Missing Information', text: 'Please fill in all required fields in Step 1 before proceeding.', confirmButtonColor: '#4f46e5' });
+      return;
+    }
+
+    if (p1 !== p2) {
+      Swal.fire({ icon: 'error', title: 'Password Mismatch', text: 'Passwords do not match.', confirmButtonColor: '#4f46e5' });
+      return;
+    }
+
+    document.getElementById('doctorStep1').style.display = 'none';
+    document.getElementById('doctorStep2').style.display = 'block';
+
+    document.getElementById('stepperBarFill').style.width = '100%';
+    document.getElementById('nodeStep1').classList.remove('active');
+    document.getElementById('nodeStep1').classList.add('completed');
+    document.getElementById('nodeStep2').classList.add('active');
+  }
+
+  function backToDoctorStep1() {
+    document.getElementById('doctorStep2').style.display = 'none';
+    document.getElementById('doctorStep1').style.display = 'block';
+
+    document.getElementById('stepperBarFill').style.width = '0%';
+    document.getElementById('nodeStep2').classList.remove('active');
+    document.getElementById('nodeStep1').classList.remove('completed');
+    document.getElementById('nodeStep1').classList.add('active');
+  }
+
+  // ── NMC Registration Number client-side format validation ─────────────
+  function validateNMCNumber(input) {
+    var fb = document.getElementById('nmc_feedback');
+    var val = input.value.trim().toUpperCase();
+
+    if (!val) {
+      fb.style.display = 'none';
+      input.style.borderColor = '';
+      return;
+    }
+
+    // Must be 5-50 chars, only letters / digits / hyphens / slashes
+    var valid = /^[A-Za-z0-9\/\-]{5,50}$/.test(val);
+
+    fb.style.display = 'block';
+    if (valid) {
+      fb.innerHTML = '<span style="color:#10b981;">&#10004; Format looks valid</span>';
+      input.style.borderColor = '#10b981';
+    } else {
+      fb.innerHTML = '<span style="color:#ef4444;">&#x2716; Use only letters, digits, hyphens, slashes (min 5 chars)</span>';
+      input.style.borderColor = '#ef4444';
+    }
+  }
+</script>
 {% endblock %}

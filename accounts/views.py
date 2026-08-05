@@ -210,14 +210,133 @@ class RegisterView(CreateView):
         return initial
 
     def form_valid(self, form):
+        role = form.cleaned_data.get('role', 'patient')
+
+        # Check if Doctor registration with wizard data
+        if role == 'doctor':
+            # ----------------------------------------------------------------
+            # NMC Registration Number validation before creating user account
+            # ----------------------------------------------------------------
+            from accounts.nmc_service import NMCVerificationService
+            p = self.request.POST
+            f = self.request.FILES
+
+            nmc_number = p.get('nmc_registration_number', '').strip()
+            state_council = p.get('state_medical_council', '').strip()
+            reg_year_raw = p.get('medical_council_registration_year', '').strip()
+            reg_year = int(reg_year_raw) if reg_year_raw.isdigit() else None
+
+            nmc_result = NMCVerificationService.run_all_validations(
+                nmc_number=nmc_number,
+                council=state_council,
+                year=reg_year,
+            )
+            if not nmc_result['all_valid']:
+                for error in nmc_result['errors']:
+                    messages.error(self.request, error)
+                return self.form_invalid(form)
+
+            user = form.save(commit=False)
+            password = form.cleaned_data.get('password1')
+            user.set_password(password)
+            user.is_active = True
+            user.role = 'doctor'
+            user.save()
+
+            from appointment.models import DoctorProfile, DEPARTMENT_CHOICES
+            doc_profile, created = DoctorProfile.objects.get_or_create(user=user)
+
+            # Populate Professional Info fields from POST data
+
+            doc_profile.medical_registration_number = p.get('medical_registration_number', '').strip()
+            doc_profile.license_number = p.get('license_number', '').strip()
+            doc_profile.medical_council = p.get('medical_council', '').strip()
+            doc_profile.qualification = p.get('qualification', '').strip()
+            doc_profile.degree = p.get('degree', '').strip()
+            doc_profile.specialization = p.get('specialization', '').strip()
+            doc_profile.super_specialization = p.get('super_specialization', '').strip()
+            doc_profile.department = p.get('department', p.get('specialization', '')).strip()
+            doc_profile.hospital = p.get('hospital', '').strip()
+            doc_profile.previous_hospital = p.get('previous_hospital', '').strip()
+            doc_profile.city = p.get('city', '').strip()
+            doc_profile.state = p.get('state', '').strip()
+            doc_profile.country = p.get('country', '').strip()
+            doc_profile.full_address = p.get('full_address', p.get('address', '')).strip()
+
+            # NMC / Medical Council fields
+            doc_profile.nmc_registration_number = nmc_number.upper()
+            doc_profile.state_medical_council = state_council
+            if reg_year:
+                doc_profile.medical_council_registration_year = reg_year
+            doc_profile.govt_photo_id_type = p.get('govt_photo_id_type', '').strip()
+            doc_profile.verification_method = nmc_result.get('verification_method', 'manual')
+
+            try:
+                doc_profile.experience_years = int(p.get('experience_years', 0))
+            except (ValueError, TypeError):
+                doc_profile.experience_years = 0
+
+            try:
+                doc_profile.consultation_fee = float(p.get('consultation_fee', 0.00))
+            except (ValueError, TypeError):
+                doc_profile.consultation_fee = 0.00
+
+            dob_str = p.get('date_of_birth', '').strip()
+            if dob_str:
+                try:
+                    doc_profile.date_of_birth = dob_str
+                except Exception:
+                    pass
+
+            doc_profile.bio = p.get('bio', '').strip()
+            doc_profile.languages = p.get('languages', '').strip()
+            doc_profile.working_days = p.get('working_days', '').strip()
+            doc_profile.available_time_slots = p.get('available_time_slots', '').strip()
+            doc_profile.awards = p.get('awards', '').strip()
+            doc_profile.certificates = p.get('certificates', '').strip()
+
+            doc_profile.online_consultation = p.get('online_consultation', 'yes').lower() in ('yes', 'true', 'on', '1')
+            doc_profile.emergency_consultation = p.get('emergency_consultation', 'no').lower() in ('yes', 'true', 'on', '1')
+
+            # Document & Photo Uploads
+            if 'photo' in f:
+                doc_profile.photo = f['photo']
+            if 'selfie_photo' in f:
+                doc_profile.selfie_photo = f['selfie_photo']
+            if 'degree_certificate' in f:
+                doc_profile.degree_certificate = f['degree_certificate']
+            if 'mbbs_degree_certificate' in f:
+                doc_profile.mbbs_degree_certificate = f['mbbs_degree_certificate']
+            if 'additional_qualification_certificates' in f:
+                doc_profile.additional_qualification_certificates = f['additional_qualification_certificates']
+            if 'license_document' in f:
+                doc_profile.license_document = f['license_document']
+            if 'govt_id_document' in f:
+                doc_profile.govt_id_document = f['govt_id_document']
+            if 'additional_documents' in f:
+                doc_profile.additional_documents = f['additional_documents']
+
+            # Set verification status to pending
+            doc_profile.verification_status = 'pending'
+            doc_profile.is_verified = False
+            doc_profile.save()
+
+            send_welcome_email_background(user, self.request)
+
+            messages.info(self.request, f"Registration submitted! Welcome Dr. {user.first_name or user.username}. Your account is pending verification.")
+            return redirect('accounts:doctor_pending_verification')
+
+
+        # Patient Registration Flow
         user = form.save(commit=False)
         password = form.cleaned_data.get('password1')
         user.set_password(password)
         user.is_active = True
+        user.role = 'patient'
         user.save()
 
-        # Re-save form so save() executes profile creation
-        form.save(commit=True)
+        from appointment.models import PatientProfile
+        PatientProfile.objects.get_or_create(user=user)
 
         try:
             from allauth.account.models import EmailAddress
@@ -232,15 +351,38 @@ class RegisterView(CreateView):
 
         send_welcome_email_background(user, self.request)
 
-        # Auto-login after registration
+        # Auto-login Patient
         auth.login(self.request, user, backend='accounts.backends.MultiFieldBackend')
         self.request.session.cycle_key()
         self.request.session['show_registration_success'] = True
         self.request.session['registration_role'] = user.role
-        self.request.session['email_unverified'] = True
 
         messages.success(self.request, f'Registration Successful 🎉 Welcome to DocMed, {user.first_name or user.username}!')
-        return self._redirect_authenticated(user)
+        return HttpResponseRedirect(redirect_by_role(user))
+
+
+class DoctorPendingVerificationView(View):
+    """
+    Informs doctor users that their account registration was received
+    and is currently under verification by hospital administration.
+    Also displays current verification status, admin remarks (if any),
+    and links to their own uploaded documents.
+    """
+    template_name = 'accounts/doctor_pending_verification.html'
+
+    def get(self, request, *args, **kwargs):
+        context = {'title': 'Pending Verification — DocMed'}
+        if request.user.is_authenticated and getattr(request.user, 'role', '') == 'doctor':
+            try:
+                profile = request.user.doctor_profile
+                context['profile'] = profile
+                context['verification_status'] = profile.verification_status
+                context['verification_remarks'] = profile.verification_remarks
+                context['nmc_number'] = profile.nmc_registration_number
+                context['state_council'] = profile.state_medical_council
+            except Exception:
+                pass
+        return render(request, self.template_name, context)
 
 
 class RegisterPatientView(RedirectView):
@@ -342,7 +484,7 @@ class VerifyEmailView(View):
 class LoginView(FormView):
     """
     Single unified login view for all users (Patient, Doctor, Admin).
-    Supports Email/Username/Phone + Password and Google Sign In.
+    Supports Email/Username/Phone + Password, Google Sign In (Firebase), and Phone OTP (Firebase).
     Redirects dynamically based on user role upon successful login.
     """
     form_class = UserLoginForm
@@ -353,6 +495,19 @@ class LoginView(FormView):
         if self.request.user.is_authenticated:
             return HttpResponseRedirect(redirect_by_role(self.request.user))
         return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['firebase_config'] = {
+            'apiKey': getattr(settings, 'FIREBASE_API_KEY', ''),
+            'authDomain': getattr(settings, 'FIREBASE_AUTH_DOMAIN', ''),
+            'projectId': getattr(settings, 'FIREBASE_PROJECT_ID', ''),
+            'storageBucket': getattr(settings, 'FIREBASE_STORAGE_BUCKET', ''),
+            'messagingSenderId': getattr(settings, 'FIREBASE_MESSAGING_SENDER_ID', ''),
+            'appId': getattr(settings, 'FIREBASE_APP_ID', ''),
+            'measurementId': getattr(settings, 'FIREBASE_MEASUREMENT_ID', ''),
+        }
+        return context
 
     def get_success_url(self):
         next_url = self.request.GET.get('next', '').strip()
@@ -389,6 +544,113 @@ class LoginView(FormView):
 
     def form_invalid(self, form):
         return self.render_to_response(self.get_context_data(form=form))
+
+
+# ---------------------------------------------------------------------------
+# Firebase Token Verification & Auth View (Google OAuth & Phone OTP)
+# ---------------------------------------------------------------------------
+
+import json
+from accounts.firebase_services import verify_firebase_id_token
+
+class FirebaseAuthView(View):
+    """
+    Backend verification API endpoint for Firebase Authentication (Google & Phone OTP).
+    Verifies ID tokens cryptographically via Firebase Admin SDK.
+    Links existing accounts or redirects new users to role selection.
+    """
+
+    def post(self, request, *args, **kwargs):
+        try:
+            body = json.loads(request.body.decode('utf-8'))
+        except Exception:
+            body = request.POST
+
+        id_token = body.get('id_token', '').strip()
+        login_type = body.get('login_type', 'google').strip().lower()
+
+        if not id_token:
+            return JsonResponse({'success': False, 'error': 'ID token is required.'}, status=400)
+
+        # Verify Firebase ID Token
+        result = verify_firebase_id_token(id_token)
+        if not result.get('success'):
+            return JsonResponse({'success': False, 'error': result.get('error', 'Authentication failed.')}, status=400)
+
+        email = result.get('email')
+        phone_number = result.get('phone_number')
+        name = result.get('name') or ''
+        picture = result.get('picture')
+
+        user = None
+
+        # Account linking: Search user by email first, then phone number
+        if email:
+            user = User.objects.filter(email__iexact=email).first()
+
+        if not user and phone_number:
+            user = User.objects.filter(phone_number=phone_number).first()
+
+        if user:
+            # Existing user: link phone number if missing and unique
+            if phone_number and not user.phone_number:
+                if not User.objects.filter(phone_number=phone_number).exclude(pk=user.pk).exists():
+                    user.phone_number = phone_number
+                    user.save(update_fields=['phone_number'])
+
+            # Log existing user in
+            user.is_active = True
+            user.save(update_fields=['is_active'])
+
+            auth.login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            request.session.cycle_key()
+
+            send_login_notification_background(user, request)
+            messages.success(request, f"Welcome back, {user.first_name or user.username}! 👋")
+
+            redirect_url = redirect_by_role(user)
+            return JsonResponse({'success': True, 'redirect_url': redirect_url})
+        else:
+            # New user: Create account shell and direct to role selection
+            base_username = (email.split('@')[0] if email else (phone_number or 'user')).replace('+', '').replace('-', '')
+            base_username = ''.join(c for c in base_username if c.isalnum() or c in '_-')[:120] or 'user'
+            candidate_username = base_username
+            counter = 1
+            while User.objects.filter(username__iexact=candidate_username).exists():
+                candidate_username = f"{base_username}_{counter}"
+                counter += 1
+
+            first_name = ''
+            last_name = ''
+            if name:
+                parts = name.split(' ', 1)
+                first_name = parts[0]
+                last_name = parts[1] if len(parts) > 1 else ''
+
+            temp_email = email or f"{candidate_username}@firebase.user"
+
+            new_user = User.objects.create(
+                username=candidate_username,
+                email=temp_email,
+                phone_number=phone_number if (phone_number and not User.objects.filter(phone_number=phone_number).exists()) else None,
+                first_name=first_name,
+                last_name=last_name,
+                is_active=True,
+            )
+            new_user.set_unusable_password()
+            new_user.save()
+
+            # Set session flags for role completion
+            request.session['social_complete_registration'] = True
+            request.session['social_user_id'] = str(new_user.pk)
+
+            auth.login(request, new_user, backend='django.contrib.auth.backends.ModelBackend')
+            request.session.cycle_key()
+
+            return JsonResponse({
+                'success': True,
+                'redirect_url': reverse('accounts:complete_social_registration')
+            })
 
 
 # ---------------------------------------------------------------------------
@@ -784,3 +1046,98 @@ class DismissRegSuccessView(View):
         request.session.pop('show_registration_success', None)
         request.session.pop('registration_role', None)
         return JsonResponse({'status': 'ok'})
+
+
+# ---------------------------------------------------------------------------
+# Secure Doctor Document Download View
+# ---------------------------------------------------------------------------
+
+class DoctorDocumentDownloadView(View):
+    """
+    Serves doctor verification documents securely.
+
+    Access Policy:
+      - The doctor who owns the profile can view their own documents.
+      - Admin users (is_staff or is_superuser) can view any doctor's documents.
+      - All other requests are denied with HTTP 403.
+
+    URL: /accounts/doctor/document/<profile_id>/<doc_type>/
+
+    Supported doc_type values:
+        degree_certificate, mbbs_degree_certificate, license_document,
+        govt_id_document, additional_documents,
+        additional_qualification_certificates, selfie_photo
+    """
+
+    ALLOWED_DOC_TYPES = {
+        'degree_certificate',
+        'mbbs_degree_certificate',
+        'license_document',
+        'govt_id_document',
+        'additional_documents',
+        'additional_qualification_certificates',
+        'selfie_photo',
+    }
+
+    def get(self, request, profile_id, doc_type, *args, **kwargs):
+        from django.http import Http404, FileResponse, HttpResponseForbidden
+        from appointment.models import DoctorProfile
+        import os
+
+        # Authentication check
+        if not request.user.is_authenticated:
+            messages.warning(request, 'Please log in to access this document.')
+            return redirect('accounts:login')
+
+        # Validate doc_type
+        if doc_type not in self.ALLOWED_DOC_TYPES:
+            raise Http404('Invalid document type.')
+
+        # Fetch the profile
+        try:
+            profile = DoctorProfile.objects.select_related('user').get(pk=profile_id)
+        except DoctorProfile.DoesNotExist:
+            raise Http404('Doctor profile not found.')
+
+        # Authorization check: owner or admin/staff only
+        is_owner = (profile.user == request.user)
+        is_admin = (request.user.is_staff or request.user.is_superuser)
+
+        if not (is_owner or is_admin):
+            return HttpResponseForbidden(
+                '<h2>Access Denied</h2>'
+                '<p>You do not have permission to view this document.</p>'
+            )
+
+        # Get the file field
+        file_field = getattr(profile, doc_type, None)
+        if not file_field or not file_field.name:
+            raise Http404('Document not found.')
+
+        # Serve the file
+        try:
+            file_path = file_field.path
+            if not os.path.exists(file_path):
+                raise Http404('Document file not found on disk.')
+
+            response = FileResponse(
+                open(file_path, 'rb'),
+                as_attachment=False,
+            )
+            # Set content-disposition with original filename
+            filename = os.path.basename(file_path)
+            response['Content-Disposition'] = f'inline; filename="{filename}"'
+            # Set Content-Type based on extension
+            ext = os.path.splitext(filename)[1].lower()
+            content_types = {
+                '.pdf': 'application/pdf',
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg',
+                '.png': 'image/png',
+            }
+            response['Content-Type'] = content_types.get(ext, 'application/octet-stream')
+            return response
+
+        except (OSError, IOError):
+            raise Http404('Unable to serve document.')
+

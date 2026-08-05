@@ -148,9 +148,18 @@ class DoctorProfile(models.Model):
     Extended with cover image, social links, registration number, about, digital signature.
     """
     VERIFICATION_STATUS_CHOICES = (
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
+        ('pending',   'Pending Verification'),
+        ('verified',  'Verified'),
+        ('rejected',  'Rejected'),
+        ('suspended', 'Suspended'),
+    )
+
+    GOVT_ID_TYPE_CHOICES = (
+        ('aadhaar', 'Aadhaar Card'),
+        ('passport', 'Passport'),
+        ('driving_license', 'Driving License'),
+        ('voter_id', 'Voter ID'),
+        ('pan_card', 'PAN Card'),
     )
 
     user = models.OneToOneField(
@@ -162,9 +171,14 @@ class DoctorProfile(models.Model):
     photo = models.ImageField(upload_to='doctor_photos/', null=True, blank=True)
     cover_image = models.ImageField(upload_to='doctor_covers/', null=True, blank=True)
     digital_signature = models.ImageField(upload_to='doctor_signatures/', null=True, blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
     qualification = models.CharField(max_length=200, blank=True)
+    degree = models.CharField(max_length=150, blank=True)
     specialization = models.CharField(choices=DEPARTMENT_CHOICES, max_length=100, blank=True)
+    super_specialization = models.CharField(max_length=150, blank=True)
+    department = models.CharField(max_length=100, blank=True)
     hospital = models.CharField(max_length=200, blank=True)
+    previous_hospital = models.CharField(max_length=200, blank=True)
     city = models.CharField(max_length=100, blank=True)
     state = models.CharField(max_length=100, blank=True)
     country = models.CharField(max_length=100, blank=True)
@@ -176,9 +190,74 @@ class DoctorProfile(models.Model):
     bio = models.TextField(blank=True)
     about = models.TextField(blank=True, help_text="Detailed about section for public profile")
     languages = models.CharField(max_length=200, blank=True, help_text="Comma separated languages")
-    license_number = models.CharField(max_length=50, blank=True)
+    license_number = models.CharField(max_length=50, blank=True, unique=False)
     medical_registration_number = models.CharField(max_length=50, blank=True)
+    medical_council = models.CharField(max_length=150, blank=True)
     working_days = models.CharField(max_length=200, blank=True, help_text="Comma separated working days, e.g. Monday, Wednesday")
+    available_time_slots = models.CharField(max_length=250, blank=True, help_text="Available time slots e.g. 09:00 AM - 05:00 PM")
+    awards = models.TextField(blank=True)
+    certificates = models.TextField(blank=True)
+
+    # NMC (National Medical Commission) Credentials
+    nmc_registration_number = models.CharField(
+        max_length=100,
+        blank=True,
+        unique=False,  # Enforced via clean() / form validation
+        help_text='NMC Registration Number (mandatory for verification)'
+    )
+    state_medical_council = models.CharField(
+        max_length=200, blank=True,
+        help_text='e.g. Maharashtra Medical Council, Delhi Medical Council'
+    )
+    medical_council_registration_year = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text='Year of registration with state medical council'
+    )
+    govt_photo_id_type = models.CharField(
+        max_length=30,
+        choices=GOVT_ID_TYPE_CHOICES,
+        blank=True,
+        help_text='Type of government-issued photo ID uploaded'
+    )
+
+    # Verification Document Uploads
+    degree_certificate = models.FileField(upload_to='doctor_documents/degree/', null=True, blank=True)
+    mbbs_degree_certificate = models.FileField(
+        upload_to='doctor_documents/mbbs/', null=True, blank=True,
+        help_text='Upload MBBS degree certificate (PDF/JPG/PNG, max 10MB)'
+    )
+    additional_qualification_certificates = models.FileField(
+        upload_to='doctor_documents/additional_qualifications/', null=True, blank=True,
+        help_text='Upload MD/MS/DM/MCh or other postgraduate certificates'
+    )
+    license_document = models.FileField(upload_to='doctor_documents/license/', null=True, blank=True)
+    govt_id_document = models.FileField(upload_to='doctor_documents/govt_id/', null=True, blank=True)
+    additional_documents = models.FileField(upload_to='doctor_documents/additional/', null=True, blank=True)
+    selfie_photo = models.ImageField(
+        upload_to='doctor_documents/selfie/', null=True, blank=True,
+        help_text='Recent selfie/profile photo for identity verification'
+    )
+
+    # Verification Audit Trail
+    verification_remarks = models.TextField(
+        blank=True,
+        help_text='Admin remarks on the verification decision (visible to doctor)'
+    )
+    verified_by = models.ForeignKey(
+        User,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='verified_doctors',
+        help_text='Admin/Staff who approved or rejected this doctor'
+    )
+    verification_date = models.DateTimeField(
+        null=True, blank=True,
+        help_text='Date and time when verification decision was made'
+    )
+    verification_method = models.CharField(
+        max_length=50, blank=True, default='manual',
+        help_text='Verification method: manual, nmc_api, digilocker, qr_code'
+    )
 
     # Social Links
     social_facebook = models.URLField(blank=True)
@@ -209,6 +288,7 @@ class DoctorProfile(models.Model):
     online_consultation = models.BooleanField(default=True)
     offline_consultation = models.BooleanField(default=True)
     emergency = models.BooleanField(default=False)
+    emergency_consultation = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

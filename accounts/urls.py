@@ -21,6 +21,9 @@ from accounts.views import (
     DismissVerifyBannerView,
     DismissRegSuccessView,
     CompleteSocialRegistrationView,
+    FirebaseAuthView,
+    DoctorPendingVerificationView,
+    DoctorDocumentDownloadView,
 )
 from appointment.views import EditDoctorProfileView, EditPatientProfileView
 
@@ -31,6 +34,7 @@ urlpatterns = [
     # Unified Registration
     path('register', RegisterView.as_view(), name='register'),
     path('register/', RegisterView.as_view(), name='register-slash'),
+    path('doctor/pending-verification/', DoctorPendingVerificationView.as_view(), name='doctor_pending_verification'),
     path('patient/register', RegisterPatientView.as_view(), name='patient-register'),
     path('doctor/register', RegisterDoctorView.as_view(), name='doctor-register'),
 
@@ -74,4 +78,14 @@ urlpatterns = [
 
     # Social registration completion (role selection for first-time Google users)
     path('complete-social-registration/', CompleteSocialRegistrationView.as_view(), name='complete_social_registration'),
+
+    # Firebase Authentication API (Google Popup & Phone OTP backend token verification)
+    path('api/firebase-login/', FirebaseAuthView.as_view(), name='firebase_login'),
+
+    # Secure Doctor Document Download (owner + admin only)
+    path(
+        'doctor/document/<int:profile_id>/<str:doc_type>/',
+        DoctorDocumentDownloadView.as_view(),
+        name='doctor_document_download',
+    ),
 ]

@@ -266,6 +266,17 @@ class PatientRegistrationForm(UserCreationForm):
         return user
 
 
+def validate_uploaded_document(file_obj):
+    """Validate uploaded document format (PDF, JPG, PNG) and max size (10MB)."""
+    if not file_obj:
+        return
+    ext = os.path.splitext(file_obj.name)[1].lower()
+    if ext not in ['.pdf', '.jpg', '.jpeg', '.png']:
+        raise ValidationError(f'Invalid file format ({ext}). Only PDF, JPG, and PNG documents are accepted.')
+    if file_obj.size > 10 * 1024 * 1024:
+        raise ValidationError('File size exceeds the maximum limit of 10MB.')
+
+
 class DoctorRegistrationForm(UserCreationForm):
     """Registration form for doctor users."""
 
@@ -362,6 +373,7 @@ class DoctorRegistrationForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
 
 
 # ---------------------------------------------------------------------------

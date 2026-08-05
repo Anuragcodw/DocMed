@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verification Status — DocMed AI Hospital{% endblock %}
+
+{% block styles %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  .pending-page-wrap {
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 16px;
+    background: linear-gradient(135deg, #0a0f1e 0%, #0d1535 40%, #1a0a2e 100%);
+    position: relative;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Animated blobs */
+  .pending-page-wrap::before,
+  .pending-page-wrap::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    animation: blob-drift 8s ease-in-out infinite alternate;
+  }
+  .pending-page-wrap::before {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(79,70,229,0.3), transparent 70%);
+    top: -150px; left: -100px;
+  }
+  .pending-page-wrap::after {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(6,182,212,0.25), transparent 70%);
+    bottom: -100px; right: -80px;
+    animation-delay: -4s;
+  }
+  @keyframes blob-drift {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(30px, 30px) scale(1.1); }
+  }
+
+  .pending-card {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 28px;
+    padding: 50px 44px;
+    max-width: 680px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 30px 90px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+    color: #f1f5f9;
+    animation: fadeSlideUp 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
+    position: relative;
+    z-index: 1;
+  }
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Status-specific icon rings */
+  .status-icon-ring {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    font-size: 44px;
+    animation: pulse-ring 2.5s ease-in-out infinite;
+  }
+  .ring-pending { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 12px 35px rgba(245,158,11,0.45); }
+  .ring-under_review { background: linear-gradient(135deg, #3b82f6, #1d4ed8); box-shadow: 0 12px 35px rgba(59,130,246,0.45); }
+  .ring-approved { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 12px 35px rgba(16,185,129,0.45); }
+  .ring-rejected { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 12px 35px rgba(239,68,68,0.45); }
+  .ring-suspended { background: linear-gradient(135deg, #f97316, #ea580c); box-shadow: 0 12px 35px rgba(249,115,22,0.45); }
+  @keyframes pulse-ring {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  /* Status badge */
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 20px; border-radius: 30px;
+    font-weight: 700; font-size: 13px; letter-spacing: 0.5px;
+    margin-bottom: 22px; text-transform: uppercase;
+  }
+  .badge-pending { background: rgba(245,158,11,0.18); border: 1px solid rgba(245,158,11,0.4); color: #fbbf24; }
+  .badge-under_review { background: rgba(59,130,246,0.18); border: 1px solid rgba(59,130,246,0.4); color: #93c5fd; }
+  .badge-approved { background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.4); color: #6ee7b7; }
+  .badge-rejected { background: rgba(239,68,68,0.18); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; }
+  .badge-suspended { background: rgba(249,115,22,0.18); border: 1px solid rgba(249,115,22,0.4); color: #fdba74; }
+
+  /* Info panels */
+  .info-panel {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 20px 22px;
+    text-align: left;
+    margin-bottom: 20px;
+  }
+  .info-panel h5 {
+    font-size: 14px; font-weight: 700; color: #a5b4fc; margin-bottom: 10px;
+  }
+  .info-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 13px;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { color: rgba(255,255,255,0.5); font-weight: 500; }
+  .info-value { color: #f1f5f9; font-weight: 600; }
+
+  /* Remarks box */
+  .remarks-box {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.35);
+    border-radius: 14px;
+    padding: 18px 20px;
+    text-align: left;
+    margin-bottom: 20px;
+  }
+  .remarks-box.info-remarks {
+    background: rgba(59,130,246,0.1);
+    border-color: rgba(59,130,246,0.35);
+  }
+  .remarks-box h6 { font-size: 13px; font-weight: 700; color: #fca5a5; margin-bottom: 8px; }
+  .remarks-box.info-remarks h6 { color: #93c5fd; }
+  .remarks-box p { font-size: 14px; color: rgba(255,255,255,0.8); margin: 0; line-height: 1.6; }
+
+  /* Steps */
+  .steps-list {
+    list-style: none; padding: 0; margin: 0;
+  }
+  .steps-list li {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 13px; color: rgba(255,255,255,0.7); padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .steps-list li:last-child { border-bottom: none; }
+  .steps-list .step-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(99,102,241,0.4); border: 1px solid rgba(99,102,241,0.5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #a5b4fc; flex-shrink: 0;
+  }
+
+  /* Buttons */
+  .btn-primary-glow {
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    color: white; border: none; padding: 13px 30px;
+    border-radius: 12px; font-weight: 700; font-size: 14px;
+    text-decoration: none; display: inline-block; cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(79,70,229,0.4);
+  }
+  .btn-primary-glow:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(79,70,229,0.5); color: white; }
+
+  .btn-ghost {
+    background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.85);
+    border: 1px solid rgba(255,255,255,0.18); padding: 13px 28px;
+    border-radius: 12px; font-weight: 600; font-size: 14px;
+    text-decoration: none; display: inline-block; cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.14); color: white; transform: translateY(-2px); }
+
+  /* NMC verified stamp (for approved) */
+  .nmc-verified-stamp {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(6,182,212,0.15));
+    border: 1px solid rgba(16,185,129,0.4); border-radius: 12px;
+    padding: 12px 20px; margin-bottom: 24px;
+    font-size: 14px; font-weight: 700; color: #6ee7b7;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pending-page-wrap">
+  <div class="pending-card">
+
+    {% with status=verification_status|default:"pending" %}
+
+    <!-- Status Icon -->
+    <div class="status-icon-ring ring-{{ status }}">
+      {% if status == "verified" %}✅
+      {% elif status == "rejected" %}❌
+      {% elif status == "suspended" %}⚠️
+      {% else %}⌛{% endif %}
+    </div>
+
+    <!-- Status Badge -->
+    <div class="status-badge badge-{{ status }}">
+      {% if status == "pending" %}⌛ Pending Verification
+      {% elif status == "verified" %}✅ Verified — NMC Registered
+      {% elif status == "rejected" %}❌ Registration Not Approved
+      {% elif status == "suspended" %}⚠️ Account Suspended
+      {% endif %}
+    </div>
+
+    <!-- Headline -->
+    <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 10px;">
+      {% if status == "pending" %}Registration Submitted Successfully
+      {% elif status == "verified" %}Your Account Is Verified &amp; Active!
+      {% elif status == "rejected" %}Registration Was Not Approved
+      {% elif status == "suspended" %}Account Suspended
+      {% endif %}
+    </h2>
+
+    <p style="font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.7; margin-bottom: 24px;">
+      {% if status == "pending" %}
+        Thank you for registering with <strong>DocMed</strong>. Your medical credentials, NMC registration details, and uploaded documents have been securely submitted to our verification team.
+      {% elif status == "verified" %}
+        Congratulations! Your NMC credentials have been verified and your DocMed doctor account is fully active. You can now access your dashboard and start accepting patients.
+      {% elif status == "rejected" %}
+        Unfortunately, we were unable to verify your submitted credentials. Please read the admin remarks below and contact our support team.
+      {% elif status == "suspended" %}
+        Your doctor account has been suspended by an administrator. Please review the remarks below and contact our admin team for assistance.
+      {% endif %}
+    </p>
+
+    <!-- Verified: NMC Stamp -->
+    {% if status == "verified" %}
+    <div class="nmc-verified-stamp">
+      <span>🩺</span>
+      <span>NMC Registered Doctor — Registration ID: {{ nmc_number|default:"N/A" }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Admin Remarks (if any) -->
+    {% if verification_remarks %}
+    <div class="remarks-box">
+      <h6>
+        {% if status == "rejected" or status == "suspended" %}⚠️ Admin Remarks:
+        {% else %}📋 Verification Notes:{% endif %}
+      </h6>
+      <p>{{ verification_remarks }}</p>
+    </div>
+    {% endif %}
+
+    <!-- NMC Info Panel (for non-verified) -->
+    {% if status != "verified" and nmc_number %}
+    <div class="info-panel">
+      <h5>📄 Submitted NMC Details</h5>
+      <div class="info-row">
+        <span class="info-label">NMC Registration Number</span>
+        <span class="info-value">{{ nmc_number }}</span>
+      </div>
+      {% if state_council %}
+      <div class="info-row">
+        <span class="info-label">State Medical Council</span>
+        <span class="info-value">{{ state_council }}</span>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Next Steps (for pending) -->
+    {% if status == "pending" %}
+    <div class="info-panel">
+      <h5>📋 What Happens Next?</h5>
+      <ul class="steps-list">
+        <li><span class="step-num">1</span><span>Your NMC Registration Number is verified against state medical council records by hospital administrators.</span></li>
+        <li><span class="step-num">2</span><span>Uploaded degree certificates, medical registration certificate, and government ID are reviewed.</span></li>
+        <li><span class="step-num">3</span><span>Upon verification, you gain full access to your doctor dashboard and become visible in search results.</span></li>
+        <li><span class="step-num">4</span><span>Verification typically completes within 24–48 business hours.</span></li>
+      </ul>
+    </div>
+    {% endif %}
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
+      {% if status == "verified" %}
+        <a href="{% url 'appointment:doctor-dashboard' %}" class="btn-primary-glow">
+          🏥 Go to Doctor Dashboard
+        </a>
+      {% else %}
+        <a href="{% url 'appointment:home' %}" class="btn-primary-glow">
+          Return to Home
+        </a>
+        {% if request.user.is_authenticated %}
+        <a href="{% url 'accounts:logout' %}" class="btn-ghost">
+          Sign Out
+        </a>
+        {% else %}
+        <a href="{% url 'accounts:login' %}" class="btn-ghost">
+          Sign In
+        </a>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    {% if status == "rejected" %}
+    <p style="margin-top: 20px; font-size: 12px; color: rgba(255,255,255,0.4);">
+      Need help? Contact <a href="mailto:admin@docmed.in" style="color: #a5b4fc;">admin@docmed.in</a>
+    </p>
+    {% endif %}
+
+    {% endwith %}
+
+  </div>
+</div>
+{% endblock %}
