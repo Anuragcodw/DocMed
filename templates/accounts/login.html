@@ -1,594 +1,498 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Sign In — DocMed{% endblock %}
+{% block title %}Sign In — DocMed Healthcare{% endblock %}
 
 {% block styles %}
 <style>
-  /* ── Hide distracting base-template elements on auth pages ── */
-  footer.footer-area,
-  .ai-chat-widget,
-  #aiChatToggle,
-  #aiChatWindow,
-  .back-to-top,
-  #scrollTop,
-  #backToTop,
-  [id*="back-to-top"],
-  [class*="back-to-top"],
-  .page-loader { display: none !important; }
+/* ─────────────────────────────────────────────
+   AUTH PAGE RESET & HIDE BASE FOOTER/WIDGETS
+───────────────────────────────────────────── */
+footer.footer-area,
+.ai-chat-widget,
+#aiChatToggle,
+#aiChatWindow,
+.back-to-top,
+#scrollTop,
+#backToTop,
+[id*="back-to-top"],
+[class*="back-to-top"],
+.page-loader { display: none !important; }
 
-  /* ── Auth page body reset ── */
-  body {
-    background: #f0f4ff;
-    overflow-x: hidden;
-  }
+body {
+  background: #f0f4ff;
+  overflow-x: hidden;
+  font-family: 'Inter', 'Poppins', sans-serif;
+}
 
-  /* ── Animated mesh gradient background ── */
-  .auth-bg {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    background:
-      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(79,70,229,.18) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 50% at 80% 85%, rgba(6,182,212,.15) 0%, transparent 60%),
-      radial-gradient(ellipse 50% 40% at 50% 50%, rgba(139,92,246,.10) 0%, transparent 60%),
-      linear-gradient(160deg, #eef2ff 0%, #e0f2fe 50%, #ede9fe 100%);
-    animation: bgShift 12s ease-in-out infinite alternate;
-  }
-  @keyframes bgShift {
-    0%   { filter: hue-rotate(0deg); }
-    100% { filter: hue-rotate(20deg); }
-  }
+/* ── Ambient Background Mesh ── */
+.auth-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 10%, rgba(37,99,235,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 85%, rgba(79,70,229,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(6,182,212,0.08) 0%, transparent 60%),
+    linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 50%, #f5f3ff 100%);
+  pointer-events: none;
+}
 
-  /* ── Floating ambient orbs ── */
-  .auth-orb {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(72px);
-    pointer-events: none;
-    animation: orbFloat 8s ease-in-out infinite alternate;
-  }
-  .auth-orb-1 {
-    width: 380px; height: 380px;
-    background: rgba(79,70,229,.14);
-    top: -80px; left: -80px;
-    animation-delay: 0s;
-  }
-  .auth-orb-2 {
-    width: 300px; height: 300px;
-    background: rgba(6,182,212,.13);
-    bottom: -60px; right: -60px;
-    animation-delay: 3s;
-  }
-  .auth-orb-3 {
-    width: 200px; height: 200px;
-    background: rgba(139,92,246,.10);
-    top: 50%; left: 55%;
-    animation-delay: 6s;
-  }
-  @keyframes orbFloat {
-    0%   { transform: translateY(0) scale(1); }
-    100% { transform: translateY(-30px) scale(1.08); }
-  }
+.auth-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  animation: orbFloat 10s ease-in-out infinite alternate;
+}
+.auth-orb-1 { width: 380px; height: 380px; background: rgba(37,99,235,0.10); top: -100px; left: -100px; }
+.auth-orb-2 { width: 320px; height: 320px; background: rgba(79,70,229,0.10); bottom: -80px; right: -80px; animation-delay: 4s; }
 
-  /* ── Floating medical icons ── */
-  .auth-icon {
-    position: fixed;
-    font-size: 22px;
-    pointer-events: none;
-    animation: iconDrift 10s ease-in-out infinite alternate;
-  }
-  .auth-icon-1 { top: 12%; left:  8%; color: rgba(79,70,229,.22); animation-delay: 0s;  font-size: 28px; }
-  .auth-icon-2 { top: 22%; right: 7%; color: rgba(6,182,212,.20); animation-delay: 2s;  font-size: 24px; }
-  .auth-icon-3 { bottom: 28%; left: 6%; color: rgba(139,92,246,.18); animation-delay: 4s; font-size: 20px; }
-  .auth-icon-4 { bottom: 18%; right: 9%; color: rgba(79,70,229,.16); animation-delay: 1s; font-size: 26px; }
-  .auth-icon-5 { top: 55%; left: 4%; color: rgba(6,182,212,.14); animation-delay: 3s; font-size: 18px; }
-  @keyframes iconDrift {
-    0%   { transform: translateY(0) rotate(0deg); }
-    100% { transform: translateY(-18px) rotate(15deg); }
-  }
+@keyframes orbFloat {
+  0%   { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-24px) scale(1.06); }
+}
 
-  /* ── Auth page layout ── */
-  .auth-page-wrap {
-    position: relative;
-    z-index: 1;
-    min-height: calc(100vh - 70px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 16px 32px;
-  }
+/* ─────────────────────────────────────────────
+   CENTERED LOGIN PAGE WRAPPER
+───────────────────────────────────────────── */
+.auth-page-wrap {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  width: 100%;
+}
 
-  /* ── Glass Login Card ── */
-  .auth-card {
-    width: 100%;
-    max-width: 480px;
-    background: rgba(255,255,255,.84);
-    backdrop-filter: blur(28px) saturate(160%);
-    -webkit-backdrop-filter: blur(28px) saturate(160%);
-    border: 1px solid rgba(255,255,255,.8);
-    border-radius: 28px;
-    box-shadow:
-      0 4px 6px rgba(0,0,0,.04),
-      0 20px 48px rgba(79,70,229,.12),
-      0 0 0 1px rgba(79,70,229,.06);
-    padding: 44px 40px 36px;
-    animation: cardIn .55s cubic-bezier(.22,1,.36,1) both;
-  }
-  @keyframes cardIn {
-    from { opacity: 0; transform: translateY(24px) scale(.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
+/* ── Glassmorphism Login Card ── */
+.auth-card {
+  width: 100%;
+  max-width: 520px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 24px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02), 0 20px 50px rgba(37,99,235,0.12), 0 1px 3px rgba(0,0,0,0.05);
+  padding: 44px 40px 40px;
+  margin: 0 auto;
+  animation: cardFadeIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
 
-  /* ── Card header ── */
-  .auth-logo-ring {
-    width: 68px; height: 68px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgba(79,70,229,.12), rgba(6,182,212,.12));
-    border: 1.5px solid rgba(79,70,229,.18);
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 18px;
-    box-shadow: 0 4px 16px rgba(79,70,229,.15);
-    animation: ringPop .6s cubic-bezier(.34,1.56,.64,1) .15s both;
-  }
-  @keyframes ringPop {
-    from { opacity: 0; transform: scale(.5); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-  .auth-logo-ring i {
-    font-size: 26px;
-    background: linear-gradient(135deg, #4f46e5, #06b6d4);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .auth-title {
-    font-family: 'Poppins', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 800;
-    color: #1e293b;
-    margin-bottom: 4px;
-    letter-spacing: -.3px;
-  }
-  .auth-subtitle {
-    font-size: .93rem;
-    color: #64748b;
-    margin-bottom: 0;
-    font-weight: 400;
-  }
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
 
-  /* ── Floating label inputs ── */
-  .auth-field {
-    position: relative;
-    margin-bottom: 20px;
-  }
-  .auth-field .field-icon {
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #94a3b8;
-    font-size: 15px;
-    pointer-events: none;
-    transition: color .25s;
-    z-index: 2;
-  }
-  .auth-field input {
-    width: 100%;
-    height: 54px;
-    padding: 16px 44px 6px 44px;
-    font-size: .93rem;
-    font-family: 'Inter', sans-serif;
-    color: #1e293b;
-    background: rgba(248,250,255,.9);
-    border: 1.5px solid rgba(203,213,225,.7);
-    border-radius: 14px;
-    outline: none;
-    transition: border-color .25s, box-shadow .25s, background .25s;
-    appearance: none;
-  }
-  .auth-field input:focus {
-    border-color: #4f46e5;
-    background: rgba(255,255,255,1);
-    box-shadow: 0 0 0 3.5px rgba(79,70,229,.12), 0 2px 8px rgba(79,70,229,.08);
-  }
-  .auth-field input.is-invalid {
-    border-color: #ef4444;
-    box-shadow: 0 0 0 3px rgba(239,68,68,.10);
-  }
-  .auth-field input:focus ~ .field-icon,
-  .auth-field input:not(:placeholder-shown) ~ .field-icon {
-    color: #4f46e5;
-  }
-  .auth-field label {
-    position: absolute;
-    left: 44px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: .88rem;
-    color: #94a3b8;
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    pointer-events: none;
-    transition: all .2s cubic-bezier(.22,1,.36,1);
-    transform-origin: left center;
-    background: transparent;
-  }
-  .auth-field input:focus ~ label,
-  .auth-field input:not(:placeholder-shown) ~ label {
-    top: 13px;
-    transform: translateY(0) scale(.78);
-    color: #4f46e5;
-    font-weight: 600;
-    letter-spacing: .01em;
-  }
+/* ── Header / Logo ── */
+.auth-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.auth-logo-ring {
+  width: 64px; height: 64px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #2563EB, #4F46E5);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+  color: #ffffff;
+  font-size: 28px;
+  box-shadow: 0 8px 24px rgba(37,99,235,0.30);
+  animation: logoPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes logoPop {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.auth-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+  letter-spacing: -0.4px;
+}
+.auth-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
 
-  /* ── Eye toggle button ── */
-  .eye-toggle {
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: #94a3b8;
-    cursor: pointer;
-    padding: 4px 6px;
-    border-radius: 8px;
-    transition: color .2s, background .2s;
-    z-index: 3;
-    display: flex; align-items: center; justify-content: center;
-    line-height: 1;
-  }
-  .eye-toggle:hover { color: #4f46e5; background: rgba(79,70,229,.06); }
-  .eye-toggle svg { width: 18px; height: 18px; transition: opacity .2s; }
+/* ─────────────────────────────────────────────
+   INPUT FIELDS — Equal Height (52px), Rounded 14px
+───────────────────────────────────────────── */
+.auth-field {
+  position: relative;
+  margin-bottom: 20px;
+}
+.auth-field .field-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 16px;
+  pointer-events: none;
+  transition: color 0.25s;
+  z-index: 2;
+}
+.auth-field input {
+  width: 100%;
+  height: 52px;
+  padding: 16px 44px 6px 44px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  color: #0f172a;
+  background: #f8faff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+  appearance: none;
+}
+.auth-field input:hover {
+  border-color: #93c5fd;
+  background: #ffffff;
+}
+.auth-field input:focus {
+  border-color: #2563EB;
+  background: #ffffff;
+  box-shadow: 0 0 0 3.5px rgba(37,99,235,0.14), 0 2px 8px rgba(37,99,235,0.08);
+}
+.auth-field input.is-invalid {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3.5px rgba(239,68,68,0.12);
+}
+.auth-field input:focus ~ .field-icon,
+.auth-field input:not(:placeholder-shown) ~ .field-icon {
+  color: #2563EB;
+}
+.auth-field label {
+  position: absolute;
+  left: 44px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #94a3b8;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: left center;
+}
+.auth-field input:focus ~ label,
+.auth-field input:not(:placeholder-shown) ~ label {
+  top: 13px;
+  transform: translateY(0) scale(0.78);
+  color: #2563EB;
+  font-weight: 600;
+}
 
-  /* ── Caps lock warning ── */
-  .caps-warn {
-    display: none;
-    margin-top: 6px;
-    padding: 5px 10px;
-    background: rgba(245,158,11,.1);
-    border: 1px solid rgba(245,158,11,.25);
-    border-radius: 8px;
-    font-size: .78rem;
-    color: #92400e;
-  }
+/* Eye Toggle */
+.eye-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: color 0.2s;
+  z-index: 3;
+  display: flex; align-items: center; justify-content: center;
+}
+.eye-toggle:hover { color: #2563EB; }
+.eye-toggle svg { width: 18px; height: 18px; }
 
-  /* ── Validation messages ── */
-  .field-error {
-    font-size: .78rem;
-    color: #ef4444;
-    margin-top: 5px;
-    margin-left: 4px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-weight: 500;
-  }
+/* Caps Warning & Field Errors */
+.caps-warn {
+  display: none;
+  margin-top: 6px;
+  padding: 5px 10px;
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #b45309;
+}
+.field-error {
+  font-size: 12px;
+  color: #ef4444;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
 
-  /* ── Alert non-field errors ── */
-  .auth-alert {
-    background: rgba(239,68,68,.07);
-    border: 1px solid rgba(239,68,68,.2);
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin-bottom: 20px;
-    font-size: .84rem;
-    color: #b91c1c;
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .auth-alert i { margin-top: 2px; flex-shrink: 0; }
+/* Non-field Errors Alert */
+.auth-alert {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #dc2626;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.auth-alert i { margin-top: 2px; flex-shrink: 0; font-size: 16px; }
 
-  /* ── Remember Me & Forgot Password row ── */
-  .auth-meta-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 22px;
-    gap: 8px;
-  }
-  .custom-check-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-size: .84rem;
-    color: #475569;
-    font-weight: 500;
-    user-select: none;
-  }
-  .custom-check-input {
-    appearance: none;
-    width: 17px; height: 17px;
-    border: 1.5px solid #cbd5e1;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all .2s;
-    flex-shrink: 0;
-    position: relative;
-  }
-  .custom-check-input:checked {
-    background: linear-gradient(135deg, #4f46e5, #06b6d4);
-    border-color: #4f46e5;
-  }
-  .custom-check-input:checked::after {
-    content: '';
-    position: absolute;
-    left: 4px; top: 1px;
-    width: 5px; height: 9px;
-    border: 2px solid white;
-    border-top: none; border-left: none;
-    transform: rotate(45deg);
-    display: block;
-  }
-  .forgot-link {
-    font-size: .84rem;
-    font-weight: 600;
-    color: #4f46e5;
-    text-decoration: none;
-    transition: color .2s, opacity .2s;
-    white-space: nowrap;
-  }
-  .forgot-link:hover { color: #4338ca; opacity: .85; text-decoration: underline; }
+/* Meta Row (Remember Me & Forgot Password) */
+.auth-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 8px;
+}
+.custom-check-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #475569;
+  font-weight: 500;
+  user-select: none;
+}
+.custom-check-input {
+  width: 17px; height: 17px;
+  accent-color: #2563EB;
+  cursor: pointer;
+}
+.forgot-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563EB;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.forgot-link:hover { color: #1d4ed8; text-decoration: underline; }
 
-  /* ── Primary submit button ── */
-  .auth-submit-btn {
-    position: relative;
-    width: 100%;
-    height: 52px;
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #06b6d4 100%);
-    background-size: 200% 200%;
-    color: white;
-    border: none;
-    border-radius: 14px;
-    font-size: .97rem;
-    font-weight: 700;
-    font-family: 'Poppins', sans-serif;
-    letter-spacing: .02em;
-    cursor: pointer;
-    transition: all .3s cubic-bezier(.22,1,.36,1);
-    box-shadow: 0 4px 16px rgba(79,70,229,.30), 0 1px 3px rgba(0,0,0,.08);
-    overflow: hidden;
-    margin-bottom: 12px;
-    animation: gradientShift 3s ease infinite;
-  }
-  @keyframes gradientShift {
-    0%, 100% { background-position: 0% 50%; }
-    50%       { background-position: 100% 50%; }
-  }
-  .auth-submit-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,.12), transparent);
-    border-radius: inherit;
-    opacity: 0;
-    transition: opacity .3s;
-  }
-  .auth-submit-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 28px rgba(79,70,229,.40), 0 2px 8px rgba(0,0,0,.1);
-  }
-  .auth-submit-btn:hover:not(:disabled)::before { opacity: 1; }
-  .auth-submit-btn:active:not(:disabled) {
-    transform: translateY(0) scale(.985);
-    box-shadow: 0 2px 8px rgba(79,70,229,.25);
-  }
-  .auth-submit-btn:disabled {
-    opacity: .75;
-    cursor: not-allowed;
-    transform: none;
-  }
-  .btn-inner {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-  .btn-spinner {
-    display: none;
-    width: 18px; height: 18px;
-    border: 2.5px solid rgba(255,255,255,.35);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin .7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* ─────────────────────────────────────────────
+   BUTTONS — Full Width, Matched Spacing
+───────────────────────────────────────────── */
 
-  /* ── OTP / Phone button ── */
-  .auth-otp-btn {
-    width: 100%;
-    height: 48px;
-    background: transparent;
-    border: 1.5px solid rgba(6,182,212,.45);
-    border-radius: 14px;
-    color: #0891b2;
-    font-size: .9rem;
-    font-weight: 600;
-    font-family: 'Poppins', sans-serif;
-    cursor: pointer;
-    transition: all .25s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    text-decoration: none;
-    margin-bottom: 20px;
-  }
-  .auth-otp-btn:hover {
-    background: rgba(6,182,212,.07);
-    border-color: #06b6d4;
-    color: #0891b2;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(6,182,212,.18);
-    text-decoration: none;
-  }
-  .auth-otp-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+/* Primary Submit Button (Gradient Purple → Blue) */
+.auth-submit-btn {
+  width: 100%;
+  height: 52px;
+  background: linear-gradient(135deg, #4F46E5 0%, #2563EB 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 14px rgba(37,99,235,0.30);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.auth-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(37,99,235,0.40);
+}
+.auth-submit-btn:active:not(:disabled) { transform: translateY(0); }
+.auth-submit-btn:disabled { opacity: 0.75; cursor: not-allowed; transform: none; }
 
-  /* ── Divider ── */
-  .auth-divider {
-    position: relative;
-    text-align: center;
-    margin: 4px 0 20px;
-  }
-  .auth-divider::before {
-    content: '';
-    position: absolute;
-    top: 50%; left: 0; right: 0;
-    height: 1px;
-    background: rgba(203,213,225,.6);
-  }
-  .auth-divider span {
-    position: relative;
-    background: rgba(255,255,255,.9);
-    padding: 0 14px;
-    font-size: .75rem;
-    font-weight: 700;
-    color: #94a3b8;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-  }
+/* Phone OTP Button (Full width outlined) */
+.auth-otp-btn {
+  width: 100%;
+  height: 50px;
+  background: #ffffff;
+  border: 1.5px solid #e0e7ff;
+  border-radius: 14px;
+  color: #4F46E5;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  margin-bottom: 24px;
+}
+.auth-otp-btn:hover {
+  background: #f5f3ff;
+  border-color: #4F46E5;
+  color: #4F46E5;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(79,70,229,0.14);
+  text-decoration: none;
+}
 
-  /* ── Google button ── */
-  .auth-google-btn {
-    width: 100%;
-    height: 50px;
-    background: white;
-    border: 1.5px solid rgba(203,213,225,.8);
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-size: .91rem;
-    font-weight: 600;
-    color: #374151;
-    font-family: 'Inter', sans-serif;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all .25s;
-    box-shadow: 0 1px 4px rgba(0,0,0,.06);
-    margin-bottom: 24px;
-  }
-  .auth-google-btn:hover {
-    background: #f9fafb;
-    border-color: #9ca3af;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(0,0,0,.10);
-    text-decoration: none;
-    color: #1f2937;
-  }
-  .auth-google-btn:active { transform: translateY(0) scale(.985); }
+/* Divider */
+.auth-divider {
+  position: relative;
+  text-align: center;
+  margin: 0 0 20px;
+}
+.auth-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 0; right: 0;
+  height: 1px;
+  background: #e2e8f0;
+}
+.auth-divider span {
+  position: relative;
+  background: #ffffff;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
-  /* ── Phone OTP Modal Styling ── */
-  .phone-modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 99999;
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-  }
-  .phone-modal-overlay.active {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .phone-modal-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 24px;
-    padding: 36px 32px;
-    width: 90%;
-    max-width: 440px;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.3);
-    position: relative;
-    transform: scale(0.92);
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .phone-modal-overlay.active .phone-modal-card {
-    transform: scale(1);
-  }
-  .phone-modal-close {
-    position: absolute;
-    top: 18px; right: 18px;
-    background: none; border: none;
-    font-size: 20px; color: #94a3b8;
-    cursor: pointer; transition: color 0.2s;
-  }
-  .phone-modal-close:hover { color: #1e293b; }
+/* Google Button (Full width outlined) */
+.auth-google-btn {
+  width: 100%;
+  height: 50px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  margin-bottom: 24px;
+}
+.auth-google-btn:hover {
+  background: #f8faff;
+  border-color: #2563EB;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(37,99,235,0.12);
+  text-decoration: none;
+  color: #0f172a;
+}
 
-  /* ── Register link row ── */
-  .auth-footer-row {
-    text-align: center;
-    font-size: .85rem;
-    color: #64748b;
-    padding-top: 20px;
-    border-top: 1px solid rgba(203,213,225,.5);
-    margin-top: 4px;
-  }
-  .auth-footer-row a {
-    color: #4f46e5;
-    font-weight: 700;
-    text-decoration: none;
-    margin-left: 4px;
-    transition: color .2s;
-  }
-  .auth-footer-row a:hover { color: #4338ca; text-decoration: underline; }
+/* Footer / Register Link Row */
+.auth-card-footer {
+  text-align: center;
+  font-size: 14px;
+  color: #64748b;
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9;
+}
+.auth-card-footer a {
+  color: #2563EB;
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 4px;
+}
+.auth-card-footer a:hover { text-decoration: underline; }
 
-  /* ── Copyright ── */
-  .auth-copyright {
-    text-align: center;
-    font-size: .75rem;
-    color: rgba(100,116,139,.55);
-    margin-top: 20px;
-    letter-spacing: .01em;
-  }
+/* Loading Spinner */
+.btn-spinner {
+  display: none;
+  width: 18px; height: 18px;
+  border: 2.5px solid rgba(255,255,255,0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── Responsive ── */
-  @media (max-width: 520px) {
-    .auth-card { padding: 32px 22px 28px; border-radius: 22px; }
-    .auth-title { font-size: 1.35rem; }
-  }
-  @media (max-width: 360px) {
-    .auth-card { padding: 28px 16px 24px; }
-    .auth-meta-row { flex-direction: column; align-items: flex-start; gap: 10px; }
-  }
+/* ─────────────────────────────────────────────
+   PHONE OTP MODAL STYLING
+───────────────────────────────────────────── */
+.phone-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(15, 23, 42, 0.60);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  padding: 16px;
+}
+.phone-modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.phone-modal-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+  position: relative;
+  transform: scale(0.94);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.phone-modal-overlay.active .phone-modal-card {
+  transform: scale(1);
+}
+.phone-modal-close {
+  position: absolute;
+  top: 18px; right: 18px;
+  background: none; border: none;
+  font-size: 22px; color: #94a3b8;
+  cursor: pointer; transition: color 0.2s;
+}
+.phone-modal-close:hover { color: #0f172a; }
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .auth-card { padding: 32px 24px 28px; }
+  .auth-title { font-size: 22px; }
+  .auth-page-wrap { padding: 24px 12px; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
 
-{# ── Ambient background ── #}
+<!-- Ambient Background Mesh -->
 <div class="auth-bg" aria-hidden="true"></div>
 <div class="auth-orb auth-orb-1" aria-hidden="true"></div>
 <div class="auth-orb auth-orb-2" aria-hidden="true"></div>
-<div class="auth-orb auth-orb-3" aria-hidden="true"></div>
 
-{# ── Floating medical icons ── #}
-<i class="fa fa-plus-circle   auth-icon auth-icon-1" aria-hidden="true"></i>
-<i class="fa fa-heartbeat     auth-icon auth-icon-2" aria-hidden="true"></i>
-<i class="fa fa-user-md       auth-icon auth-icon-3" aria-hidden="true"></i>
-<i class="fa fa-stethoscope   auth-icon auth-icon-4" aria-hidden="true"></i>
-<i class="fa fa-medkit        auth-icon auth-icon-5" aria-hidden="true"></i>
-
+<!-- Centered Page Layout -->
 <main class="auth-page-wrap" role="main">
   <div class="auth-card" role="region" aria-label="Sign in to DocMed">
 
-    {# ── Header ── #}
-    <div class="text-center mb-4">
+    <!-- Header / Logo -->
+    <div class="auth-header">
       <div class="auth-logo-ring" aria-hidden="true">
-        <i class="fa fa-user-md"></i>
+        <i class="ri-heart-pulse-fill"></i>
       </div>
       <h1 class="auth-title">Welcome Back</h1>
-      <p class="auth-subtitle">Sign in to your DocMed account</p>
+      <p class="auth-subtitle">Sign in to access your DocMed Healthcare portal</p>
     </div>
 
-    {# ── Non-field errors ── #}
+    <!-- Non-field error alert -->
     {% if form.non_field_errors %}
       <div class="auth-alert" role="alert">
         <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
@@ -600,11 +504,11 @@
       </div>
     {% endif %}
 
-    {# ── Login Form ── #}
+    <!-- Login Form -->
     <form action="" method="POST" id="loginForm" novalidate>
       {% csrf_token %}
 
-      {# ── Identifier field ── #}
+      <!-- Identifier Field -->
       <div class="auth-field" id="field-identifier">
         <input
           type="text"
@@ -614,21 +518,20 @@
           required
           autocomplete="username"
           aria-label="Email, Username or Phone"
-          aria-describedby="id_login_credential_error"
           value="{{ form.login_credential.value|default:'' }}"
           class="{% if form.login_credential.errors %}is-invalid{% endif %}"
         >
         <i class="fa fa-envelope field-icon" aria-hidden="true"></i>
         <label for="id_login_credential">Email, Username or Phone</label>
         {% if form.login_credential.errors %}
-          <div class="field-error" id="id_login_credential_error" role="alert">
-            <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+          <div class="field-error" role="alert">
+            <i class="fa fa-times-circle" aria-hidden="true"></i>
             {% for error in form.login_credential.errors %}{{ error }}{% endfor %}
           </div>
         {% endif %}
       </div>
 
-      {# ── Password field ── #}
+      <!-- Password Field -->
       <div class="auth-field" id="field-password">
         <input
           type="password"
@@ -638,20 +541,18 @@
           required
           autocomplete="current-password"
           aria-label="Password"
-          aria-describedby="id_password_error"
           class="{% if form.password.errors %}is-invalid{% endif %}"
         >
         <i class="fa fa-lock field-icon" aria-hidden="true"></i>
         <label for="id_password">Password</label>
 
-        {# ── Eye toggle ── #}
+        <!-- Eye toggle -->
         <button
           type="button"
           class="eye-toggle"
           id="passwordToggleEye"
           aria-label="Show password"
           aria-pressed="false"
-          tabindex="0"
         >
           <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -662,20 +563,20 @@
           </svg>
         </button>
 
-        {# Caps lock warning #}
+        <!-- Caps lock warning -->
         <div class="caps-warn" id="capsWarn" role="alert" aria-live="polite">
           <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Caps Lock is ON
         </div>
 
         {% if form.password.errors %}
-          <div class="field-error" id="id_password_error" role="alert">
-            <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+          <div class="field-error" role="alert">
+            <i class="fa fa-times-circle" aria-hidden="true"></i>
             {% for error in form.password.errors %}{{ error }}{% endfor %}
           </div>
         {% endif %}
       </div>
 
-      {# ── Remember Me & Forgot Password ── #}
+      <!-- Remember Me & Forgot Password -->
       <div class="auth-meta-row">
         <label class="custom-check-label" for="rememberMe">
           <input
@@ -689,51 +590,45 @@
         <a
           href="{% url 'accounts:password_reset' %}"
           class="forgot-link"
-          aria-label="Forgot your password? Reset it here"
         >Forgot Password?</a>
       </div>
 
-      {# ── Sign In button ── #}
+      <!-- Sign In Button -->
       <button
         type="submit"
         class="auth-submit-btn"
         id="loginBtn"
         aria-label="Sign In"
       >
-        <span class="btn-inner" id="btnText">
-          <i class="fa fa-sign-in" aria-hidden="true"></i> Sign In
-        </span>
+        <span id="btnText"><i class="fa fa-sign-in" aria-hidden="true"></i> Sign In</span>
         <span class="btn-spinner" id="btnSpinner" role="status" aria-hidden="true"></span>
       </button>
 
-      {# ── Phone OTP trigger button ── #}
+      <!-- Phone OTP Button -->
       <button
         type="button"
         class="auth-otp-btn"
         id="openPhoneOtpModalBtn"
         aria-label="Login with Phone OTP"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-        </svg>
-        Login with Phone OTP
+        <i class="fa fa-mobile" style="font-size: 20px;"></i>
+        <span>Login with Phone OTP</span>
       </button>
 
-    </form>{# end form #}
+    </form>
 
-    {# ── Divider ── #}
+    <!-- Divider -->
     <div class="auth-divider" role="separator" aria-hidden="true">
       <span>or continue with</span>
     </div>
 
-    {# ── Firebase Google Login button ── #}
+    <!-- Firebase Google Login Button -->
     <button
       type="button"
       class="auth-google-btn"
       aria-label="Continue with Google"
       id="firebaseGoogleBtn"
     >
-      {# Official Google G logo SVG #}
       <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
         <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
         <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
@@ -741,46 +636,40 @@
         <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
         <path fill="none" d="M0 0h48v48H0z"/>
       </svg>
-      Continue with Google
+      <span>Continue with Google</span>
     </button>
 
-    {# ── Register link ── #}
-    <div class="auth-footer-row">
+    <!-- Register Link -->
+    <div class="auth-card-footer">
       <span>Don't have an account?</span>
-      <a href="{% url 'accounts:register' %}" aria-label="Create a new DocMed account">Register Now</a>
+      <a href="{% url 'accounts:register' %}">Register Now</a>
     </div>
 
   </div>{# end .auth-card #}
-
-  {# ── Copyright ── #}
-  <p class="auth-copyright">
-    &copy; <script>document.write(new Date().getFullYear());</script> DocMed &mdash; All rights reserved
-  </p>
-
 </main>
 
-{# ── Firebase Phone OTP Modal ── #}
+<!-- Firebase Phone OTP Modal -->
 <div class="phone-modal-overlay" id="phoneOtpModal">
   <div class="phone-modal-card">
     <button type="button" class="phone-modal-close" id="closePhoneOtpModalBtn">&times;</button>
     <div class="text-center mb-4">
-      <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, rgba(6,182,212,.15), rgba(79,70,229,.15)); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 24px; color: #0891b2;">
+      <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(79,70,229,0.12)); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 24px; color: #2563EB;">
         📱
       </div>
-      <h3 style="font-size: 1.3rem; font-weight: 700; color: #1e293b; margin-bottom: 4px;">Phone OTP Sign In</h3>
-      <p style="font-size: 0.85rem; color: #64748b;">We'll send a 6-digit verification code to your phone</p>
+      <h3 style="font-size: 20px; font-weight: 700; color: #0f172a; margin-bottom: 4px; font-family:'Poppins',sans-serif;">Phone OTP Sign In</h3>
+      <p style="font-size: 13px; color: #64748b;">We'll send a 6-digit verification code to your phone</p>
     </div>
 
     <!-- Step 1: Input Phone Number -->
     <div id="otpStep1">
       <div class="auth-field" style="margin-bottom: 16px;">
-        <input type="tel" id="firebasePhoneNumber" placeholder=" " value="+1">
+        <input type="tel" id="firebasePhoneNumber" placeholder=" " value="+91">
         <i class="fa fa-phone field-icon"></i>
         <label for="firebasePhoneNumber">Phone Number (with Country Code)</label>
       </div>
       <div id="recaptcha-container"></div>
       <button type="button" class="auth-submit-btn" id="sendOtpBtn" style="margin-top: 14px;">
-        <span class="btn-inner" id="sendOtpText">Send Verification Code</span>
+        <span id="sendOtpText">Send Verification Code</span>
         <span class="btn-spinner" id="sendOtpSpinner"></span>
       </button>
     </div>
@@ -793,10 +682,10 @@
         <label for="firebaseSmsCode">Enter 6-Digit Code</label>
       </div>
       <button type="button" class="auth-submit-btn" id="verifyOtpBtn">
-        <span class="btn-inner" id="verifyOtpText">Verify & Sign In</span>
+        <span id="verifyOtpText">Verify &amp; Sign In</span>
         <span class="btn-spinner" id="verifyOtpSpinner"></span>
       </button>
-      <button type="button" style="background: none; border: none; color: #4f46e5; font-weight: 600; font-size: 0.85rem; cursor: pointer; width: 100%; margin-top: 12px;" id="resendOtpBtn">
+      <button type="button" style="background: none; border: none; color: #2563EB; font-weight: 600; font-size: 13px; cursor: pointer; width: 100%; margin-top: 12px;" id="resendOtpBtn">
         Resend SMS Code
       </button>
     </div>
@@ -809,14 +698,14 @@
 {% block javascripts %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 
-<!-- Firebase JS SDK v10 (Compat version for lightweight usage) -->
+<!-- Firebase JS SDK v10 (Compat version) -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-  /* ── Password visibility toggle ── */
+  /* Password visibility toggle */
   var eyeBtn    = document.getElementById('passwordToggleEye');
   var pwdInput  = document.getElementById('id_password');
   var eyeOpen   = document.getElementById('eyeOpen');
@@ -833,15 +722,15 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ── Caps Lock detection ── */
+  /* Caps Lock detection */
   var capsWarn = document.getElementById('capsWarn');
   if (pwdInput && capsWarn) {
     pwdInput.addEventListener('keyup', function (e) {
-      capsWarn.style.display = e.getModifierState('CapsLock') ? '' : 'none';
+      capsWarn.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
     });
   }
 
-  /* ── Email / Password Submit Loading ── */
+  /* Email / Password Submit Loading */
   var loginForm  = document.getElementById('loginForm');
   var loginBtn   = document.getElementById('loginBtn');
   var btnText    = document.getElementById('btnText');
@@ -851,11 +740,11 @@ document.addEventListener('DOMContentLoaded', function () {
     loginForm.addEventListener('submit', function () {
       loginBtn.disabled        = true;
       btnText.style.display    = 'none';
-      btnSpinner.style.display = '';
+      btnSpinner.style.display = 'inline-block';
     });
   }
 
-  /* ── Firebase Client Initialization ── */
+  /* Firebase Client Initialization */
   var firebaseConfig = {
     apiKey: "{{ firebase_config.apiKey|default:'' }}",
     authDomain: "{{ firebase_config.authDomain|default:'' }}",
@@ -898,7 +787,7 @@ document.addEventListener('DOMContentLoaded', function () {
           icon: 'error',
           title: 'Authentication Error',
           text: data.error || 'Server token verification failed.',
-          confirmButtonColor: '#4f46e5'
+          confirmButtonColor: '#2563EB'
         });
       }
     })
@@ -907,12 +796,12 @@ document.addEventListener('DOMContentLoaded', function () {
         icon: 'error',
         title: 'Connection Error',
         text: 'Failed to communicate with authentication server.',
-        confirmButtonColor: '#4f46e5'
+        confirmButtonColor: '#2563EB'
       });
     });
   }
 
-  /* ── Firebase Google Popup Authentication ── */
+  /* Firebase Google Popup Authentication */
   var googleBtn = document.getElementById('firebaseGoogleBtn');
   if (googleBtn) {
     googleBtn.addEventListener('click', function () {
@@ -921,7 +810,7 @@ document.addEventListener('DOMContentLoaded', function () {
           icon: 'info',
           title: 'Firebase Configuration Pending',
           text: 'Please configure FIREBASE_API_KEY in environment variables.',
-          confirmButtonColor: '#4f46e5'
+          confirmButtonColor: '#2563EB'
         });
         return;
       }
@@ -939,14 +828,14 @@ document.addEventListener('DOMContentLoaded', function () {
               icon: 'error',
               title: 'Google Sign-In Failed',
               text: error.message,
-              confirmButtonColor: '#4f46e5'
+              confirmButtonColor: '#2563EB'
             });
           }
         });
     });
   }
 
-  /* ── Phone OTP Modal Controls ── */
+  /* Phone OTP Modal Controls */
   var phoneModal = document.getElementById('phoneOtpModal');
   var openModalBtn = document.getElementById('openPhoneOtpModalBtn');
   var closeModalBtn = document.getElementById('closePhoneOtpModalBtn');
@@ -962,7 +851,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ── Firebase Phone OTP Handlers ── */
+  /* Firebase Phone OTP Handlers */
   var sendOtpBtn = document.getElementById('sendOtpBtn');
   var verifyOtpBtn = document.getElementById('verifyOtpBtn');
   var resendOtpBtn = document.getElementById('resendOtpBtn');
@@ -972,12 +861,12 @@ document.addEventListener('DOMContentLoaded', function () {
     sendOtpBtn.addEventListener('click', function() {
       var phoneNum = document.getElementById('firebasePhoneNumber').value.trim();
       if (!phoneNum || phoneNum.length < 8) {
-        Swal.fire({ icon: 'warning', title: 'Invalid Phone Number', text: 'Please enter a valid phone number with country code (e.g. +1234567890).', confirmButtonColor: '#4f46e5' });
+        Swal.fire({ icon: 'warning', title: 'Invalid Phone Number', text: 'Please enter a valid phone number with country code (e.g. +919876543210).', confirmButtonColor: '#2563EB' });
         return;
       }
 
       if (!firebaseConfig.apiKey) {
-        Swal.fire({ icon: 'info', title: 'Firebase Configuration Pending', text: 'Please configure FIREBASE_API_KEY in environment variables.', confirmButtonColor: '#4f46e5' });
+        Swal.fire({ icon: 'info', title: 'Firebase Configuration Pending', text: 'Please configure FIREBASE_API_KEY in environment variables.', confirmButtonColor: '#2563EB' });
         return;
       }
 
@@ -996,7 +885,7 @@ document.addEventListener('DOMContentLoaded', function () {
           document.getElementById('otpStep2').style.display = 'block';
         })
         .catch(function(error) {
-          Swal.fire({ icon: 'error', title: 'SMS OTP Failed', text: error.message, confirmButtonColor: '#4f46e5' });
+          Swal.fire({ icon: 'error', title: 'SMS OTP Failed', text: error.message, confirmButtonColor: '#2563EB' });
           if (window.recaptchaVerifier) { window.recaptchaVerifier.render().then(function(widgetId) { grecaptcha.reset(widgetId); }); }
         })
         .finally(function() {
@@ -1011,12 +900,12 @@ document.addEventListener('DOMContentLoaded', function () {
     verifyOtpBtn.addEventListener('click', function() {
       var code = document.getElementById('firebaseSmsCode').value.trim();
       if (!code || code.length !== 6) {
-        Swal.fire({ icon: 'warning', title: 'Invalid Code', text: 'Please enter the 6-digit verification code.', confirmButtonColor: '#4f46e5' });
+        Swal.fire({ icon: 'warning', title: 'Invalid Code', text: 'Please enter the 6-digit verification code.', confirmButtonColor: '#2563EB' });
         return;
       }
 
       if (!confirmationResult) {
-        Swal.fire({ icon: 'error', title: 'Session Expired', text: 'Please resend verification code.', confirmButtonColor: '#4f46e5' });
+        Swal.fire({ icon: 'error', title: 'Session Expired', text: 'Please resend verification code.', confirmButtonColor: '#2563EB' });
         return;
       }
 
@@ -1032,7 +921,7 @@ document.addEventListener('DOMContentLoaded', function () {
           postFirebaseTokenToBackend(idToken, 'phone');
         })
         .catch(function(error) {
-          Swal.fire({ icon: 'error', title: 'Verification Failed', text: 'Invalid verification code. Please try again.', confirmButtonColor: '#4f46e5' });
+          Swal.fire({ icon: 'error', title: 'Verification Failed', text: 'Invalid verification code. Please try again.', confirmButtonColor: '#2563EB' });
         })
         .finally(function() {
           document.getElementById('verifyOtpText').style.display = 'inline-block';
@@ -1049,14 +938,14 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ── SweetAlert2 for verified query param ── */
+  /* SweetAlert2 for verified query param */
   var urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('verified') === 'success') {
     Swal.fire({
       title: 'Email Verified!',
       text: 'Your account is now activated. You can sign in using your credentials.',
       icon: 'success',
-      confirmButtonColor: '#4f46e5'
+      confirmButtonColor: '#2563EB'
     });
   }
 
