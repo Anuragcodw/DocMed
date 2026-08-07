@@ -29,6 +29,11 @@ from appointment.payment_views import (
     PaymentPendingView, PaymentHistoryView, InvoicePDFView,
     PaymentReceiptView, RequestRefundView, AdminRefundActionView
 )
+from appointment.payment_api_views import (
+    RazorpayCreateOrderAPIView, RazorpayVerifyPaymentAPIView,
+    PatientPaymentHistoryAPIView, InAppNotificationListView,
+    MarkNotificationReadAPIView
+)
 from appointment.prescription_views import (
     CreatePrescriptionView, PrescriptionDetailView, PrescriptionPDFView,
     PrescriptionHistoryView
@@ -78,6 +83,11 @@ urlpatterns = [
     path('api/ai/tts/', TextToSpeechView.as_view(), name='api-ai-tts'),
     path('api/translate/', TranslateTextView.as_view(), name='api-translate'),
     path('api/languages/', LanguageListView.as_view(), name='api-languages'),
+    path('api/payment/razorpay/create-order/', RazorpayCreateOrderAPIView.as_view(), name='api-razorpay-create-order'),
+    path('api/payment/razorpay/verify/', RazorpayVerifyPaymentAPIView.as_view(), name='api-razorpay-verify'),
+    path('api/payment/history/', PatientPaymentHistoryAPIView.as_view(), name='api-payment-history'),
+    path('api/notifications/', InAppNotificationListView.as_view(), name='api-notifications-list'),
+    path('api/notifications/<int:pk>/read/', MarkNotificationReadAPIView.as_view(), name='api-notification-read'),
 
     # ── Doctor Directory & Public Profile ─────────────────────────────────────
     path('doctors/', DoctorListView.as_view(), name='doctor-list'),

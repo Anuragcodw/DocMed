@@ -182,3 +182,78 @@ def notify_emergency_update_sms(booking, update_text):
         return
     msg = f'🚨 EMERGENCY UPDATE for Booking #{booking.id}: {update_text}'
     send_sms(patient_phone, msg, user=booking.user, event_type="emergency_update")
+
+
+# ============================================================================
+# In-App Notification Dispatcher
+# ============================================================================
+
+def create_in_app_notification(user, title: str, message: str, notification_type: str = 'system', link: str = None):
+    """
+    Creates an InAppNotification database record for a user.
+    Powers website notification alerts and badge counters.
+    """
+    if not user:
+        return None
+    try:
+        from .models import InAppNotification
+        notification = InAppNotification.objects.create(
+            user=user,
+            title=title,
+            message=message,
+            notification_type=notification_type,
+            link=link or '',
+        )
+        logger.info(f'[IN-APP NOTIF] Created for {user.username}: {title}')
+        return notification
+    except Exception as exc:
+        logger.error(f'[IN-APP NOTIF ERROR] Failed to create for {user.username}: {exc}')
+        return None
+
+
+def dispatch_payment_notifications(payment):
+    """
+    Dispatches In-App notifications to Patient, Doctor, and Admin upon payment success.
+    - Patient: Payment confirmation & invoice ready notification.
+    - Doctor: New paid appointment alert.
+    - Admin: Revenue update alert for staff users.
+    """
+    booking = payment.booking
+    patient = booking.user
+    doctor_user = booking.appointment.user
+    currency = '₹' if payment.gateway in ['razorpay', 'upi'] else '$'
+
+    # 1. Patient Notification
+    create_in_app_notification(
+        user=patient,
+        title='🎉 Payment Successful & Appointment Confirmed',
+        message=f'Your payment of {currency}{payment.amount} for appointment with Dr. {booking.appointment.full_name} (ID: #{booking.id}) is confirmed. Invoice: #{payment.invoice_number}',
+        notification_type='payment',
+        link=f'/appointment/payment/{payment.id}/receipt/'
+    )
+
+    # 2. Doctor Notification
+    create_in_app_notification(
+        user=doctor_user,
+        title='💼 New Paid Appointment Booking',
+        message=f'Patient {booking.full_name} has paid {currency}{payment.amount} for an appointment on {booking.date.strftime("%d %b %Y")}.',
+        notification_type='appointment',
+        link='/appointment/doctor/dashboard/'
+    )
+
+    # 3. Admin Notification (to all superusers/staff)
+    try:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        admins = User.objects.filter(is_staff=True)
+        for admin in admins:
+            create_in_app_notification(
+                user=admin,
+                title='💰 New Payment Received',
+                message=f'Payment of {currency}{payment.amount} received via {payment.gateway.upper()} for Booking #{booking.id} (Patient: {booking.full_name}).',
+                notification_type='revenue',
+                link='/appointment/admin-dashboard/'
+            )
+    except Exception as err:
+        logger.warning(f'Failed to dispatch admin revenue notification: {err}')
+

@@ -204,26 +204,57 @@ class RazorpayCallbackView(LoginRequiredMixin, View):
             payment.razorpay_payment_id = razorpay_payment_id
             payment.razorpay_signature = razorpay_signature
             payment.status = 'success'
+
+            from django.utils import timezone
+            payment.paid_at = timezone.now()
+
+            # Attempt to fetch exact payment method from Razorpay API
+            try:
+                razor_pay_obj = client.payment.fetch(razorpay_payment_id)
+                payment.payment_method = razor_pay_obj.get('method', 'razorpay')
+            except Exception as fetch_err:
+                logger.warning(f'Could not fetch Razorpay payment method: {fetch_err}')
+                payment.payment_method = 'razorpay'
+
             payment.save()
 
-            # Mark booking as paid
+            # Mark booking as paid and confirmed
             payment.booking.is_paid = True
-            payment.booking.save()
+            payment.booking.status = 'approved'
+            payment.booking.save(update_fields=['is_paid', 'status'])
 
-            # Send payment confirmation email
+            # Send multi-channel notifications (HTML Email, SMS, In-App Notifications)
             try:
                 from .emails import send_payment_confirmation_email
                 send_payment_confirmation_email(payment)
             except Exception as email_err:
                 logger.warning(f'Payment email failed: {email_err}')
 
+            try:
+                from .notification_service import dispatch_payment_notifications, notify_payment_success
+                dispatch_payment_notifications(payment)
+                notify_payment_success(payment)
+            except Exception as notif_err:
+                logger.warning(f'In-app notification dispatch failed: {notif_err}')
+
             messages.success(request, '🎉 Payment successful! Your appointment is confirmed.')
             return redirect('appointment:payment-success', payment_id=payment.id)
 
         except Exception as e:
             logger.error(f'Razorpay verification failed: {e}')
-            messages.error(request, 'Payment verification failed. Please contact support.')
-            booking_id = request.POST.get('booking_id', '0')
+            booking_id = request.POST.get('booking_id')
+            if booking_id:
+                try:
+                    p = Payment.objects.filter(booking_id=booking_id).first()
+                    if p and p.status != 'success':
+                        p.status = 'failed'
+                        p.save()
+                    from .emails import send_payment_failed_email
+                    booking_obj = TakeAppointment.objects.get(pk=booking_id)
+                    send_payment_failed_email(booking_obj, amount=booking_obj.appointment.fee if hasattr(booking_obj.appointment, 'fee') else 500)
+                except Exception:
+                    pass
+            messages.error(request, 'Payment verification failed. You can retry your payment.')
             return redirect('appointment:payment-failed', booking_id=booking_id or '0')
 
 

@@ -341,3 +341,39 @@ class ReviewAdmin(admin.ModelAdmin):
     @admin.action(description='Reject selected reviews')
     def reject_reviews(self, request, queryset):
         queryset.update(is_approved=False)
+
+
+from .models import Payment, Invoice, InAppNotification, NotificationLog
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('invoice_number', 'booking', 'gateway', 'payment_method', 'amount', 'currency', 'status', 'created_at')
+    list_filter = ('gateway', 'status', 'payment_method', 'created_at')
+    search_fields = ('invoice_number', 'razorpay_order_id', 'razorpay_payment_id', 'booking__full_name', 'booking__user__email')
+    ordering = ('-created_at',)
+    readonly_fields = ('invoice_number', 'created_at', 'updated_at')
+
+
+@admin.register(Invoice)
+class InvoiceAdmin(admin.ModelAdmin):
+    list_display = ('invoice_number', 'payment', 'total_amount', 'created_at')
+    search_fields = ('invoice_number', 'payment__invoice_number')
+    ordering = ('-created_at',)
+
+
+@admin.register(InAppNotification)
+class InAppNotificationAdmin(admin.ModelAdmin):
+    list_display = ('title', 'user', 'notification_type', 'is_read', 'created_at')
+    list_filter = ('notification_type', 'is_read', 'created_at')
+    search_fields = ('title', 'message', 'user__username', 'user__email')
+    ordering = ('-created_at',)
+
+
+@admin.register(NotificationLog)
+class NotificationLogAdmin(admin.ModelAdmin):
+    list_display = ('event_type', 'channel', 'recipient', 'status', 'attempts', 'created_at')
+    list_filter = ('channel', 'status', 'event_type', 'created_at')
+    search_fields = ('recipient', 'event_type', 'subject_or_title')
+    ordering = ('-created_at',)
+

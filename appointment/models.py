@@ -993,6 +993,10 @@ class Payment(models.Model):
     stripe_payment_intent = models.CharField(max_length=255, blank=True, null=True)
     upi_transaction_id = models.CharField(max_length=100, blank=True, null=True)
 
+    # Payment details
+    payment_method = models.CharField(max_length=50, blank=True, null=True, help_text="e.g. card, upi, netbanking, wallet")
+    paid_at = models.DateTimeField(blank=True, null=True, help_text="Timestamp when payment was successfully verified")
+
     # Invoice
     invoice_number = models.CharField(max_length=30, unique=True, blank=True)
     receipt_url = models.URLField(blank=True, null=True)
@@ -1577,6 +1581,43 @@ class NotificationLog(models.Model):
 
     def __str__(self):
         return f"[{self.channel.upper()}] {self.event_type} → {self.recipient} ({self.status})"
+
+
+class InAppNotification(models.Model):
+    """
+    In-App Notifications for Patients, Doctors, and Admins.
+    Powers live alert drop-downs, badge counters, and real-time updates.
+    """
+    NOTIFICATION_TYPE_CHOICES = (
+        ('payment', 'Payment'),
+        ('appointment', 'Appointment'),
+        ('revenue', 'Revenue'),
+        ('system', 'System'),
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='in_app_notifications'
+    )
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    notification_type = models.CharField(
+        max_length=50,
+        choices=NOTIFICATION_TYPE_CHOICES,
+        default='system'
+    )
+    is_read = models.BooleanField(default=False)
+    link = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'In-App Notification'
+        verbose_name_plural = 'In-App Notifications'
+
+    def __str__(self):
+        return f"[{self.notification_type.upper()}] {self.title} → {self.user.username} (Read: {self.is_read})"
 
 
 

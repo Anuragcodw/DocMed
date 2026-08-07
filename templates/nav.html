@@ -84,19 +84,44 @@
                         <div class="dropdown mr-2">
                             <button class="btn btn-notification rounded-circle shadow-lg position-relative dropdown-toggle border-0" id="notificationDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; padding: 0; background: rgba(79, 70, 229, 0.08) !important; transition: all 0.3s;">
                                 <i class="fa fa-bell-o" style="font-size: 18px; color: #4F46E5;"></i>
-                                <span class="position-absolute top-0 right-0 badge badge-danger badge-pill shadow-lg" style="transform: translate(35%, -35%); font-size: 11px; padding: 4px 7px; animation: pulse-badge 2s infinite;">2</span>
+                                {% if user_unread_notifications_count > 0 %}
+                                <span class="position-absolute top-0 right-0 badge badge-danger badge-pill shadow-lg" style="transform: translate(35%, -35%); font-size: 11px; padding: 4px 7px; animation: pulse-badge 2s infinite;">{{ user_unread_notifications_count }}</span>
+                                {% endif %}
                             </button>
-                            <div class="dropdown-menu dropdown-menu-right nav-dropdown-menu p-4" aria-labelledby="notificationDropdown" style="min-width: 340px; border-radius: 20px;">
-                                <h6 class="font-weight-bold text-dark mb-4" style="font-size: 16px; display: flex; align-items: center;"><i class="fa fa-bell mr-2 text-primary"></i> Notifications</h6>
-                                <div class="d-flex flex-column" style="gap: 14px;">
-                                    <div class="p-4 rounded" style="font-size: 13px; border-left: 4px solid #06b6d4; background: linear-gradient(135deg, rgba(6,182,212,0.08), rgba(6,182,212,0.04)); cursor: pointer; transition: all 0.3s; border-radius: 10px;">
-                                        <div class="font-weight-bold text-dark" style="display: flex; align-items: center;"><span>Welcome to DocMed! 🎉</span></div>
-                                        <div class="text-muted small" style="margin-top: 6px;">Your premium healthcare account is now active and ready to use.</div>
-                                        <div class="text-muted" style="font-size: 11px; margin-top: 8px; display: flex; align-items: center;"><i class="fa fa-clock-o mr-1"></i> Just now</div>
-                                    </div>
+                            <div class="dropdown-menu dropdown-menu-right nav-dropdown-menu p-4" aria-labelledby="notificationDropdown" style="min-width: 340px; max-width: 380px; border-radius: 20px;">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="font-weight-bold text-dark mb-0" style="font-size: 16px;"><i class="fa fa-bell mr-2 text-primary"></i> Notifications</h6>
+                                    {% if user_unread_notifications_count > 0 %}
+                                    <span class="badge badge-primary px-2 py-1 small">{{ user_unread_notifications_count }} New</span>
+                                    {% endif %}
                                 </div>
+                                <div class="d-flex flex-column" style="gap: 12px; max-height: 320px; overflow-y: auto;">
+                                    {% if user_recent_notifications %}
+                                        {% for notif in user_recent_notifications %}
+                                        <div class="p-3 rounded {% if not notif.is_read %}bg-light border-left-primary{% endif %}" style="font-size: 13px; border-left: 4px solid {% if notif.notification_type == 'payment' %}#10b981{% elif notif.notification_type == 'revenue' %}#f59e0b{% else %}#06b6d4{% endif %}; background: rgba(79,70,229,0.03); border-radius: 10px;">
+                                            <div class="font-weight-bold text-dark d-flex align-items-center justify-content-between">
+                                                <span>{{ notif.title }}</span>
+                                            </div>
+                                            <div class="text-muted small mt-1">{{ notif.message }}</div>
+                                            <div class="text-muted small mt-2 d-flex justify-content-between align-items-center">
+                                                <span><i class="fa fa-clock-o mr-1"></i> {{ notif.created_at|timesince }} ago</span>
+                                                {% if notif.link %}
+                                                <a href="{{ notif.link }}" class="text-primary font-weight-bold">View →</a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="p-4 text-center text-muted small">
+                                            <i class="fa fa-bell-slash-o fa-2x d-block mb-2 text-secondary"></i>
+                                            No notifications yet.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                {% if request.user.role == 'patient' %}
                                 <hr style="border-color: rgba(0,0,0,0.08); margin: 16px 0;">
-                                <a href="#" class="text-center d-block" style="color: #4f46e5; font-weight: 700; font-size: 13px; transition: all 0.3s;">View All Notifications →</a>
+                                <a href="{% url 'appointment:patient-bookings' %}" class="text-center d-block" style="color: #4f46e5; font-weight: 700; font-size: 13px; transition: all 0.3s;">View My Bookings & Payments →</a>
+                                {% endif %}
                             </div>
                         </div>
 
