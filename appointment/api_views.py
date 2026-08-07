@@ -23,42 +23,52 @@ def haversine(lat1, lon1, lat2, lon2):
     r = 6371 # Radius of earth in kilometers
     return c * r
 
+from .search_service import SearchService
+
 class DoctorsNearbyAPIView(View):
     """
     API endpoint to fetch available doctors, sorted by distance if lat/lon provided.
+    Includes OSRM driving distance and estimated travel time.
     """
     def get(self, request, *args, **kwargs):
         lat_str = request.GET.get('lat')
         lon_str = request.GET.get('lon')
         limit = int(request.GET.get('limit', 5))
-        
+
         user_lat = None
         user_lon = None
-        
+
         if lat_str and lon_str:
             try:
                 user_lat = float(lat_str)
                 user_lon = float(lon_str)
             except ValueError:
                 pass
-                
-        # Get doctors who are verified and currently available
+
+        # Get doctors who are verified
         doctors = list(DoctorProfile.objects.filter(is_verified=True).select_related('user'))
-        
-        # Filter for actual availability (online + today + within time window)
+
+        # Filter for availability
         available_doctors = [doc for doc in doctors if doc.is_available_now]
-        
+        if not available_doctors:
+            available_doctors = doctors[:10]  # Fallback to verified doctors if none online right now
+
         results = []
         for doc in available_doctors:
-            dist = haversine(user_lat, user_lon, doc.latitude, doc.longitude)
-            
-            # Format image URL properly
+            dist_km = None
+            duration_min = None
+            if user_lat is not None and user_lon is not None and doc.latitude and doc.longitude:
+                dist_km, duration_min = SearchService.get_travel_distance_osrm(
+                    user_lat, user_lon, doc.latitude, doc.longitude
+                )
+
             photo_url = doc.photo.url if doc.photo else '/static/images/default-doctor.jpg'
-            
+
             results.append({
                 'id': doc.id,
                 'first_name': doc.user.first_name,
                 'last_name': doc.user.last_name,
+                'full_name': doc.full_name,
                 'specialization': doc.specialization,
                 'hospital': doc.hospital,
                 'experience': doc.experience_years,
@@ -66,13 +76,15 @@ class DoctorsNearbyAPIView(View):
                 'rating': doc.rating,
                 'reviews': doc.review_count,
                 'photo_url': photo_url,
-                'distance': dist
+                'distance_km': dist_km,
+                'duration_min': duration_min,
+                'latitude': doc.latitude,
+                'longitude': doc.longitude,
             })
-            
-        # Sort by distance if location provided, else by rating
+
         if user_lat is not None and user_lon is not None:
-            results.sort(key=lambda x: (x['distance'], -x['rating']))
+            results.sort(key=lambda x: (x['distance_km'] if x['distance_km'] is not None else 9999, -x['rating']))
         else:
             results.sort(key=lambda x: (-x['rating'], -x['reviews']))
-            
+
         return JsonResponse({'doctors': results[:limit]})

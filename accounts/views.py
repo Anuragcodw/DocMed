@@ -1141,3 +1141,25 @@ class DoctorDocumentDownloadView(View):
         except (OSError, IOError):
             raise Http404('Unable to serve document.')
 
+
+@method_decorator(login_required, name='dispatch')
+class SaveFCMTokenView(View):
+    """
+    POST /api/save-fcm-token/
+    Stores the user's FCM device token in their profile for push notifications.
+    """
+    def post(self, request, *args, **kwargs):
+        import json
+        try:
+            body = json.loads(request.body)
+            token = body.get('token') or request.POST.get('token')
+        except Exception:
+            token = request.POST.get('token')
+
+        if token:
+            request.user.fcm_token = token
+            request.user.save(update_fields=['fcm_token'])
+            return JsonResponse({'status': 'success', 'message': 'FCM token saved.'})
+        return JsonResponse({'status': 'error', 'message': 'Token missing.'}, status=400)
+
+

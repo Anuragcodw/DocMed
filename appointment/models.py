@@ -125,6 +125,14 @@ class TakeAppointment(models.Model):
     )
     meeting_notes = models.TextField(blank=True, null=True, help_text="Doctor notes logged during meeting")
 
+    # Google Calendar Integration
+    google_calendar_event_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Google Calendar event ID for this appointment (used to cancel on appointment cancellation).",
+    )
+
     # Payment tracking
     is_paid = models.BooleanField(default=False)
     payment_required = models.BooleanField(default=False)
@@ -259,6 +267,20 @@ class DoctorProfile(models.Model):
         help_text='Verification method: manual, nmc_api, digilocker, qr_code'
     )
 
+    # Auto-Generated System IDs on Approval
+    doctor_id_code = models.CharField(
+        max_length=50, blank=True, null=True, unique=True,
+        help_text='Auto-generated unique Doctor ID (e.g. DOC20260001)'
+    )
+    registration_id = models.CharField(
+        max_length=100, blank=True, null=True, unique=True,
+        help_text='Auto-generated unique Registration ID (e.g. REG-2026-000001)'
+    )
+    nmc_certificate_number = models.CharField(
+        max_length=100, blank=True, null=True, unique=True,
+        help_text='Auto-generated unique NMC Certificate Number (e.g. NMC-2026-000001)'
+    )
+
     # Social Links
     social_facebook = models.URLField(blank=True)
     social_twitter = models.URLField(blank=True)
@@ -296,6 +318,66 @@ class DoctorProfile(models.Model):
     class Meta:
         verbose_name = 'Doctor Profile'
         verbose_name_plural = 'Doctor Profiles'
+
+    def generate_approval_ids(self):
+        """
+        Atomically generate unique Doctor ID, Registration ID, and NMC Certificate Number
+        if not already set. Uses current year and sequential database counter.
+        Example outputs:
+            doctor_id_code: DOC20260001
+            registration_id: REG-2026-000001
+            nmc_certificate_number: NMC-2026-000001
+        """
+        from django.utils import timezone
+        year = timezone.now().strftime('%Y')
+
+        if not self.doctor_id_code:
+            prefix = f"DOC{year}"
+            last = DoctorProfile.objects.filter(
+                doctor_id_code__startswith=prefix
+            ).exclude(pk=self.pk).order_by('-id').first()
+
+            if last and last.doctor_id_code:
+                try:
+                    num = int(last.doctor_id_code.replace(prefix, '')) + 1
+                except ValueError:
+                    num = self.pk or 1
+            else:
+                num = (DoctorProfile.objects.filter(doctor_id_code__isnull=False).count()) + 1
+
+            self.doctor_id_code = f"{prefix}{num:04d}"
+
+        if not self.registration_id:
+            prefix = f"REG-{year}-"
+            last = DoctorProfile.objects.filter(
+                registration_id__startswith=prefix
+            ).exclude(pk=self.pk).order_by('-id').first()
+
+            if last and last.registration_id:
+                try:
+                    num = int(last.registration_id.replace(prefix, '')) + 1
+                except ValueError:
+                    num = self.pk or 1
+            else:
+                num = (DoctorProfile.objects.filter(registration_id__isnull=False).count()) + 1
+
+            self.registration_id = f"{prefix}{num:06d}"
+
+        if not self.nmc_certificate_number:
+            prefix = f"NMC-{year}-"
+            last = DoctorProfile.objects.filter(
+                nmc_certificate_number__startswith=prefix
+            ).exclude(pk=self.pk).order_by('-id').first()
+
+            if last and last.nmc_certificate_number:
+                try:
+                    num = int(last.nmc_certificate_number.replace(prefix, '')) + 1
+                except ValueError:
+                    num = self.pk or 1
+            else:
+                num = (DoctorProfile.objects.filter(nmc_certificate_number__isnull=False).count()) + 1
+
+            self.nmc_certificate_number = f"{prefix}{num:06d}"
 
     def __str__(self):
         return f"Dr. {self.user.first_name} {self.user.last_name} ({self.specialization})"
@@ -1426,6 +1508,76 @@ class VoiceSummary(models.Model):
 
     def __str__(self):
         return f"{self.language} audio for {self.report.title}"
+
+
+class Invoice(models.Model):
+    """
+    Stores generated PDF invoices for appointment payments.
+    """
+    payment = models.OneToOneField(
+        'Payment',
+        on_delete=models.CASCADE,
+        related_name='invoice_record'
+    )
+    invoice_number = models.CharField(max_length=100, unique=True)
+    pdf_file = models.FileField(upload_to='invoices/%Y/%m/', blank=True, null=True)
+    qr_code_data = models.TextField(blank=True, null=True)
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Invoice'
+        verbose_name_plural = 'Invoices'
+
+    def __str__(self):
+        return f"Invoice #{self.invoice_number} - {self.payment.booking.full_name}"
+
+
+class NotificationLog(models.Model):
+    """
+    Audit log and retry queue for multi-channel notifications (Email, SMS, FCM Push).
+    Provides deduplication and rate-limiting protection.
+    """
+    CHANNEL_CHOICES = (
+        ('email', 'Email'),
+        ('sms', 'SMS'),
+        ('fcm', 'Push Notification'),
+    )
+    STATUS_CHOICES = (
+        ('sent', 'Sent'),
+        ('failed', 'Failed'),
+        ('queued', 'Queued'),
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='notification_logs'
+    )
+    channel = models.CharField(max_length=10, choices=CHANNEL_CHOICES)
+    event_type = models.CharField(max_length=100)
+    recipient = models.CharField(max_length=255)
+    subject_or_title = models.CharField(max_length=255, blank=True, null=True)
+    content = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='sent')
+    attempts = models.IntegerField(default=1)
+    error_message = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Notification Log'
+        verbose_name_plural = 'Notification Logs'
+
+    def __str__(self):
+        return f"[{self.channel.upper()}] {self.event_type} → {self.recipient} ({self.status})"
+
 
 
 

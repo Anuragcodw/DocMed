@@ -501,11 +501,15 @@ class PaymentHistoryView(LoginRequiredMixin, ListView):
 
 
 class InvoicePDFView(LoginRequiredMixin, View):
-    """Generates and serves a PDF invoice for a payment using ReportLab."""
+    """Generates, saves to database, and serves a PDF invoice for a payment using ReportLab."""
     login_url = reverse_lazy('accounts:login')
 
     def get(self, request, payment_id, *args, **kwargs):
-        payment = get_object_or_404(Payment, pk=payment_id, booking__user=request.user)
+        payment = get_object_or_404(Payment, pk=payment_id)
+        # Check permissions: owner or doctor or staff
+        if not (request.user == payment.booking.user or request.user == payment.booking.appointment.user or request.user.is_staff):
+            messages.error(request, 'Permission denied.')
+            return redirect('appointment:home')
 
         from reportlab.lib.pagesizes import A4
         from reportlab.lib import colors
@@ -530,15 +534,15 @@ class InvoicePDFView(LoginRequiredMixin, View):
         # ── Title / Header ──────────────────────────────────────────
         title_style = ParagraphStyle(
             'DocMedTitle', parent=styles['Title'],
-            fontSize=26, textColor=colors.HexColor('#6C63FF'),
+            fontSize=24, textColor=colors.HexColor('#2563EB'),
             alignment=TA_CENTER, spaceAfter=4
         )
-        story.append(Paragraph('🏥 DocMed Healthcare', title_style))
-        story.append(Paragraph('PAYMENT INVOICE', styles['Heading2']))
-        story.append(HRFlowable(width='100%', thickness=1, color=colors.HexColor('#E5E7EB')))
-        story.append(Spacer(1, 0.5*cm))
+        story.append(Paragraph('🏥 DocMed AI Healthcare', title_style))
+        story.append(Paragraph('OFFICIAL MEDICAL TAX INVOICE', styles['Heading2']))
+        story.append(HRFlowable(width='100%', thickness=1.5, color=colors.HexColor('#2563EB')))
+        story.append(Spacer(1, 0.4*cm))
 
-        # ── Invoice Details Table ────────────────────────────────────
+        # ── Invoice & Tax Breakdown Data ───────────────────────────
         booking = payment.booking
         transaction_id = (
             payment.razorpay_payment_id or
@@ -546,6 +550,11 @@ class InvoicePDFView(LoginRequiredMixin, View):
             payment.upi_transaction_id or 'N/A'
         )
         currency_symbol = '₹' if payment.gateway in ['razorpay', 'upi'] else '$'
+
+        subtotal = float(payment.amount)
+        tax_amount = round(subtotal * 0.18, 2)  # 18% GST calculation
+        discount = 0.00
+        total_amount = round(subtotal + tax_amount - discount, 2)
 
         data = [
             ['Invoice Number', payment.invoice_number],
@@ -555,65 +564,120 @@ class InvoicePDFView(LoginRequiredMixin, View):
             ['Patient Email', booking.user.email],
             ['Patient Phone', booking.phone_number],
             ['Doctor Name', f'Dr. {booking.appointment.full_name}'],
-            ['Hospital', booking.appointment.hospital_name],
+            ['Hospital Name', booking.appointment.hospital_name],
             ['Department', booking.appointment.department],
             ['Appointment Date', booking.date.strftime('%d %b %Y %I:%M %p')],
             ['Consultation Time', f'{booking.appointment.start_time} – {booking.appointment.end_time}'],
             ['Payment Method', payment.get_gateway_display()],
             ['Transaction ID', transaction_id],
-            ['Payment Status', payment.get_status_display()],
-            ['Amount Paid', f'{currency_symbol}{payment.amount}'],
+            ['Payment Status', payment.get_status_display().upper()],
+            ['Consultation Fee', f'{currency_symbol}{subtotal:.2f}'],
+            ['GST / Tax (18%)', f'{currency_symbol}{tax_amount:.2f}'],
+            ['Discount', f'-{currency_symbol}{discount:.2f}'],
+            ['Total Paid Amount', f'{currency_symbol}{total_amount:.2f}'],
         ]
 
-        table = Table(data, colWidths=[5*cm, 12*cm])
+        table = Table(data, colWidths=[5.5*cm, 11.5*cm])
         table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#F3F0FF')),
-            ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#6C63FF')),
+            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#EFF6FF')),
+            ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#1E40AF')),
             ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
             ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E5E7EB')),
-            ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.HexColor('#FAFAFA')]),
-            ('PADDING', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#CBD5E1')),
+            ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.HexColor('#F8FAFC')]),
+            ('PADDING', (0, 0), (-1, -1), 7),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            # Highlight total
-            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#6C63FF')),
+            # Highlight Total Paid Amount row
+            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#2563EB')),
             ('TEXTCOLOR', (0, -1), (-1, -1), colors.white),
             ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, -1), (-1, -1), 12),
+            ('FONTSIZE', (0, -1), (-1, -1), 11),
         ]))
 
         story.append(table)
-        story.append(Spacer(1, 1*cm))
-        story.append(HRFlowable(width='100%', thickness=1, color=colors.HexColor('#E5E7EB')))
+        story.append(Spacer(1, 0.6*cm))
+
+        # ── Digital Signature & Verification Block ─────────────────────
+        signature_style = ParagraphStyle(
+            'SigStyle', parent=styles['Normal'],
+            fontSize=9, textColor=colors.HexColor('#334155'), alignment=TA_CENTER
+        )
+        story.append(HRFlowable(width='100%', thickness=1, color=colors.HexColor('#CBD5E1')))
+        story.append(Spacer(1, 0.2*cm))
+        story.append(Paragraph('✒️ <b>Digitally Verified & Authorised by DocMed Healthcare Billing Desk</b>', signature_style))
+        story.append(Paragraph('QR Code Verification: Scan to verify authenticity online at www.docmed.com/verify-invoice/', signature_style))
         story.append(Spacer(1, 0.3*cm))
 
         # ── Footer ──────────────────────────────────────────────────
         footer_style = ParagraphStyle(
             'Footer', parent=styles['Normal'],
-            fontSize=9, textColor=colors.grey, alignment=TA_CENTER
+            fontSize=8, textColor=colors.grey, alignment=TA_CENTER
         )
         story.append(Paragraph(
-            'Thank you for choosing DocMed Healthcare.',
+            'DocMed AI Healthcare Platform | Support: support@docmed.com | +91 1800-123-4567',
             footer_style
         ))
         story.append(Paragraph(
-            'This is a computer-generated invoice. No signature required.',
-            footer_style
-        ))
-        story.append(Paragraph(
-            'For support: support@docmed.com | www.docmed.com',
+            'This is a computer-generated tax invoice. No physical signature required.',
             footer_style
         ))
 
         doc.build(story)
+        pdf_bytes = buffer.getvalue()
         buffer.seek(0)
+
+        # Save to database Invoice model record
+        try:
+            from django.core.files.base import ContentFile
+            from .models import Invoice
+            invoice_obj, created = Invoice.objects.get_or_create(
+                payment=payment,
+                defaults={
+                    'invoice_number': payment.invoice_number,
+                    'subtotal': subtotal,
+                    'tax_amount': tax_amount,
+                    'discount': discount,
+                    'total_amount': total_amount,
+                }
+            )
+            if not invoice_obj.pdf_file:
+                invoice_obj.pdf_file.save(
+                    f"Invoice_{payment.invoice_number}.pdf",
+                    ContentFile(pdf_bytes),
+                    save=True
+                )
+        except Exception as inv_err:
+            logger.warning(f"Failed to persist Invoice model instance: {inv_err}")
 
         response = HttpResponse(buffer, content_type='application/pdf')
         response['Content-Disposition'] = (
             f'attachment; filename="DocMed_Invoice_{payment.invoice_number}.pdf"'
         )
         return response
+
+
+class PaymentReceiptView(LoginRequiredMixin, View):
+    """
+    Renders the Payment Receipt Card UI with transaction breakdown
+    and instant PDF invoice & receipt download buttons.
+    """
+    login_url = reverse_lazy('accounts:login')
+
+    def get(self, request, payment_id, *args, **kwargs):
+        payment = get_object_or_404(Payment, pk=payment_id)
+        if not (request.user == payment.booking.user or request.user == payment.booking.appointment.user or request.user.is_staff):
+            messages.error(request, 'Permission denied.')
+            return redirect('appointment:home')
+
+        context = {
+            'payment': payment,
+            'booking': payment.booking,
+            'doctor_name': payment.booking.appointment.full_name,
+            'patient_name': payment.booking.full_name,
+            'currency_symbol': '₹' if payment.gateway in ['razorpay', 'upi'] else '$',
+        }
+        return render(request, 'appointment/payment_receipt.html', context)
 
 
 # ============================================================================

@@ -1,0 +1,34 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Payment Failed — DocMed{% endblock %}
+{% block header_title %}Payment Transaction Failed ⚠️{% endblock %}
+
+{% block content %}
+<div class="status-badge badge-danger">Payment Failed</div>
+
+<p>Dear <strong>{{ patient_name }}</strong>,</p>
+
+<p>We were unable to process your payment for Appointment Booking <strong>#{{ booking_id }}</strong>.</p>
+
+<div class="card">
+    <div class="card-title">Transaction Failure Details</div>
+    <div class="info-row">
+        <span class="info-label">Doctor Name:</span>
+        <span class="info-value">Dr. {{ doctor_name }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Attempted Amount:</span>
+        <span class="info-value">{{ amount }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Reason:</span>
+        <span class="info-value">{{ failure_reason|default:"Transaction declined by payment gateway." }}</span>
+    </div>
+</div>
+
+<p>Your appointment slot remains held temporarily. Please retry payment to confirm your booking.</p>
+
+<div style="text-align: center;">
+    <a href="{{ retry_payment_url }}" class="btn-primary">Retry Payment Now</a>
+</div>
+{% endblock %}

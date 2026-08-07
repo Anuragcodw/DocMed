@@ -1,0 +1,52 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Upcoming Appointment Reminder{% endblock %}
+{% block header_title %}Appointment Reminder ⏰{% endblock %}
+
+{% block content %}
+<div class="status-badge badge-info">{{ time_window }} Reminder</div>
+
+<p>Hello <strong>{{ recipient_name }}</strong>,</p>
+
+<p>This is a reminder for your upcoming medical appointment scheduled in <strong>{{ time_window }}</strong>.</p>
+
+<div class="card">
+    <div class="card-title">Appointment Summary</div>
+    <div class="info-row">
+        <span class="info-label">Doctor Name:</span>
+        <span class="info-value">Dr. {{ doctor_name }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Patient Name:</span>
+        <span class="info-value">{{ patient_name }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Department:</span>
+        <span class="info-value">{{ department }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Date & Time:</span>
+        <span class="info-value">{{ date }} at {{ time }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Hospital / Location:</span>
+        <span class="info-value">{{ hospital_name }}</span>
+    </div>
+    {% if meet_url %}
+    <div class="info-row">
+        <span class="info-label">Consultation Mode:</span>
+        <span class="info-value">Online Video Consultation</span>
+    </div>
+    {% endif %}
+</div>
+
+{% if meet_url %}
+<div style="text-align: center;">
+    <a href="{{ meet_url }}" class="btn-primary">Join Google Meet Consultation</a>
+</div>
+{% else %}
+<div style="text-align: center;">
+    <a href="{{ booking_url }}" class="btn-primary">View Appointment Details</a>
+</div>
+{% endif %}
+{% endblock %}

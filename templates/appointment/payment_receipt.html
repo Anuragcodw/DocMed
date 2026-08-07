@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment Receipt — DocMed Healthcare{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <!-- Receipt Header -->
+                <div class="card-header text-white text-center py-4" style="background: linear-gradient(135deg, #2563EB 0%, #4F46E5 100%);">
+                    <div class="display-6 mb-1">🎉</div>
+                    <h3 class="fw-bold mb-1">Payment Successful!</h3>
+                    <p class="mb-0 opacity-75">DocMed AI Healthcare Transaction Receipt</p>
+                </div>
+
+                <!-- Receipt Body -->
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold">
+                            STATUS: PAID
+                        </span>
+                        <h2 class="display-5 fw-extrabold text-primary my-2">{{ currency_symbol }}{{ payment.amount }}</h2>
+                        <p class="text-muted small">Invoice #{{ payment.invoice_number }}</p>
+                    </div>
+
+                    <div class="bg-light p-3 rounded-3 mb-4">
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Transaction ID</span>
+                            <span class="fw-bold font-monospace">{{ payment.razorpay_payment_id|default:payment.stripe_payment_intent|default:payment.upi_transaction_id|default:"N/A" }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Payment Gateway</span>
+                            <span class="fw-semibold text-capitalize">{{ payment.get_gateway_display }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Payment Date</span>
+                            <span class="fw-semibold">{{ payment.created_at|date:"d M Y, h:i A" }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Patient Name</span>
+                            <span class="fw-semibold">{{ patient_name }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Doctor Name</span>
+                            <span class="fw-semibold">Dr. {{ doctor_name }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Hospital</span>
+                            <span class="fw-semibold">{{ booking.appointment.hospital_name }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2">
+                            <span class="text-muted">Appointment Date</span>
+                            <span class="fw-semibold">{{ booking.date|date:"d M Y, h:i A" }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'appointment:invoice-pdf' payment.id %}" class="btn btn-primary btn-lg rounded-3 fw-bold py-3 shadow-sm">
+                            📄 Download PDF Invoice
+                        </a>
+                        <a href="{% url 'appointment:patient-dashboard' %}" class="btn btn-outline-secondary rounded-3 py-2 fw-semibold">
+                            Back to Patient Dashboard
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="card-footer bg-light text-center py-3 text-muted small">
+                    Need support? Email <a href="mailto:support@docmed.com" class="text-decoration-none">support@docmed.com</a> or call +91 1800-123-4567
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

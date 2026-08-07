@@ -24,6 +24,7 @@ from accounts.views import (
     FirebaseAuthView,
     DoctorPendingVerificationView,
     DoctorDocumentDownloadView,
+    SaveFCMTokenView,
 )
 from appointment.views import EditDoctorProfileView, EditPatientProfileView
 
@@ -81,6 +82,9 @@ urlpatterns = [
 
     # Firebase Authentication API (Google Popup & Phone OTP backend token verification)
     path('api/firebase-login/', FirebaseAuthView.as_view(), name='firebase_login'),
+
+    # Firebase Cloud Messaging Token Registration
+    path('api/save-fcm-token/', SaveFCMTokenView.as_view(), name='api-save-fcm-token'),
 
     # Secure Doctor Document Download (owner + admin only)
     path(

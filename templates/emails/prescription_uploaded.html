@@ -1,0 +1,32 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Prescription Ready — DocMed{% endblock %}
+{% block header_title %}New Prescription Uploaded 💊{% endblock %}
+
+{% block content %}
+<div class="status-badge badge-success">Prescription Available</div>
+
+<p>Dear <strong>{{ patient_name }}</strong>,</p>
+
+<p>Dr. <strong>{{ doctor_name }}</strong> has issued and uploaded a digital prescription for your appointment on <strong>{{ date }}</strong>.</p>
+
+<div class="card">
+    <div class="card-title">Prescription Overview</div>
+    <div class="info-row">
+        <span class="info-label">Doctor Name:</span>
+        <span class="info-value">Dr. {{ doctor_name }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Diagnosis:</span>
+        <span class="info-value">{{ diagnosis|default:"Consultation Prescription" }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Booking ID:</span>
+        <span class="info-value">#{{ booking_id }}</span>
+    </div>
+</div>
+
+<div style="text-align: center;">
+    <a href="{{ prescription_url }}" class="btn-primary">View & Download Prescription (PDF)</a>
+</div>
+{% endblock %}

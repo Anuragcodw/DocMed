@@ -21,9 +21,10 @@ django-ratelimit==4.1.0
 pyotp==2.9.0
 firebase-admin==6.7.0
 
-# REST Framework & JWT
+# REST Framework, JWT & OpenAPI Docs
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.1
+drf-spectacular==0.27.2
 
 # AI & Data Processing
 google-generativeai==0.8.4
@@ -61,3 +62,12 @@ django-widget-tweaks==1.5.0
 pytz==2024.1
 requests==2.32.3
 sqlparse==0.5.0
+
+# Background Scheduling (Reminders, Notifications)
+# Option A — Celery + Redis (production-grade, requires Redis server)
+celery==5.3.6
+redis==5.0.3
+django-celery-beat==2.6.0
+
+# Option B — APScheduler (zero-infrastructure, runs inside Django process)
+APScheduler==3.10.4

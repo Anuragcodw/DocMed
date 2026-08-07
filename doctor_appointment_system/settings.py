@@ -66,6 +66,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
 
+    # API Documentation (Swagger/ReDoc)
+    'drf_spectacular',
+
+    # Celery Beat — DB-backed periodic task scheduler
+    'django_celery_beat',
+
     # Project apps
     'appointment',
     'accounts',
@@ -439,6 +445,105 @@ FIREBASE_APP_ID = os.environ.get('FIREBASE_APP_ID', '')
 FIREBASE_MEASUREMENT_ID = os.environ.get('FIREBASE_MEASUREMENT_ID', '')
 FIREBASE_SERVICE_ACCOUNT_JSON = os.environ.get('FIREBASE_SERVICE_ACCOUNT_JSON', '')
 FIREBASE_SERVICE_ACCOUNT_PATH = os.environ.get('FIREBASE_SERVICE_ACCOUNT_PATH', '')
+
+# Firebase Cloud Messaging (FCM) Push Notifications
+# ⚠️  Requires FIREBASE_SERVICE_ACCOUNT_JSON or FIREBASE_SERVICE_ACCOUNT_PATH above.
+# Set FCM_ENABLED=True once credentials are configured.
+FCM_ENABLED = os.environ.get('FCM_ENABLED', 'False').lower() in ('true', '1', 'yes')
+FIREBASE_VAPID_PUBLIC_KEY = os.environ.get('FIREBASE_VAPID_PUBLIC_KEY', '')
+
+# ---------------------------------------------------------------------------
+# Google Calendar + Google Meet Integration
+# ---------------------------------------------------------------------------
+# ⚠️  Enable the Google Calendar API in Google Cloud Console.
+# Create a Service Account key and set GOOGLE_SERVICE_ACCOUNT_JSON in .env.
+# Set GOOGLE_CALENDAR_ID to the calendar email (e.g. doctor@gmail.com or 'primary').
+GOOGLE_CALENDAR_ENABLED = os.environ.get('GOOGLE_CALENDAR_ENABLED', 'False').lower() in ('true', '1', 'yes')
+GOOGLE_CALENDAR_ID = os.environ.get('GOOGLE_CALENDAR_ID', 'primary')
+GOOGLE_SERVICE_ACCOUNT_JSON = os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON', '')
+GOOGLE_SERVICE_ACCOUNT_PATH = os.environ.get('GOOGLE_SERVICE_ACCOUNT_PATH', '')
+
+# Public URL of this site (used in calendar event descriptions & FCM deep links)
+SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
+
+# ---------------------------------------------------------------------------
+# ElevenLabs Text-to-Speech
+# ---------------------------------------------------------------------------
+# ⚠️  Get your API key at https://elevenlabs.io/
+# Rachel voice (21m00Tcm4TlvDq8ikWAM) is recommended for medical applications.
+ELEVENLABS_ENABLED = os.environ.get('ELEVENLABS_ENABLED', 'False').lower() in ('true', '1', 'yes')
+ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY', '')
+ELEVENLABS_VOICE_ID = os.environ.get('ELEVENLABS_VOICE_ID', '21m00Tcm4TlvDq8ikWAM')
+ELEVENLABS_MODEL_ID = os.environ.get('ELEVENLABS_MODEL_ID', 'eleven_multilingual_v2')
+
+# ---------------------------------------------------------------------------
+# Google Cloud Translation API (Multi-Language)
+# ---------------------------------------------------------------------------
+# ⚠️  Enable Cloud Translation API in Google Cloud Console.
+# Supports 12 languages: EN, HI, BN, TE, MR, TA, GU, KN, ML, PA, UR, OR
+GOOGLE_TRANSLATE_ENABLED = os.environ.get('GOOGLE_TRANSLATE_ENABLED', 'False').lower() in ('true', '1', 'yes')
+GOOGLE_TRANSLATE_API_KEY = os.environ.get('GOOGLE_TRANSLATE_API_KEY', '')
+
+# ---------------------------------------------------------------------------
+# API Documentation (drf-spectacular / Swagger + ReDoc)
+# ---------------------------------------------------------------------------
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'DocMed API',
+    'DESCRIPTION': (
+        'RESTful API for DocMed Doctor Appointment System. '
+        'Covers appointments, payments, prescriptions, AI report analysis, '
+        'video consultations, and push notifications.'
+    ),
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'CONTACT': {'email': 'support@docmed.com'},
+    'LICENSE': {'name': 'Proprietary'},
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': True,
+    },
+    'COMPONENT_SPLIT_REQUEST': True,
+}
+
+# ---------------------------------------------------------------------------
+# Celery + Redis Background Task Queue
+# ---------------------------------------------------------------------------
+# ⚠️  REQUIRED: Install Redis on your server or use Render's Redis add-on.
+#     Set REDIS_URL in .env  (e.g. redis://localhost:6379/0  or  rediss://...)
+#     On Render: add a Redis instance and copy its Internal URL as REDIS_URL.
+#
+# START WORKERS (run these in separate terminal tabs):
+#   celery -A doctor_appointment_system worker --loglevel=info
+#   celery -A doctor_appointment_system beat   --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Kolkata'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 5 * 60  # 5 minutes max per task
+
+# Celery Beat — Periodic Task Schedule
+from celery.schedules import crontab as celery_crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'send-appointment-reminders-every-15-mins': {
+        'task': 'appointment.tasks.send_appointment_reminders_task',
+        'schedule': celery_crontab(minute='*/15'),   # every 15 minutes
+    },
+}
+
+# ---------------------------------------------------------------------------
+# APScheduler Fallback (runs INSIDE Django/Gunicorn process)
+# Active when Celery+Redis is NOT configured.
+# Set DISABLE_SCHEDULER=True in .env to suppress it.
+# ---------------------------------------------------------------------------
+# No extra env vars needed — starts automatically on server launch.
 
 # Python 3.14 + Django 4.2 Template Context Compatibility Patch
 try:

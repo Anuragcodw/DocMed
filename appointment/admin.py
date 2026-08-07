@@ -40,29 +40,32 @@ class TakeAppointmentAdmin(admin.ModelAdmin):
 
 
 from django.utils.html import format_html
+from accounts.verification_service import DoctorVerificationService
 
 
 @admin.register(DoctorProfile)
 class DoctorProfileAdmin(admin.ModelAdmin):
     """
-    Doctor Verification Admin Module — NMC Edition.
+    Doctor Verification Admin Module — NMC & Automated Approval Workflow Edition.
 
     Allows administrators to:
       • View all NMC credentials submitted by doctors
+      • Inspect auto-generated Doctor ID, Registration ID, and NMC Certificate Number
       • Preview all uploaded verification documents inline
-      • Bulk Approve, Reject, Suspend, or mark Under Review
+      • Bulk Approve (Auto-generates IDs & sends verification email)
+      • Bulk Reject / Suspend (Sends rejection notice with admin remarks)
       • Record verification remarks, verified_by, and verification_date
     """
 
     list_display = (
+        'doctor_id_code',
         'user',
+        'nmc_certificate_number',
         'nmc_registration_number',
-        'medical_registration_number',
         'specialization',
         'state_medical_council',
         'verification_status',
         'is_verified',
-        'verification_method',
         'created_at',
     )
     list_filter = (
@@ -74,6 +77,9 @@ class DoctorProfileAdmin(admin.ModelAdmin):
         'created_at',
     )
     search_fields = (
+        'doctor_id_code',
+        'nmc_certificate_number',
+        'registration_id',
         'user__first_name',
         'user__last_name',
         'user__email',
@@ -85,6 +91,9 @@ class DoctorProfileAdmin(admin.ModelAdmin):
         'city',
     )
     readonly_fields = (
+        'doctor_id_code',
+        'registration_id',
+        'nmc_certificate_number',
         'nmc_registration_number',
         'state_medical_council',
         'medical_council_registration_year',
@@ -109,26 +118,21 @@ class DoctorProfileAdmin(admin.ModelAdmin):
     # Bulk Actions                                                        #
     # ------------------------------------------------------------------ #
 
-    @admin.action(description='✅ Approve selected Doctor Registrations (Mark Verified)')
+    @admin.action(description='✅ Approve selected Doctor Registrations (Auto-Generate IDs & Send Email)')
     def approve_doctors(self, request, queryset):
-        now = timezone.now()
-        count = queryset.update(
-            verification_status='verified',
-            is_verified=True,
-            verified_by=request.user,
-            verification_date=now,
-        )
-        self.message_user(request, f"✅ Successfully verified {count} doctor account(s). They now have full dashboard access.")
+        count = 0
+        for profile in queryset:
+            DoctorVerificationService.approve_doctor(profile, admin_user=request.user)
+            count += 1
+        self.message_user(request, f"✅ Successfully verified {count} doctor account(s). Doctor IDs & NMC Certificate Numbers generated, and confirmation emails sent.")
 
-    @admin.action(description='❌ Reject selected Doctor Registrations')
+    @admin.action(description='❌ Reject selected Doctor Registrations (Send Rejection Email)')
     def reject_doctors(self, request, queryset):
-        count = queryset.update(
-            verification_status='rejected',
-            is_verified=False,
-            verified_by=request.user,
-            verification_date=timezone.now(),
-        )
-        self.message_user(request, f"❌ Rejected {count} doctor account(s). They will see the rejection status and admin remarks.")
+        count = 0
+        for profile in queryset:
+            DoctorVerificationService.reject_doctor(profile, admin_user=request.user, remarks=profile.verification_remarks)
+            count += 1
+        self.message_user(request, f"❌ Rejected {count} doctor account(s). Rejection notifications sent to registered emails.")
 
     @admin.action(description='⚠️ Suspend selected Doctor Registrations')
     def suspend_doctors(self, request, queryset):
@@ -139,6 +143,30 @@ class DoctorProfileAdmin(admin.ModelAdmin):
             verification_date=timezone.now(),
         )
         self.message_user(request, f"⚠️ Suspended {count} doctor account(s).")
+
+    def save_model(self, request, obj, form, change):
+        """
+        Handle single DoctorProfile save in Admin.
+        Triggers ID generation and email notification when status changes to 'verified' or 'rejected'.
+        """
+        if change:
+            orig = DoctorProfile.objects.filter(pk=obj.pk).first()
+            if orig and orig.verification_status != obj.verification_status:
+                if obj.verification_status == 'verified':
+                    DoctorVerificationService.approve_doctor(obj, admin_user=request.user, remarks=obj.verification_remarks)
+                    return
+                elif obj.verification_status == 'rejected':
+                    DoctorVerificationService.reject_doctor(obj, admin_user=request.user, remarks=obj.verification_remarks)
+                    return
+
+        # If IDs aren't set but status is verified, generate them
+        if obj.verification_status == 'verified' and not obj.doctor_id_code:
+            obj.generate_approval_ids()
+            obj.is_verified = True
+            if not obj.verification_date:
+                obj.verification_date = timezone.now()
+
+        super().save_model(request, obj, form, change)
 
 
     # ------------------------------------------------------------------ #

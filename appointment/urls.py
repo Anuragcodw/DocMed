@@ -27,7 +27,7 @@ from appointment.payment_views import (
     StripeCheckoutView, StripeSuccessView, stripe_webhook,
     UPIPaymentConfirmView, PaymentSuccessView, PaymentFailedView,
     PaymentPendingView, PaymentHistoryView, InvoicePDFView,
-    RequestRefundView, AdminRefundActionView
+    PaymentReceiptView, RequestRefundView, AdminRefundActionView
 )
 from appointment.prescription_views import (
     CreatePrescriptionView, PrescriptionDetailView, PrescriptionPDFView,
@@ -54,6 +54,8 @@ from appointment.booking_views import (
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from appointment.ai_views import AIChatView, AIRiskAssessmentView
+from appointment.tts_views import TextToSpeechView
+from appointment.translate_views import TranslateTextView, LanguageListView
 
 app_name = 'appointment'
 
@@ -65,7 +67,7 @@ urlpatterns = [
     path('contact/', ContactView.as_view(), name='contact'),
     path('search/', SearchView.as_view(), name='search'),
 
-    # ── JWT API ───────────────────────────────────────────────────────────────
+    # ── JWT & AI Services API ─────────────────────────────────────────────────
     path('api/token/', TokenObtainPairView.as_view(), name='token-obtain-pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
     path('api/doctors/nearby/', DoctorsNearbyAPIView.as_view(), name='api-doctors-nearby'),
@@ -73,6 +75,9 @@ urlpatterns = [
     path('api/ai/chat/', AIChatView.as_view(), name='api-ai-chat'),
     path('api/chatbot/', AIChatView.as_view(), name='api-chatbot'),
     path('api/ai/risk-assessment/', AIRiskAssessmentView.as_view(), name='api-ai-risk-assessment'),
+    path('api/ai/tts/', TextToSpeechView.as_view(), name='api-ai-tts'),
+    path('api/translate/', TranslateTextView.as_view(), name='api-translate'),
+    path('api/languages/', LanguageListView.as_view(), name='api-languages'),
 
     # ── Doctor Directory & Public Profile ─────────────────────────────────────
     path('doctors/', DoctorListView.as_view(), name='doctor-list'),
@@ -147,6 +152,7 @@ urlpatterns = [
     path('payment/pending/<int:booking_id>/', PaymentPendingView.as_view(), name='payment-pending'),
     path('payment/history/', PaymentHistoryView.as_view(), name='payment-history'),
     path('payment/<int:payment_id>/invoice/', InvoicePDFView.as_view(), name='invoice-pdf'),
+    path('payment/<int:payment_id>/receipt/', PaymentReceiptView.as_view(), name='payment-receipt'),
     path('payment/<int:payment_id>/refund/request/', RequestRefundView.as_view(), name='refund-request'),
     path('payment/<int:payment_id>/refund/action/', AdminRefundActionView.as_view(), name='admin-refund-action'),
 

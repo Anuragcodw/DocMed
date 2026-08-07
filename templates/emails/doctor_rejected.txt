@@ -1,0 +1,17 @@
+DocMed AI Healthcare System — Registration Status Update
+
+Dear Dr. {{ doctor_name }},
+
+Thank you for applying to join DocMed AI Healthcare System. After reviewing your submitted credentials and documents, we regret to inform you that your registration could not be approved at this time.
+
+{% if remarks %}
+Admin Remarks / Reason for Rejection:
+-------------------------------------
+{{ remarks }}
+{% endif %}
+
+If you believe this is an error or would like to resubmit updated documents, please contact our support team at {{ support_email }}.
+
+Regards,
+DocMed Administration Team
+{{ system_name }}

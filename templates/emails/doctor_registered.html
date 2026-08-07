@@ -1,0 +1,34 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Doctor Registration Submitted{% endblock %}
+{% block header_title %}Registration Received 📋{% endblock %}
+
+{% block content %}
+<div class="status-badge badge-pending">Under Verification</div>
+
+<p>Dear <strong>Dr. {{ doctor_name }}</strong>,</p>
+
+<p>Thank you for submitting your registration application to join the <strong>DocMed Medical Network</strong>.</p>
+
+<div class="card">
+    <div class="card-title">Submitted Credentials</div>
+    <div class="info-row">
+        <span class="info-label">Doctor Name:</span>
+        <span class="info-value">Dr. {{ doctor_name }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Specialization:</span>
+        <span class="info-value">{{ specialization }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">NMC Reg Number:</span>
+        <span class="info-value">{{ nmc_reg_number }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Status:</span>
+        <span class="info-value">Pending Admin Review</span>
+    </div>
+</div>
+
+<p>Our medical credentialing committee is reviewing your submitted degree, license, and government ID documents. You will receive an approval email with your unique <strong>Doctor ID</strong> and <strong>NMC Certificate Number</strong> once verified.</p>
+{% endblock %}

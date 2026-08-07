@@ -549,11 +549,29 @@ class ApproveBookingView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         booking = get_object_or_404(TakeAppointment, pk=pk, appointment__user=request.user)
         booking.status = 'approved'
+
+        # Generate Google Meet link & create Google Calendar event
+        try:
+            from .google_calendar_service import create_google_meeting
+            meet_url = create_google_meeting(booking)
+            if meet_url:
+                booking.meeting_url = meet_url
+                booking.meeting_provider = 'meet'
+        except Exception as exc:
+            logger.warning(f"Google Calendar/Meet event creation skipped: {exc}")
+
         booking.save()
 
         # Send confirmation email
         from .emails import send_appointment_status_update_email
         send_appointment_status_update_email(booking, 'Approved')
+
+        # Send FCM Push Notification to Patient
+        try:
+            from .fcm_service import notify_appointment_approved
+            notify_appointment_approved(booking)
+        except Exception as exc:
+            logger.warning(f"FCM push notification skipped: {exc}")
 
         messages.success(request, f"Appointment booking for {booking.full_name} has been approved.")
         return redirect('appointment:patient-list')
@@ -568,9 +586,24 @@ class CancelBookingView(LoginRequiredMixin, View):
         booking.status = 'cancelled'
         booking.save()
 
+        # Cancel Google Calendar event if exists
+        if getattr(booking, 'google_calendar_event_id', None):
+            try:
+                from .google_calendar_service import cancel_calendar_event_async
+                cancel_calendar_event_async(booking.google_calendar_event_id)
+            except Exception as exc:
+                logger.warning(f"Google Calendar event cancellation skipped: {exc}")
+
         # Send confirmation email
         from .emails import send_appointment_status_update_email
         send_appointment_status_update_email(booking, 'Cancelled')
+
+        # Send FCM Push Notification to Patient
+        try:
+            from .fcm_service import notify_appointment_cancelled
+            notify_appointment_cancelled(booking)
+        except Exception as exc:
+            logger.warning(f"FCM push notification skipped: {exc}")
 
         messages.warning(request, f"Appointment booking for {booking.full_name} has been cancelled.")
         return redirect('appointment:patient-list')
@@ -593,6 +626,13 @@ class RescheduleBookingView(LoginRequiredMixin, View):
                 # Send confirmation email
                 from .emails import send_appointment_status_update_email
                 send_appointment_status_update_email(booking, 'Rescheduled')
+
+                # Send FCM Push Notification to Patient
+                try:
+                    from .fcm_service import notify_appointment_rescheduled
+                    notify_appointment_rescheduled(booking)
+                except Exception as exc:
+                    logger.warning(f"FCM push notification skipped: {exc}")
 
                 messages.success(request, f"Appointment booking for {booking.full_name} has been rescheduled.")
             except Exception:

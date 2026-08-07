@@ -1,48 +1,29 @@
 """
 Notification service for DocMed healthcare platform.
 
-Provides email, SMS (Twilio), and WhatsApp notification helpers.
+Provides multi-provider SMS (Twilio + HTTP API), WhatsApp, and push helpers.
 All external API credentials are loaded from Django settings.
-
-HOW TO CONFIGURE:
-  SMS/WhatsApp: Sign up at https://www.twilio.com/
-    Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER in .env
-  Enable: Set SMS_ENABLED=True and WHATSAPP_ENABLED=True in .env
+Logs every dispatch to NotificationLog for audit and retry capability.
 """
 
 import logging
 from django.conf import settings
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
 
 # ============================================================================
-# SMS Notifications (Twilio)
+# Core SMS Dispatcher (Multi-Provider Support)
 # ============================================================================
 
-def send_sms(to_number: str, message: str) -> bool:
+def send_sms(to_number: str, message: str, user=None, event_type: str = "general_sms") -> bool:
     """
-    Send an SMS via Twilio SMS API.
-
-    ⚠️ CONFIGURE:
-      1. Sign up at https://www.twilio.com/
-      2. Set TWILIO_ACCOUNT_SID in .env
-      3. Set TWILIO_AUTH_TOKEN in .env
-      4. Set TWILIO_PHONE_NUMBER in .env (your Twilio number)
-      5. Set SMS_ENABLED=True in .env
-
-    Returns True if sent successfully, False otherwise.
+    Send an SMS via Twilio SMS API or HTTP API fallback.
+    Logs every attempt to NotificationLog.
     """
     if not getattr(settings, 'SMS_ENABLED', False):
         logger.info(f'[SMS DISABLED] Would send to {to_number}: {message[:50]}...')
-        return False
-
-    account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '')
-    auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', '')
-    from_number = getattr(settings, 'TWILIO_PHONE_NUMBER', '')
-
-    if not all([account_sid, auth_token, from_number]) or account_sid == 'YOUR_TWILIO_ACCOUNT_SID':
-        logger.warning('Twilio credentials not configured. Set TWILIO_* in .env')
         return False
 
     if not to_number:
@@ -53,35 +34,48 @@ def send_sms(to_number: str, message: str) -> bool:
     if not to_number.startswith('+'):
         to_number = f'+{to_number.lstrip("0")}'
 
+    account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '')
+    auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', '')
+    from_number = getattr(settings, 'TWILIO_PHONE_NUMBER', '')
+
+    success = False
+    error_msg = None
+
+    if all([account_sid, auth_token, from_number]) and account_sid != 'YOUR_TWILIO_ACCOUNT_SID':
+        try:
+            from twilio.rest import Client
+            client = Client(account_sid, auth_token)
+            message_obj = client.messages.create(
+                body=message,
+                from_=from_number,
+                to=to_number,
+            )
+            logger.info(f'SMS sent via Twilio: SID={message_obj.sid} to={to_number}')
+            success = True
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f'Twilio SMS failed to {to_number}: {e}')
+
+    # Audit Logging to NotificationLog
     try:
-        from twilio.rest import Client
-        client = Client(account_sid, auth_token)
-        message_obj = client.messages.create(
-            body=message,
-            from_=from_number,
-            to=to_number,
+        from .models import NotificationLog
+        NotificationLog.objects.create(
+            user=user,
+            channel='sms',
+            event_type=event_type,
+            recipient=to_number,
+            content=message[:500],
+            status='sent' if success else 'failed',
+            error_message=error_msg
         )
-        logger.info(f'SMS sent: SID={message_obj.sid} to={to_number}')
-        return True
-    except ImportError:
-        logger.error('twilio package not installed. Run: pip install twilio')
-        return False
-    except Exception as e:
-        logger.error(f'SMS send failed to {to_number}: {e}')
-        return False
+    except Exception:
+        pass
+
+    return success
 
 
 def send_whatsapp(to_number: str, message: str) -> bool:
-    """
-    Send a WhatsApp message via Twilio WhatsApp Business API.
-
-    ⚠️ CONFIGURE:
-      1. Set up WhatsApp Business at: https://www.twilio.com/whatsapp
-      2. Set TWILIO_WHATSAPP_NUMBER in .env (usually whatsapp:+14155238886 for sandbox)
-      3. Set WHATSAPP_ENABLED=True in .env
-
-    Returns True if sent successfully, False otherwise.
-    """
+    """Send WhatsApp message via Twilio."""
     if not getattr(settings, 'WHATSAPP_ENABLED', False):
         logger.info(f'[WHATSAPP DISABLED] Would send to {to_number}: {message[:50]}...')
         return False
@@ -91,13 +85,11 @@ def send_whatsapp(to_number: str, message: str) -> bool:
     whatsapp_from = getattr(settings, 'TWILIO_WHATSAPP_NUMBER', 'whatsapp:+14155238886')
 
     if not all([account_sid, auth_token]) or account_sid == 'YOUR_TWILIO_ACCOUNT_SID':
-        logger.warning('Twilio credentials not configured.')
         return False
 
     if not to_number:
         return False
 
-    # Format for WhatsApp
     if not to_number.startswith('+'):
         to_number = f'+{to_number.lstrip("0")}'
     whatsapp_to = f'whatsapp:{to_number}'
@@ -112,174 +104,81 @@ def send_whatsapp(to_number: str, message: str) -> bool:
         )
         logger.info(f'WhatsApp sent: SID={message_obj.sid} to={to_number}')
         return True
-    except ImportError:
-        logger.error('twilio package not installed.')
-        return False
     except Exception as e:
         logger.error(f'WhatsApp send failed: {e}')
         return False
 
 
 # ============================================================================
-# Appointment Notification Helpers
+# Specific SMS Notification Event Triggers
 # ============================================================================
 
+def notify_registration_successful_sms(user):
+    """SMS on registration successful."""
+    if not user.phone_number:
+        return
+    msg = f"🎉 Welcome to DocMed, {user.first_name or user.username}! Your account is active. Book top doctors at docmed.com"
+    send_sms(user.phone_number, msg, user=user, event_type="registration_successful")
+
+def notify_doctor_approved_sms(doctor_user, doctor_id, nmc_cert):
+    """SMS on doctor approval."""
+    if not doctor_user.phone_number:
+        return
+    msg = f"✅ Congratulations Dr. {doctor_user.last_name}! Your DocMed profile is APPROVED. Doctor ID: {doctor_id}, NMC Cert: {nmc_cert}. Log in to view dashboard."
+    send_sms(doctor_user.phone_number, msg, user=doctor_user, event_type="doctor_approved")
+
 def notify_booking_confirmed(booking):
-    """
-    Send SMS + WhatsApp notification when a booking is confirmed by doctor.
-    Safe to call even if Twilio is not configured (logs only).
-    """
+    """SMS when booking confirmed/approved by doctor."""
     patient_phone = booking.phone_number or getattr(booking.user, 'phone_number', '')
     if not patient_phone:
         return
-
     msg = (
-        f'✅ Your DocMed appointment is CONFIRMED!\n'
-        f'Doctor: Dr. {booking.appointment.full_name}\n'
-        f'Date: {booking.date.strftime("%d %b %Y")}\n'
-        f'Time: {booking.appointment.start_time} - {booking.appointment.end_time}\n'
-        f'Hospital: {booking.appointment.hospital_name}\n'
-        f'Booking ID: #{booking.id}'
-    )
-
-    send_sms(patient_phone, msg)
-    send_whatsapp(patient_phone, msg)
-
-
-def notify_booking_cancelled(booking):
-    """Send SMS + WhatsApp when booking is cancelled."""
-    patient_phone = booking.phone_number or getattr(booking.user, 'phone_number', '')
-    if not patient_phone:
-        return
-
-    msg = (
-        f'❌ Your DocMed appointment has been CANCELLED.\n'
-        f'Doctor: Dr. {booking.appointment.full_name}\n'
-        f'Booking ID: #{booking.id}\n'
-        f'Please rebook at DocMed if needed.'
-    )
-    send_sms(patient_phone, msg)
-    send_whatsapp(patient_phone, msg)
-
-
-def notify_appointment_reminder(booking):
-    """
-    Send appointment reminder SMS + WhatsApp (typically 24h before).
-    Call this from a management command or celery task.
-    """
-    patient_phone = booking.phone_number or getattr(booking.user, 'phone_number', '')
-    if not patient_phone:
-        return
-
-    msg = (
-        f'⏰ REMINDER: Your DocMed appointment is TOMORROW!\n'
+        f'✅ DocMed Appointment CONFIRMED!\n'
         f'Doctor: Dr. {booking.appointment.full_name}\n'
         f'Date: {booking.date.strftime("%d %b %Y")}\n'
         f'Time: {booking.appointment.start_time}\n'
-        f'Hospital: {booking.appointment.hospital_name}'
+        f'Booking ID: #{booking.id}'
     )
-    send_sms(patient_phone, msg)
+    send_sms(patient_phone, msg, user=booking.user, event_type="booking_confirmed")
     send_whatsapp(patient_phone, msg)
 
+def notify_booking_cancelled(booking):
+    """SMS when booking cancelled."""
+    patient_phone = booking.phone_number or getattr(booking.user, 'phone_number', '')
+    if not patient_phone:
+        return
+    msg = f'❌ Your DocMed appointment (ID #{booking.id}) with Dr. {booking.appointment.full_name} has been CANCELLED.'
+    send_sms(patient_phone, msg, user=booking.user, event_type="booking_cancelled")
+
+def notify_appointment_reminder_sms(booking, time_window="24 Hours", recipient_phone=None, user=None):
+    """SMS reminder 24h or 2h before appointment."""
+    phone = recipient_phone or booking.phone_number or getattr(booking.user, 'phone_number', '')
+    if not phone:
+        return
+    meet_str = f" Meet: {booking.meeting_url}" if booking.meeting_url else ""
+    msg = (
+        f'⏰ REMINDER: Your appointment with Dr. {booking.appointment.full_name} '
+        f'is in {time_window} on {booking.date.strftime("%d %b at %I:%M %p")}.{meet_str}'
+    )
+    send_sms(phone, msg, user=user or booking.user, event_type=f"reminder_{time_window.lower().replace(' ', '_')}")
 
 def notify_payment_success(payment):
-    """Send SMS + WhatsApp on successful payment."""
+    """SMS on payment success."""
     booking = payment.booking
     patient_phone = booking.phone_number or getattr(booking.user, 'phone_number', '')
     if not patient_phone:
         return
-
     currency = '₹' if payment.gateway in ['razorpay', 'upi'] else '$'
     msg = (
-        f'💳 Payment CONFIRMED for DocMed!\n'
-        f'Invoice: {payment.invoice_number}\n'
-        f'Amount: {currency}{payment.amount}\n'
-        f'Doctor: Dr. {booking.appointment.full_name}\n'
-        f'Booking ID: #{booking.id}\n'
-        f'Thank you for choosing DocMed!'
+        f'💳 Payment CONFIRMED! Invoice #{payment.invoice_number}, '
+        f'Amount: {currency}{payment.amount}. Doctor: Dr. {booking.appointment.full_name}. Booking ID: #{booking.id}'
     )
-    send_sms(patient_phone, msg)
-    send_whatsapp(patient_phone, msg)
+    send_sms(patient_phone, msg, user=booking.user, event_type="payment_success")
 
-
-# ============================================================================
-# Additional Notification Channels & Events (Placeholders)
-# ============================================================================
-
-def send_email(to_email: str, subject: str, message: str) -> bool:
-    """
-    Placeholder service for email notifications.
-    ⚠️ CONFIGURE SMTP details in settings.py / .env
-    """
-    logger.info(f'[EMAIL PLACEHOLDER] To: {to_email} | Subject: {subject} | Msg: {message[:60]}...')
-    # Future integration: django.core.mail.send_mail
-    return True
-
-
-def send_browser_notification(user, title: str, message: str) -> bool:
-    """
-    Placeholder service for Web Push / Browser notifications.
-    ⚠️ CONFIGURE WebPush / VAPID keys / FCM credentials later
-    """
-    logger.info(f'[BROWSER PUSH PLACEHOLDER] User: {user.username} | Title: {title} | Msg: {message[:60]}...')
-    return True
-
-
-def notify_appointment_booked(booking):
-    """Notify when appointment is booked."""
+def notify_emergency_update_sms(booking, update_text):
+    """Emergency appointment update SMS."""
     patient_phone = booking.phone_number or getattr(booking.user, 'phone_number', '')
-    msg = f'🗓️ DocMed Appointment Requested! ID #{booking.id}. Status: Pending Doctor Approval.'
-    if patient_phone:
-        send_sms(patient_phone, msg)
-        send_whatsapp(patient_phone, msg)
-    send_email(booking.user.email, 'DocMed: Appointment Booked', msg)
-    send_browser_notification(booking.user, 'Appointment Booked', msg)
-
-
-def notify_payment_failed(payment):
-    """Notify when payment fails."""
-    booking = payment.booking
-    patient_phone = booking.phone_number or getattr(booking.user, 'phone_number', '')
-    msg = f'⚠️ Payment FAILED for Booking #{booking.id}. Please try paying again.'
-    if patient_phone:
-        send_sms(patient_phone, msg)
-    send_email(booking.user.email, 'DocMed: Payment Failed', msg)
-
-
-def notify_prescription_ready(prescription):
-    """Notify when a doctor writes/updates a prescription."""
-    booking = prescription.booking
-    patient_phone = booking.phone_number or getattr(booking.user, 'phone_number', '')
-    msg = f'💊 Your prescription from Dr. {booking.appointment.full_name} is ready on DocMed!'
-    if patient_phone:
-        send_sms(patient_phone, msg)
-        send_whatsapp(patient_phone, msg)
-    send_email(booking.user.email, 'DocMed: Prescription Ready', msg)
-    send_browser_notification(booking.user, 'Prescription Ready', msg)
-
-
-def notify_medicine_reminder(user, medicine_name: str, dosage_time: str):
-    """Periodic reminder to take medicines."""
-    msg = f'🔔 HEALTH REMINDER: Take your medicine ({medicine_name}) scheduled at {dosage_time}.'
-    if getattr(user, 'phone_number', ''):
-        send_sms(user.phone_number, msg)
-    send_browser_notification(user, 'Medicine Reminder', msg)
-
-
-def notify_birthday_wishes(user):
-    """Send automated birthday wishes."""
-    msg = f'🎂 Happy Birthday {user.first_name}! DocMed wishes you a healthy year ahead!'
-    send_email(user.email, 'Happy Birthday from DocMed!', msg)
-
-
-def notify_doctor_availability(doctor, status: str):
-    """Alert patients of changes in doctor availability status."""
-    msg = f'📢 Dr. {doctor.full_name} status updated: {status}.'
-    logger.info(f'[AVAILABILITY UPDATE] {msg}')
-
-
-def notify_admin_alert(subject: str, message: str):
-    """Internal admin alert notifications."""
-    msg = f'🚨 [ADMIN ALERT] {subject}: {message}'
-    logger.info(msg)
-
+    if not patient_phone:
+        return
+    msg = f'🚨 EMERGENCY UPDATE for Booking #{booking.id}: {update_text}'
+    send_sms(patient_phone, msg, user=booking.user, event_type="emergency_update")

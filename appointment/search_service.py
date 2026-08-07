@@ -28,6 +28,38 @@ class SearchService:
         c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
         return 6371.0 * c # Earth radius is ~6371 km
 
+    @staticmethod
+    def get_travel_distance_osrm(lat1, lon1, lat2, lon2):
+        """
+        Calculates driving route distance (km) and estimated duration (mins)
+        between two coordinates using the free OSRM (Open Source Routing Machine) API.
+        Falls back to Haversine distance if OSRM service is offline.
+        """
+        if None in (lat1, lon1, lat2, lon2):
+            return None, None
+        try:
+            import requests as req
+            url = f"https://router.project-osrm.org/route/v1/driving/{lon1},{lat1};{lon2},{lat2}?overview=false"
+            res = req.get(url, timeout=3)
+            if res.status_code == 200:
+                data = res.json()
+                if data.get('routes'):
+                    route = data['routes'][0]
+                    dist_km = round(route['distance'] / 1000.0, 1)
+                    duration_min = math.ceil(route['duration'] / 60.0)
+                    return dist_km, duration_min
+        except Exception:
+            pass
+
+        # Fallback to straight-line Haversine distance
+        haversine_dist = SearchService.calculate_distance(lat1, lon1, lat2, lon2)
+        if haversine_dist is not None:
+            # Estimate driving time assuming ~30 km/h average city speed
+            est_duration = math.ceil((haversine_dist / 30.0) * 60)
+            return round(haversine_dist, 1), est_duration
+
+        return None, None
+
     @classmethod
     def get_nearby_doctor_ids(cls, ref_lat, ref_lng, max_dist_km=50):
         """Returns doctor user_ids within max_dist_km of reference coordinates."""

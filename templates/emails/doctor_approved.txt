@@ -1,0 +1,23 @@
+DocMed AI Healthcare System — Registration Approved & Verified
+
+Congratulations, Dr. {{ doctor_name }}!
+
+We are pleased to inform you that your registration with DocMed AI Healthcare System has been officially reviewed and APPROVED by the administration team.
+
+Official Credentials & Verification Details:
+---------------------------------------------
+- Doctor ID: {{ doctor_id }}
+- NMC Certificate No: {{ nmc_certificate_number }}
+- NMC Registration No: {{ nmc_registration_number }}
+- State Medical Council: {{ state_medical_council }}
+- Verification Status: VERIFIED
+
+Your doctor dashboard is now fully unlocked. You are visible in doctor searches and can start accepting patient appointments immediately.
+
+Login to your dashboard: {{ login_url }}
+
+If you have any questions, please contact our support team at {{ support_email }}.
+
+Regards,
+DocMed Administration Team
+{{ system_name }}

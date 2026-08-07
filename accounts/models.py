@@ -64,6 +64,14 @@ class User(AbstractUser):
             'unique': 'A user with that phone number already exists.',
         },
     )
+    # Firebase Cloud Messaging device token for push notifications
+    # Updated via /api/save-fcm-token/ on each page load
+    fcm_token = models.CharField(
+        max_length=512,
+        blank=True,
+        null=True,
+        help_text='Firebase Cloud Messaging device/browser token for push notifications.',
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
