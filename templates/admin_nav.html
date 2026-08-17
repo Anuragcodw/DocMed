@@ -24,15 +24,15 @@
                     <ul class="navbar-nav mx-auto" style="gap: 15px;">
                         
                         <!-- Dashboard -->
-                        <li class="nav-item {% if request.resolver_match.url_name == 'admin-dashboard' %}active{% endif %}">
-                            <a class="nav-link font-weight-bold admin-nav-link" href="{% url 'appointment:admin-dashboard' %}">
+                        <li class="nav-item {% if request.resolver_match.url_name == 'admin-dashboard' %}active{% endif %}" id="nav-item-dashboard">
+                            <a class="nav-link font-weight-bold admin-nav-link" href="{% url 'appointment:admin-dashboard' %}#welcome-banner-section">
                                 <i class="fa fa-dashboard text-warning mr-1"></i> Dashboard
                             </a>
                         </li>
 
                         <!-- Doctors Dropdown -->
-                        <li class="nav-item dropdown {% if 'doctor' in request.resolver_match.url_name %}active{% endif %}">
-                            <a class="nav-link dropdown-toggle font-weight-bold admin-nav-link" href="#" id="adminDoctorsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <li class="nav-item dropdown {% if 'doctor' in request.resolver_match.url_name %}active{% endif %}" id="nav-item-doctors">
+                            <a class="nav-link dropdown-toggle font-weight-bold admin-nav-link" href="{% url 'appointment:admin-dashboard' %}#doctors-section" id="adminDoctorsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fa fa-user-md text-info mr-1"></i> Doctors
                             </a>
                             <div class="dropdown-menu admin-dropdown-menu p-2" aria-labelledby="adminDoctorsDropdown" style="min-width: 270px; background: rgba(30, 41, 59, 0.98); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
@@ -56,37 +56,37 @@
                         </li>
 
                         <!-- Patients -->
-                        <li class="nav-item {% if request.resolver_match.url_name == 'patient-list' %}active{% endif %}">
-                            <a class="nav-link font-weight-bold admin-nav-link" href="{% url 'appointment:patient-list' %}">
+                        <li class="nav-item {% if request.resolver_match.url_name == 'patient-list' %}active{% endif %}" id="nav-item-patients">
+                            <a class="nav-link font-weight-bold admin-nav-link" href="{% url 'appointment:admin-dashboard' %}#patients-section">
                                 <i class="fa fa-users text-primary mr-1"></i> Patients
                             </a>
                         </li>
 
                         <!-- Appointments -->
-                        <li class="nav-item">
+                        <li class="nav-item" id="nav-item-appointments">
                             <a class="nav-link font-weight-bold admin-nav-link" href="{% url 'appointment:admin-dashboard' %}#appointments-section">
                                 <i class="fa fa-calendar text-success mr-1"></i> Appointments
                             </a>
                         </li>
 
                         <!-- Payments -->
-                        <li class="nav-item {% if request.resolver_match.url_name == 'payment-history' %}active{% endif %}">
-                            <a class="nav-link font-weight-bold admin-nav-link" href="{% url 'appointment:payment-history' %}">
+                        <li class="nav-item {% if request.resolver_match.url_name == 'payment-history' %}active{% endif %}" id="nav-item-payments">
+                            <a class="nav-link font-weight-bold admin-nav-link" href="{% url 'appointment:admin-dashboard' %}#payments-section">
                                 <i class="fa fa-credit-card text-warning mr-1"></i> Payments
                             </a>
                         </li>
 
                         <!-- Reports & Analytics -->
-                        <li class="nav-item {% if request.resolver_match.url_name == 'report-center' %}active{% endif %}">
-                            <a class="nav-link font-weight-bold admin-nav-link" href="{% url 'appointment:report-center' %}">
+                        <li class="nav-item {% if request.resolver_match.url_name == 'report-center' %}active{% endif %}" id="nav-item-reports">
+                            <a class="nav-link font-weight-bold admin-nav-link" href="{% url 'appointment:admin-dashboard' %}#reports-section">
                                 <i class="fa fa-bar-chart text-cyan mr-1" style="color:#06b6d4;"></i> Reports
                             </a>
                         </li>
 
-                        <!-- System Settings (Django Admin) -->
-                        <li class="nav-item">
-                            <a class="nav-link font-weight-bold admin-nav-link" href="/admin/" target="_blank">
-                                <i class="fa fa-cogs text-secondary mr-1" style="color:#94a3b8 !important;"></i> System Settings
+                        <!-- System Settings -->
+                        <li class="nav-item" id="nav-item-settings">
+                            <a class="nav-link font-weight-bold admin-nav-link" href="{% url 'appointment:admin-dashboard' %}#settings-section">
+                                <i class="fa fa-cogs text-secondary mr-1" style="color:#94a3b8 !important;"></i> Settings
                             </a>
                         </li>
                     </ul>
@@ -121,12 +121,10 @@
                             </div>
                         </div>
 
-                        <!-- Admin Profile Badge -->
+                        <!-- Profile Dropdown -->
                         <div class="dropdown">
-                            <button class="btn border-0 p-0 d-flex align-items-center dropdown-toggle" type="button" id="adminProfileDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background: none;">
-                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; font-weight: bold; border: 2px solid rgba(255,255,255,0.4);">
-                                    <i class="fa fa-user-secret"></i>
-                                </div>
+                            <button class="btn btn-dark dropdown-toggle d-flex align-items-center border-0 px-3 py-2" id="adminProfileDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background: rgba(255, 255, 255, 0.1) !important; border-radius: 50px; border: 1px solid rgba(255,255,255,0.2) !important;">
+                                <div class="rounded-circle bg-warning text-dark font-weight-bold d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 12px;">A</div>
                                 <span class="ml-2 font-weight-bold text-white d-none d-md-inline" style="font-size: 14px;">Admin</span>
                             </button>
                             <div class="dropdown-menu dropdown-menu-right p-2" aria-labelledby="adminProfileDropdown" style="min-width: 200px; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 14px;">
@@ -172,3 +170,42 @@
     color: #ffffff !important;
 }
 </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var adminLinks = document.querySelectorAll('.admin-nav-link, .admin-drop-item');
+    var navbarHeight = 95;
+
+    adminLinks.forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        var href = this.getAttribute('href');
+        if (href && href.indexOf('#') !== -1) {
+          var targetId = href.substring(href.indexOf('#'));
+          var targetEl = document.querySelector(targetId);
+          if (targetEl) {
+            e.preventDefault();
+            var targetPosition = targetEl.getBoundingClientRect().top + window.pageYOffset - navbarHeight;
+            window.scrollTo({
+              top: targetPosition,
+              behavior: 'smooth'
+            });
+            if (history.pushState) {
+              history.pushState(null, null, targetId);
+            }
+          }
+        }
+      });
+    });
+
+    // Auto-scroll if page was opened with hash (e.g. /admin-dashboard/#doctors-section)
+    if (window.location.hash) {
+      var hashTarget = document.querySelector(window.location.hash);
+      if (hashTarget) {
+        setTimeout(function() {
+          var pos = hashTarget.getBoundingClientRect().top + window.pageYOffset - navbarHeight;
+          window.scrollTo({ top: pos, behavior: 'smooth' });
+        }, 300);
+      }
+    }
+  });
+</script>

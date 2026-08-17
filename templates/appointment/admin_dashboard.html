@@ -4,228 +4,494 @@
 {% block title %}Admin Dashboard - DocMed Premium{% endblock %}
 
 {% block styles %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
+  /* ============================================================
+     DOCMED ADMIN DASHBOARD — PROFESSIONAL DESIGN SYSTEM v2
+     ============================================================ */
+
   :root {
-    --dash-bg: rgba(255, 255, 255, 0.75);
-    --dash-border: rgba(255, 255, 255, 0.45);
-    --dash-shadow: 0 10px 40px rgba(99, 102, 241, 0.12);
+    --dash-bg: rgba(255, 255, 255, 0.82);
+    --dash-border: rgba(226, 232, 240, 0.8);
+    --dash-shadow: 0 4px 24px rgba(15, 23, 42, 0.07);
+    --dash-hover-shadow: 0 12px 40px rgba(15, 23, 42, 0.13);
+    --radius-card: 18px;
+    --radius-sm: 12px;
+    --font-base: 'Inter', 'Segoe UI', system-ui, sans-serif;
+
+    /* DocMed Color Palette */
+    --c-blue:   #3b82f6;
+    --c-blue-light: #dbeafe;
+    --c-orange: #f59e0b;
+    --c-orange-light: #fef3c7;
+    --c-purple: #8b5cf6;
+    --c-purple-light: #ede9fe;
+    --c-green:  #10b981;
+    --c-green-light: #d1fae5;
+    --c-pink:   #ec4899;
+    --c-pink-light: #fce7f3;
+    --c-cyan:   #14b8a6;
+    --c-cyan-light: #ccfbf1;
   }
-  
+
+  * { font-family: var(--font-base); }
+
   body {
-    background: #f1f5f9;
+    background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 50%, #f0fdf4 100%);
+    min-height: 100vh;
     position: relative;
     overflow-x: hidden;
   }
 
-  /* Glassmorphism Panel */
+  /* ============================================================
+     ANIMATED GRADIENT BORDER KEYFRAMES
+     ============================================================ */
+  @keyframes gradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: var(--dash-shadow); }
+    50%       { box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15); }
+  }
+
+  @keyframes floatUp {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-4px); }
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes shimmer {
+    0%   { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+
+  @keyframes floatBlob {
+    0%   { transform: translate(0, 0) scale(1); }
+    50%  { transform: translate(50px, 30px) scale(1.1); }
+    100% { transform: translate(-30px, 50px) scale(0.92); }
+  }
+
+  @keyframes drawLine {
+    from { stroke-dashoffset: 1000; }
+    to   { stroke-dashoffset: 0; }
+  }
+
+  /* ============================================================
+     GLASSMORPHISM PANEL — BASE CARD
+     ============================================================ */
   .dash-panel {
     background: var(--dash-bg) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
+    backdrop-filter: blur(18px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
     border: 1px solid var(--dash-border) !important;
     box-shadow: var(--dash-shadow) !important;
-    border-radius: 20px;
+    border-radius: var(--radius-card);
     padding: 24px;
     margin-bottom: 24px;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+    transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 240ms ease,
+                border-color 240ms ease;
     position: relative;
     z-index: 2;
+    animation: fadeInUp 0.45s ease both;
   }
+
   .dash-panel:hover {
-    transform: translateY(-6px) scale(1.005);
-    box-shadow: 0 15px 45px rgba(99, 102, 241, 0.18) !important;
-    border-color: rgba(99, 102, 241, 0.35) !important;
+    transform: translateY(-4px);
+    box-shadow: var(--dash-hover-shadow) !important;
+    border-color: rgba(99, 102, 241, 0.28) !important;
   }
-  
-  /* Gradient Border/Bar Accents for Stat Cards */
+
+  /* ============================================================
+     STAT CARDS — ANIMATED GRADIENT TOP BAR
+     ============================================================ */
   .stat-card-gradient {
     position: relative;
     overflow: hidden;
-    padding-top: 28px !important;
+    padding-top: 30px !important;
+    min-height: 155px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
+
   .stat-card-gradient::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 4px;
-    border-radius: 20px 20px 0 0;
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+    background-size: 200% 200%;
+    animation: gradientShift 5s ease infinite;
     z-index: 3;
   }
-  .card-blue::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
-  .card-orange::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-  .card-purple::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
-  .card-green::before { background: linear-gradient(90deg, #10b981, #34d399); }
-  .card-pink::before { background: linear-gradient(90deg, #ec4899, #f472b6); }
-  .card-cyan::before { background: linear-gradient(90deg, #14b8a6, #2dd4bf); }
 
-  .stat-value {
-    font-size: 32px;
-    font-weight: 800;
-    line-height: 1.2;
-    margin-bottom: 6px;
-    display: inline-block;
+  /* Coloured top-bar per card theme */
+  .card-blue::before   { background: linear-gradient(90deg, #3b82f6, #60a5fa, #2563eb, #3b82f6); }
+  .card-orange::before { background: linear-gradient(90deg, #f59e0b, #fbbf24, #d97706, #f59e0b); }
+  .card-purple::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa, #7c3aed, #8b5cf6); }
+  .card-green::before  { background: linear-gradient(90deg, #10b981, #34d399, #059669, #10b981); }
+  .card-pink::before   { background: linear-gradient(90deg, #ec4899, #f472b6, #db2777, #ec4899); }
+  .card-cyan::before   { background: linear-gradient(90deg, #14b8a6, #2dd4bf, #0d9488, #14b8a6); }
+
+  /* Subtle corner icon background tint */
+  .stat-card-gradient::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; right: -20px;
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    opacity: 0.06;
+    z-index: 1;
   }
-  .val-blue { color: #3b82f6; }
-  .val-orange { color: #f59e0b; }
-  .val-purple { color: #8b5cf6; }
-  .val-green { color: #10b981; }
-  .val-pink { color: #ec4899; }
-  .val-cyan { color: #14b8a6; }
-  
+  .card-blue::after   { background: var(--c-blue); }
+  .card-orange::after { background: var(--c-orange); }
+  .card-purple::after { background: var(--c-purple); }
+  .card-green::after  { background: var(--c-green); }
+  .card-pink::after   { background: var(--c-pink); }
+  .card-cyan::after   { background: var(--c-cyan); }
+
+  /* ============================================================
+     STAT CARD TYPOGRAPHY & ICON
+     ============================================================ */
+  .stat-value {
+    font-size: 34px;
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 4px;
+    display: inline-block;
+    letter-spacing: -0.5px;
+    z-index: 2;
+    position: relative;
+  }
+
   .stat-label {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.8px;
     color: #64748b;
-    letter-spacing: 0.5px;
     display: block;
+    z-index: 2;
+    position: relative;
   }
+
+  /* Icon Container */
+  .stat-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px auto;
+    z-index: 2;
+    position: relative;
+    transition: transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .card-blue   .stat-icon-wrap { background: var(--c-blue-light); }
+  .card-orange .stat-icon-wrap { background: var(--c-orange-light); }
+  .card-purple .stat-icon-wrap { background: var(--c-purple-light); }
+  .card-green  .stat-icon-wrap { background: var(--c-green-light); }
+  .card-pink   .stat-icon-wrap { background: var(--c-pink-light); }
+  .card-cyan   .stat-icon-wrap { background: var(--c-cyan-light); }
 
   .stat-icon {
-    font-size: 26px;
-    margin-bottom: 8px;
-    opacity: 0.85;
-    transition: transform 0.3s ease;
-  }
-  .dash-panel:hover .stat-icon {
-    transform: scale(1.18) rotate(5deg);
+    font-size: 22px;
+    opacity: 1;
+    transition: transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: inline-block;
   }
 
-  /* Floating Header & Filters */
+  .stat-card-gradient:hover .stat-icon-wrap { transform: scale(1.12) translateY(-2px); }
+  .card-blue:hover   .stat-icon-wrap { transform: scale(1.12) rotate(5deg); }
+  .card-orange:hover .stat-icon-wrap { transform: scale(1.12) translateY(-3px); }
+  .card-green:hover  .stat-icon-wrap { transform: scale(1.12) rotate(-5deg); }
+  .card-purple:hover .stat-icon-wrap { transform: scale(1.12) translateY(-2px); }
+  .card-pink:hover   .stat-icon-wrap { transform: scale(1.12) rotate(4deg); }
+  .card-cyan:hover   .stat-icon-wrap { transform: scale(1.12) rotate(-4deg); }
+
+  /* Value colours */
+  .val-blue   { color: var(--c-blue); }
+  .val-orange { color: var(--c-orange); }
+  .val-purple { color: var(--c-purple); }
+  .val-green  { color: var(--c-green); }
+  .val-pink   { color: var(--c-pink); }
+  .val-cyan   { color: var(--c-cyan); }
+
+  /* ============================================================
+     ANALYTICS HEADER (FLOATING STICKY BAR)
+     ============================================================ */
   .floating-header {
     position: sticky;
     top: 90px;
     z-index: 100;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    padding: 15px 24px;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    margin-bottom: 30px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    padding: 14px 22px;
+    border-radius: var(--radius-card);
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08), 0 1px 0 rgba(255,255,255,0.5) inset;
+    margin-bottom: 28px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid rgba(255,255,255,0.4);
-    transition: all 0.3s ease;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    transition: box-shadow 240ms ease;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .floating-header:hover {
+    box-shadow: 0 6px 28px rgba(15, 23, 42, 0.12), 0 1px 0 rgba(255,255,255,0.5) inset;
+  }
+  .floating-header h4 {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
   }
 
-  /* Custom styled selects and buttons in header */
+  /* ============================================================
+     FILTER DROPDOWN
+     ============================================================ */
   .header-filter-select {
-    height: 48px !important;
-    width: 180px !important;
-    border-radius: 16px !important;
-    padding: 12px 18px !important;
-    font-size: 15px !important;
-    border: 1px solid rgba(79, 70, 229, 0.15) !important;
-    background-color: rgba(255, 255, 255, 0.9) !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.02) !important;
+    height: 42px !important;
+    width: 175px !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 0 16px !important;
+    font-size: 14px !important;
     font-weight: 600 !important;
+    border: 1.5px solid rgba(99, 102, 241, 0.18) !important;
+    background: white !important;
     color: #1e293b !important;
-    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+    transition: border-color 200ms ease, box-shadow 200ms ease !important;
     cursor: pointer !important;
+    appearance: auto;
   }
-  .header-filter-select:hover, .header-filter-select:focus {
-    border-color: #4f46e5 !important;
-    outline: none !important;
-    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.1) !important;
+  .header-filter-select:hover,
+  .header-filter-select:focus {
+    border-color: #6366f1 !important;
+    outline: 2px solid rgba(99, 102, 241, 0.18) !important;
+    outline-offset: 1px !important;
+    box-shadow: 0 2px 12px rgba(99, 102, 241, 0.12) !important;
   }
 
+  /* ============================================================
+     EXPORT CSV / PRINT BUTTONS
+     ============================================================ */
   .header-btn {
-    height: 48px !important;
-    border-radius: 16px !important;
-    padding: 12px 18px !important;
-    font-size: 15px !important;
+    height: 42px !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 0 18px !important;
+    font-size: 13px !important;
     font-weight: 700 !important;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    transition: transform 200ms ease, box-shadow 200ms ease !important;
     border: none !important;
     cursor: pointer !important;
+    letter-spacing: 0.2px;
+  }
+  .header-btn:focus-visible {
+    outline: 3px solid rgba(99, 102, 241, 0.4) !important;
+    outline-offset: 2px !important;
   }
   .header-btn-csv {
     background: linear-gradient(135deg, #10b981, #059669) !important;
     color: white !important;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+    box-shadow: 0 3px 10px rgba(16, 185, 129, 0.22) !important;
   }
   .header-btn-csv:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.32) !important;
+    color: white !important;
   }
   .header-btn-print {
     background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
     color: white !important;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2) !important;
+    box-shadow: 0 3px 10px rgba(59, 130, 246, 0.22) !important;
   }
   .header-btn-print:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.3) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.32) !important;
+    color: white !important;
   }
 
+  /* ============================================================
+     CHART CARD CONTAINERS
+     ============================================================ */
+  .chart-card-container {
+    height: 360px !important;
+    max-height: 380px !important;
+    overflow: hidden !important;
+    padding: 22px 22px 16px !important;
+    display: flex;
+    flex-direction: column;
+  }
+  .chart-card-container h6 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.1px;
+    margin-bottom: 2px;
+    flex-shrink: 0;
+  }
+  .chart-subtitle {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 500;
+    margin-bottom: 14px;
+    flex-shrink: 0;
+  }
+  .chart-canvas-wrapper {
+    flex: 1;
+    position: relative !important;
+    width: 100% !important;
+    min-height: 0;
+  }
+  .chart-canvas-wrapper canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Empty / Error state inside chart containers */
+  .chart-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #94a3b8;
+    gap: 8px;
+  }
+  .chart-empty-state i { font-size: 32px; opacity: 0.4; }
+  .chart-empty-state p { font-size: 13px; font-weight: 500; margin: 0; text-align: center; }
+
+  /* ============================================================
+     TIMELINE ACTIVITY
+     ============================================================ */
   .timeline {
     position: relative;
-    padding-left: 30px;
+    padding-left: 32px;
   }
   .timeline::before {
     content: '';
     position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
+    left: 10px; top: 0; bottom: 0;
     width: 2px;
-    background: rgba(0,0,0,0.1);
+    background: linear-gradient(to bottom, #e2e8f0, rgba(226,232,240,0));
+    border-radius: 2px;
   }
   .timeline-item {
     position: relative;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
   .timeline-icon {
     position: absolute;
     left: -38px;
-    top: 0;
-    width: 28px;
-    height: 28px;
+    top: 2px;
+    width: 26px; height: 26px;
     border-radius: 50%;
-    background: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    font-size: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    font-size: 11px;
     color: white;
+    flex-shrink: 0;
   }
 
+  /* ============================================================
+     PROGRESS BARS
+     ============================================================ */
   .progress-thin {
     height: 6px;
-    border-radius: 3px;
+    border-radius: 6px;
     background: rgba(0,0,0,0.05);
+    overflow: hidden;
+  }
+  .progress-thin .progress-bar {
+    border-radius: 6px;
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* Graph Layout Controls */
-  .chart-card-container {
-    height: 350px !important;
-    max-height: 400px !important;
-    overflow: hidden !important;
-    padding: 20px !important;
+  /* ============================================================
+     TABLE IMPROVEMENTS
+     ============================================================ */
+  .dash-panel .table {
+    border-collapse: separate;
+    border-spacing: 0;
   }
-  .chart-canvas-wrapper {
-    height: 270px !important;
-    position: relative !important;
-    width: 100% !important;
+  .dash-panel .table thead th {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: #94a3b8;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    background: transparent;
+    white-space: nowrap;
   }
-  .chart-canvas-wrapper canvas {
-    width: 100% !important;
-    height: 270px !important;
+  .dash-panel .table tbody tr {
+    transition: background 160ms ease;
+  }
+  .dash-panel .table tbody tr:hover {
+    background: rgba(99, 102, 241, 0.04);
+  }
+  .dash-panel .table tbody td {
+    padding: 12px 14px;
+    font-size: 13px;
+    border-top: 1px solid #f8fafc;
+    vertical-align: middle;
+  }
+  .dash-panel .table tbody tr:first-child td { border-top: none; }
+
+  /* ============================================================
+     SKELETON LOADER
+     ============================================================ */
+  .skeleton-card {
+    border-radius: var(--radius-card);
+    background: #f1f5f9;
+    background: linear-gradient(
+      90deg,
+      #f1f5f9 0px, #e9edf3 40%, #f1f5f9 80%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 1.8s infinite linear;
+    min-height: 150px;
+    margin-bottom: 24px;
+  }
+  .skeleton-chart {
+    border-radius: var(--radius-card);
+    background: linear-gradient(
+      90deg,
+      #f1f5f9 0px, #e9edf3 40%, #f1f5f9 80%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 1.8s infinite linear;
+    height: 360px;
+    margin-bottom: 24px;
   }
 
-  /* Floating Background Circles styling */
+  /* ============================================================
+     FLOATING BACKGROUND BLOBS
+     ============================================================ */
   .floating-blobs {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     overflow: hidden;
     z-index: 0;
     pointer-events: none;
@@ -233,59 +499,57 @@
   .f-blob {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.12;
-    animation: floatBlob 20s infinite ease-in-out alternate;
+    filter: blur(90px);
+    opacity: 0.09;
+    animation: floatBlob 22s infinite ease-in-out alternate;
   }
-  .f-blob-blue {
-    width: 300px;
-    height: 300px;
-    background: #3b82f6;
-    top: 15%;
-    left: 10%;
-  }
-  .f-blob-purple {
-    width: 400px;
-    height: 400px;
-    background: #8b5cf6;
-    bottom: 10%;
-    right: 15%;
-    animation-delay: -5s;
-  }
-  .f-blob-cyan {
-    width: 350px;
-    height: 350px;
-    background: #06b6d4;
-    top: 60%;
-    left: 45%;
-    animation-delay: -10s;
-  }
-  @keyframes floatBlob {
-    0% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(60px, 40px) scale(1.15); }
-    100% { transform: translate(-40px, 60px) scale(0.9); }
-  }
+  .f-blob-blue   { width: 320px; height: 320px; background: #3b82f6; top: 12%; left: 8%; }
+  .f-blob-purple { width: 380px; height: 380px; background: #8b5cf6; bottom: 12%; right: 12%; animation-delay: -6s; }
+  .f-blob-cyan   { width: 300px; height: 300px; background: #06b6d4; top: 55%; left: 42%; animation-delay: -11s; }
 
-  /* Print Styles - hide unnecessary overlays, print ONLY dashboard contents */
+  /* ============================================================
+     SECTION HEADING CHIPS
+     ============================================================ */
+  .section-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .chip-blue   { background: var(--c-blue-light);   color: #1d4ed8; }
+  .chip-green  { background: var(--c-green-light);  color: #065f46; }
+  .chip-orange { background: var(--c-orange-light); color: #92400e; }
+  .chip-purple { background: var(--c-purple-light); color: #5b21b6; }
+
+  /* ============================================================
+     BADGE IMPROVEMENTS
+     ============================================================ */
+  .badge-pill-soft {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+  .badge-pill-soft.success { background: var(--c-green-light);  color: #065f46; }
+  .badge-pill-soft.warning { background: var(--c-orange-light); color: #92400e; }
+  .badge-pill-soft.danger  { background: var(--c-pink-light);   color: #9d174d; }
+  .badge-pill-soft.info    { background: var(--c-blue-light);   color: #1d4ed8; }
+  .badge-pill-soft.default { background: #f1f5f9;               color: #64748b; }
+
+  /* ============================================================
+     PRINT STYLES
+     ============================================================ */
   @media print {
-    sidebar,
-    navbar,
-    chatbot,
-    buttons,
-    .navbar,
-    .glass-nav,
-    .header-area,
-    footer,
-    .footer-area,
-    .ai-chat-widget,
-    .ai-chat-toggle,
-    #aiChatToggle,
-    #aiChatWindow,
-    .btn,
-    button,
-    form,
-    a[href],
-    .floating-header {
+    sidebar, navbar, chatbot, buttons,
+    .navbar, .glass-nav, .header-area, footer, .footer-area,
+    .ai-chat-widget, .ai-chat-toggle, #aiChatToggle, #aiChatWindow,
+    .btn, button, form, a[href], .floating-header, .floating-blobs {
       display: none !important;
     }
     body, html, section {
@@ -299,15 +563,37 @@
       border: 1px solid #cbd5e1 !important;
       background: white !important;
       backdrop-filter: none !important;
+      animation: none !important;
     }
+  }
+
+  /* ============================================================
+     ACCESSIBILITY — PREFERS REDUCED MOTION
+     ============================================================ */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  /* ============================================================
+     RESPONSIVE TWEAKS
+     ============================================================ */
+  @media (max-width: 768px) {
+    .stat-value { font-size: 26px; }
+    .chart-card-container { height: 300px !important; max-height: 320px !important; }
+    .floating-header { top: 75px; padding: 12px 16px; }
   }
 </style>
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 {% endblock %}
 
 {% block content %}
-<section style="padding-top: 130px; min-height: 90vh; background: #f8fafc; position: relative;">
+<section style="padding-top: 130px; min-height: 90vh; background: transparent; position: relative;">
   
   <!-- Floating Background Blobs -->
   <div class="floating-blobs">
@@ -318,6 +604,24 @@
 
   <div class="container-fluid px-4 px-lg-5" style="position: relative; z-index: 2;">
     
+    <!-- Professional Admin Welcome Banner -->
+    <div class="dash-panel welcome-banner mb-4" id="welcome-banner-section" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.98)) !important; border: 1px solid rgba(245, 158, 11, 0.35) !important; color: white; padding: 20px 28px; box-shadow: 0 12px 35px rgba(0,0,0,0.3) !important;">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center" style="gap: 15px;">
+        <div>
+          <div class="d-flex align-items-center mb-1" style="gap: 10px;">
+            <h4 class="m-0 font-weight-bold" style="color: #ffffff; font-size: 22px;">Welcome Back, Admin 👋</h4>
+            <span class="badge badge-warning text-uppercase px-2 py-1" style="font-size: 10px; font-weight: 800; border-radius: 6px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;">System Admin</span>
+          </div>
+          <p class="m-0 text-muted small" style="color: #cbd5e1 !important; font-size: 13px;">DocMed — Smart Healthcare Management Platform</p>
+        </div>
+        <div class="d-flex align-items-center" style="gap: 10px;">
+          <button id="btnPlayAdminWelcomeVoice" class="btn btn-sm text-dark font-weight-bold px-3 py-2" style="background: linear-gradient(135deg, #f59e0b, #fbbf24); border-radius: 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); border: none; cursor: pointer;">
+            <i class="fa fa-volume-up" id="adminVoiceIcon"></i> <span id="adminVoiceLabel">Welcome Voice</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Floating Header & Filters -->
     <div class="floating-header" data-aos="fade-down">
       <div>
@@ -347,150 +651,169 @@
     </div>
 
     <!-- Top Statistics Grid -->
-    <div class="row mb-4">
+    <div class="row mb-4" id="dashboard-section">
       <!-- Patients Card -->
       <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="50">
-        <div class="dash-panel stat-card-gradient card-blue text-center p-4">
-          <div class="stat-icon"><i class="fa fa-users val-blue"></i></div>
+        <div class="dash-panel stat-card-gradient card-blue text-center p-4" role="region" aria-label="Total Patients">
+          <div class="stat-icon-wrap"><i class="fa fa-users val-blue stat-icon"></i></div>
           <div class="stat-value val-blue" id="stat-total-patients" data-val="{{ stats.total_patients }}">0</div>
           <div class="stat-label">Total Patients</div>
         </div>
       </div>
       <!-- Registered Doctors Card -->
       <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="100">
-        <div class="dash-panel stat-card-gradient card-orange text-center p-4">
-          <div class="stat-icon"><i class="fa fa-user-md val-orange"></i></div>
+        <div class="dash-panel stat-card-gradient card-orange text-center p-4" role="region" aria-label="Registered Doctors">
+          <div class="stat-icon-wrap"><i class="fa fa-user-md val-orange stat-icon"></i></div>
           <div class="stat-value val-orange" id="stat-total-doctors" data-val="{{ stats.total_doctors }}">0</div>
           <div class="stat-label">Registered Doctors</div>
         </div>
       </div>
       <!-- Active Doctors Card -->
       <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="150">
-        <div class="dash-panel stat-card-gradient card-green text-center p-4">
-          <div class="stat-icon"><i class="fa fa-check-circle val-green"></i></div>
+        <div class="dash-panel stat-card-gradient card-green text-center p-4" role="region" aria-label="Active Doctors">
+          <div class="stat-icon-wrap"><i class="fa fa-check-circle val-green stat-icon"></i></div>
           <div class="stat-value val-green" id="stat-active-doctors" data-val="{{ stats.active_doctors }}">0</div>
           <div class="stat-label">Active Doctors</div>
         </div>
       </div>
       <!-- Online Doctors Card -->
       <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="200">
-        <div class="dash-panel stat-card-gradient card-cyan text-center p-4">
-          <div class="stat-icon"><i class="fa fa-globe val-cyan"></i></div>
+        <div class="dash-panel stat-card-gradient card-cyan text-center p-4" role="region" aria-label="Online Doctors">
+          <div class="stat-icon-wrap"><i class="fa fa-globe val-cyan stat-icon"></i></div>
           <div class="stat-value val-cyan" id="stat-online-doctors" data-val="{{ stats.online_doctors }}">0</div>
-          <div class="stat-label">Online Doctors</div>
+          <div class="stat-label">Online Now</div>
         </div>
       </div>
-      
-      <!-- Sub-Appointment Counts row (Col-xl-2 col-md-4 col-6) -->
+
+      <!-- Appointment Sub-counts Row -->
       <div class="col-xl-2 col-md-4 col-6 mb-4" data-aos="fade-up" data-aos-delay="250">
-        <div class="dash-panel stat-card-gradient card-purple text-center p-3">
-          <div class="stat-icon"><i class="fa fa-calendar val-purple"></i></div>
-          <div class="stat-value val-purple" style="font-size: 24px;" id="stat-total-appointments" data-val="{{ stats.total_appointments }}">0</div>
-          <div class="stat-label" style="font-size: 11px;">Total Appts</div>
+        <div class="dash-panel stat-card-gradient card-purple text-center p-3" role="region" aria-label="Total Appointments">
+          <div class="stat-icon-wrap" style="width:40px;height:40px;"><i class="fa fa-calendar val-purple stat-icon" style="font-size:18px;"></i></div>
+          <div class="stat-value val-purple" style="font-size:26px;" id="stat-total-appointments" data-val="{{ stats.total_appointments }}">0</div>
+          <div class="stat-label" style="font-size:10px;">Total Appts</div>
         </div>
       </div>
       <div class="col-xl-2 col-md-4 col-6 mb-4" data-aos="fade-up" data-aos-delay="300">
-        <div class="dash-panel stat-card-gradient card-purple text-center p-3">
-          <div class="stat-icon"><i class="fa fa-clock-o val-purple"></i></div>
-          <div class="stat-value val-purple" style="font-size: 24px;" id="stat-todays-appointments" data-val="{{ stats.todays_appointments }}">0</div>
-          <div class="stat-label" style="font-size: 11px;">Today's Appts</div>
+        <div class="dash-panel stat-card-gradient card-purple text-center p-3" role="region" aria-label="Today's Appointments">
+          <div class="stat-icon-wrap" style="width:40px;height:40px;"><i class="fa fa-clock-o val-purple stat-icon" style="font-size:18px;"></i></div>
+          <div class="stat-value val-purple" style="font-size:26px;" id="stat-todays-appointments" data-val="{{ stats.todays_appointments }}">0</div>
+          <div class="stat-label" style="font-size:10px;">Today's Appts</div>
         </div>
       </div>
       <div class="col-xl-2 col-md-4 col-6 mb-4" data-aos="fade-up" data-aos-delay="350">
-        <div class="dash-panel stat-card-gradient card-green text-center p-3">
-          <div class="stat-icon"><i class="fa fa-check val-green"></i></div>
-          <div class="stat-value val-green" style="font-size: 24px;" id="stat-completed-appointments" data-val="{{ stats.completed_appointments }}">0</div>
-          <div class="stat-label" style="font-size: 11px;">Completed</div>
+        <div class="dash-panel stat-card-gradient card-green text-center p-3" role="region" aria-label="Completed Appointments">
+          <div class="stat-icon-wrap" style="width:40px;height:40px;"><i class="fa fa-check val-green stat-icon" style="font-size:18px;"></i></div>
+          <div class="stat-value val-green" style="font-size:26px;" id="stat-completed-appointments" data-val="{{ stats.completed_appointments }}">0</div>
+          <div class="stat-label" style="font-size:10px;">Completed</div>
         </div>
       </div>
       <div class="col-xl-2 col-md-4 col-6 mb-4" data-aos="fade-up" data-aos-delay="400">
-        <div class="dash-panel stat-card-gradient card-pink text-center p-3">
-          <div class="stat-icon"><i class="fa fa-times val-pink"></i></div>
-          <div class="stat-value val-pink" style="font-size: 24px;" id="stat-cancelled-appointments" data-val="{{ stats.cancelled_appointments }}">0</div>
-          <div class="stat-label" style="font-size: 11px;">Cancelled</div>
+        <div class="dash-panel stat-card-gradient card-pink text-center p-3" role="region" aria-label="Cancelled Appointments">
+          <div class="stat-icon-wrap" style="width:40px;height:40px;"><i class="fa fa-times val-pink stat-icon" style="font-size:18px;"></i></div>
+          <div class="stat-value val-pink" style="font-size:26px;" id="stat-cancelled-appointments" data-val="{{ stats.cancelled_appointments }}">0</div>
+          <div class="stat-label" style="font-size:10px;">Cancelled</div>
         </div>
       </div>
       <div class="col-xl-2 col-md-4 col-6 mb-4" data-aos="fade-up" data-aos-delay="450">
-        <div class="dash-panel stat-card-gradient card-orange text-center p-3">
-          <div class="stat-icon"><i class="fa fa-hourglass-half val-orange"></i></div>
-          <div class="stat-value val-orange" style="font-size: 24px;" id="stat-pending-appointments" data-val="{{ stats.pending_appointments }}">0</div>
-          <div class="stat-label" style="font-size: 11px;">Pending</div>
+        <div class="dash-panel stat-card-gradient card-orange text-center p-3" role="region" aria-label="Pending Appointments">
+          <div class="stat-icon-wrap" style="width:40px;height:40px;"><i class="fa fa-hourglass-half val-orange stat-icon" style="font-size:18px;"></i></div>
+          <div class="stat-value val-orange" style="font-size:26px;" id="stat-pending-appointments" data-val="{{ stats.pending_appointments }}">0</div>
+          <div class="stat-label" style="font-size:10px;">Pending</div>
         </div>
       </div>
       <div class="col-xl-2 col-md-4 col-6 mb-4" data-aos="fade-up" data-aos-delay="500">
-        <div class="dash-panel stat-card-gradient card-blue text-center p-3">
-          <div class="stat-icon"><i class="fa fa-arrow-right val-blue"></i></div>
-          <div class="stat-value val-blue" style="font-size: 24px;" id="stat-upcoming-appointments" data-val="{{ stats.upcoming_appointments }}">0</div>
-          <div class="stat-label" style="font-size: 11px;">Upcoming</div>
+        <div class="dash-panel stat-card-gradient card-blue text-center p-3" role="region" aria-label="Upcoming Appointments">
+          <div class="stat-icon-wrap" style="width:40px;height:40px;"><i class="fa fa-arrow-right val-blue stat-icon" style="font-size:18px;"></i></div>
+          <div class="stat-value val-blue" style="font-size:26px;" id="stat-upcoming-appointments" data-val="{{ stats.upcoming_appointments }}">0</div>
+          <div class="stat-label" style="font-size:10px;">Upcoming</div>
         </div>
       </div>
-      
-      <!-- Bottom stat row -->
+
+      <!-- Bottom stat row: Revenue, Rating, Departments -->
       <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="550">
-        <div class="dash-panel stat-card-gradient card-green text-center p-4">
-          <div class="stat-icon"><i class="fa fa-money val-green"></i></div>
+        <div class="dash-panel stat-card-gradient card-green text-center p-4" role="region" aria-label="Total Revenue">
+          <div class="stat-icon-wrap"><i class="fa fa-money val-green stat-icon"></i></div>
           <div class="stat-value val-green" id="stat-total-revenue" data-is-currency="true" data-val="{{ stats.total_revenue }}">₹0</div>
           <div class="stat-label">Total Revenue</div>
         </div>
       </div>
       <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="600">
-        <div class="dash-panel stat-card-gradient card-purple text-center p-4">
-          <div class="stat-icon"><i class="fa fa-line-chart val-purple"></i></div>
+        <div class="dash-panel stat-card-gradient card-purple text-center p-4" role="region" aria-label="Monthly Revenue">
+          <div class="stat-icon-wrap"><i class="fa fa-line-chart val-purple stat-icon"></i></div>
           <div class="stat-value val-purple" id="stat-monthly-revenue" data-is-currency="true" data-val="{{ stats.monthly_revenue }}">₹0</div>
           <div class="stat-label">Monthly Revenue</div>
         </div>
       </div>
       <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="650">
-        <div class="dash-panel stat-card-gradient card-pink text-center p-4">
-          <div class="stat-icon"><i class="fa fa-star val-pink"></i></div>
-          <div class="stat-value val-pink"><span id="stat-avg-rating" data-val="{{ stats.avg_rating }}">{{ stats.avg_rating }}</span> <i class="fa fa-star text-warning" style="font-size:20px;"></i></div>
+        <div class="dash-panel stat-card-gradient card-pink text-center p-4" role="region" aria-label="Average Rating">
+          <div class="stat-icon-wrap"><i class="fa fa-star val-pink stat-icon"></i></div>
+          <div class="stat-value val-pink">
+            <span id="stat-avg-rating" data-val="{{ stats.avg_rating }}">{{ stats.avg_rating }}</span>
+            <i class="fa fa-star text-warning" style="font-size:18px;vertical-align:middle;"></i>
+          </div>
           <div class="stat-label">Avg Rating (<span id="stat-total-reviews">{{ stats.total_reviews }}</span> Reviews)</div>
         </div>
       </div>
       <div class="col-xl-3 col-md-6 col-12 mb-4" data-aos="fade-up" data-aos-delay="700">
-        <div class="dash-panel stat-card-gradient card-cyan text-center p-4">
-          <div class="stat-icon"><i class="fa fa-hospital-o val-cyan"></i></div>
+        <div class="dash-panel stat-card-gradient card-cyan text-center p-4" role="region" aria-label="Total Departments">
+          <div class="stat-icon-wrap"><i class="fa fa-hospital-o val-cyan stat-icon"></i></div>
           <div class="stat-value val-cyan" id="stat-total-departments" data-val="{{ stats.total_departments }}">0</div>
           <div class="stat-label">Departments ({{ stats.hospitals_registered }} Hosps)</div>
         </div>
       </div>
     </div>
 
-    <!-- Charts Row 1 -->
-    <div class="row">
+    <!-- Reports & Analytics Charts Row -->
+    <div class="row" id="reports-section">
       <div class="col-lg-8 mb-4" data-aos="fade-up">
         <div class="dash-panel chart-card-container">
-          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Daily Appointment Trend</h6>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <h6 class="m-0">Daily Appointment Trend</h6>
+            <span class="section-chip chip-blue"><i class="fa fa-line-chart"></i> Live</span>
+          </div>
+          <p class="chart-subtitle">Appointments booked per day over the selected period</p>
           <div class="chart-canvas-wrapper">
-            <canvas id="dailyApptChart"></canvas>
+            <canvas id="dailyApptChart" aria-label="Daily appointment trend chart" role="img"></canvas>
           </div>
         </div>
       </div>
       <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
         <div class="dash-panel chart-card-container">
-          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Appointment Status</h6>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <h6 class="m-0">Appointment Status</h6>
+            <span class="section-chip chip-purple"><i class="fa fa-pie-chart"></i></span>
+          </div>
+          <p class="chart-subtitle">Breakdown by completion, cancellation &amp; pending</p>
           <div class="chart-canvas-wrapper">
-            <canvas id="statusChart"></canvas>
+            <canvas id="statusChart" aria-label="Appointment status doughnut chart" role="img"></canvas>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Charts Row 2 -->
+    <!-- Revenue & Monthly Trends -->
     <div class="row">
       <div class="col-lg-6 mb-4" data-aos="fade-up">
         <div class="dash-panel chart-card-container">
-          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Revenue Trend (Daily)</h6>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <h6 class="m-0">Revenue Trend (Daily)</h6>
+            <span class="section-chip chip-green"><i class="fa fa-money"></i> INR</span>
+          </div>
+          <p class="chart-subtitle">Daily revenue collected across all appointments</p>
           <div class="chart-canvas-wrapper">
-            <canvas id="dailyRevChart"></canvas>
+            <canvas id="dailyRevChart" aria-label="Daily revenue trend chart" role="img"></canvas>
           </div>
         </div>
       </div>
       <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="100">
         <div class="dash-panel chart-card-container">
-          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Monthly Revenue</h6>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <h6 class="m-0">Monthly Revenue</h6>
+            <span class="section-chip chip-orange"><i class="fa fa-bar-chart"></i></span>
+          </div>
+          <p class="chart-subtitle">Month-by-month revenue comparison</p>
           <div class="chart-canvas-wrapper">
-            <canvas id="monthlyRevChart"></canvas>
+            <canvas id="monthlyRevChart" aria-label="Monthly revenue bar chart" role="img"></canvas>
           </div>
         </div>
       </div>
@@ -500,57 +823,80 @@
     <div class="row">
       <div class="col-lg-4 mb-4" data-aos="fade-up">
         <div class="dash-panel chart-card-container">
-          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Most Popular Departments</h6>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <h6 class="m-0">Popular Departments</h6>
+            <span class="section-chip chip-purple"><i class="fa fa-hospital-o"></i></span>
+          </div>
+          <p class="chart-subtitle">Top departments by appointment volume</p>
           <div class="chart-canvas-wrapper">
-            <canvas id="popDeptChart"></canvas>
+            <canvas id="popDeptChart" aria-label="Department popularity pie chart" role="img"></canvas>
           </div>
         </div>
       </div>
       <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
         <div class="dash-panel chart-card-container">
-          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Doctor Specializations</h6>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <h6 class="m-0">Doctor Specializations</h6>
+            <span class="section-chip chip-orange"><i class="fa fa-stethoscope"></i></span>
+          </div>
+          <p class="chart-subtitle">Distribution of doctor specializations on platform</p>
           <div class="chart-canvas-wrapper">
-            <canvas id="docSpecChart"></canvas>
+            <canvas id="docSpecChart" aria-label="Doctor specialization doughnut chart" role="img"></canvas>
           </div>
         </div>
       </div>
       <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
         <div class="dash-panel chart-card-container">
-          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Monthly Appointments</h6>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <h6 class="m-0">Monthly Appointments</h6>
+            <span class="section-chip chip-blue"><i class="fa fa-calendar"></i></span>
+          </div>
+          <p class="chart-subtitle">Total appointments grouped by month</p>
           <div class="chart-canvas-wrapper">
-            <canvas id="monthlyApptChart"></canvas>
+            <canvas id="monthlyApptChart" aria-label="Monthly appointments bar chart" role="img"></canvas>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Charts Row 4 -->
-    <div class="row">
+    <!-- Patient & Registration Analytics Row -->
+    <div class="row" id="patients-section">
       <div class="col-lg-6 mb-4" data-aos="fade-up">
         <div class="dash-panel chart-card-container">
-          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Patient Registration Trend</h6>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <h6 class="m-0">Registration Trends</h6>
+            <span class="section-chip chip-green"><i class="fa fa-users"></i> Growth</span>
+          </div>
+          <p class="chart-subtitle">New patient &amp; doctor registrations over time</p>
           <div class="chart-canvas-wrapper">
-            <canvas id="patientRegChart"></canvas>
+            <canvas id="patientRegChart" aria-label="Patient and doctor registration trend chart" role="img"></canvas>
           </div>
         </div>
       </div>
       <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="100">
         <div class="dash-panel chart-card-container">
-          <h6 class="font-weight-bold mb-3" style="color: var(--color-text-main); font-size: 15px;">Top Doctors by Revenue</h6>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <h6 class="m-0">Top Doctors by Revenue</h6>
+            <span class="section-chip chip-blue"><i class="fa fa-trophy"></i> Top 10</span>
+          </div>
+          <p class="chart-subtitle">Highest-earning doctors in the selected period</p>
           <div class="chart-canvas-wrapper">
-            <canvas id="topDocsChart"></canvas>
+            <canvas id="topDocsChart" aria-label="Top doctors by revenue bar chart" role="img"></canvas>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Data Tables & Lists Row -->
-    <div class="row">
+    <!-- Doctor Management & Data Tables Row -->
+    <div class="row" id="doctors-section">
       
       <!-- Top Doctors Table -->
       <div class="col-lg-8 mb-4" data-aos="fade-up">
         <div class="dash-panel" style="overflow-x: auto;">
-          <h5 class="font-weight-bold mb-4"><i class="fa fa-user-md text-primary mr-2"></i> Top Performing Doctors</h5>
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="font-weight-bold mb-0"><i class="fa fa-user-md text-primary mr-2"></i> Top Performing Doctors</h5>
+            <span class="section-chip chip-blue"><i class="fa fa-star"></i> Leaderboard</span>
+          </div>
           <table class="table table-hover align-middle mb-0" style="min-width: 700px;">
             <thead class="text-muted" style="font-size: 12px; text-transform: uppercase;">
               <tr>
@@ -597,9 +943,9 @@
                 <td class="font-weight-bold" style="color: var(--color-primary);">₹{{ doc.total_rev|default:"0.00" }}</td>
                 <td>
                   {% if doc.is_available_now %}
-                    <span class="badge badge-success px-2 py-1" style="border-radius: 4px;">Available</span>
+                    <span class="badge-pill-soft success">● Available</span>
                   {% else %}
-                    <span class="badge badge-secondary px-2 py-1" style="border-radius: 4px;">Offline</span>
+                    <span class="badge-pill-soft default">○ Offline</span>
                   {% endif %}
                 </td>
               </tr>
@@ -614,7 +960,10 @@
       <!-- Most Popular Departments -->
       <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
         <div class="dash-panel">
-          <h5 class="font-weight-bold mb-4"><i class="fa fa-stethoscope text-primary mr-2"></i> Popular Departments</h5>
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="font-weight-bold mb-0"><i class="fa fa-stethoscope text-primary mr-2"></i> Top Departments</h5>
+            <span class="section-chip chip-purple"><i class="fa fa-trophy"></i></span>
+          </div>
           <div class="d-flex flex-column" style="gap: 16px;">
             {% for dept in popular_departments|slice:":6" %}
             <div>
@@ -644,7 +993,10 @@
       <!-- Verifications & Approvals -->
       <div class="col-lg-4 mb-4" data-aos="fade-up">
         <div class="dash-panel" style="max-height: 500px; overflow-y: auto;">
-          <h6 class="font-weight-bold mb-3 text-warning"><i class="fa fa-exclamation-circle mr-1"></i> Pending Approvals</h6>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="font-weight-bold mb-0"><i class="fa fa-exclamation-circle mr-1" style="color:#f59e0b;"></i> Pending Approvals</h6>
+            <span class="section-chip chip-orange"><i class="fa fa-bell"></i></span>
+          </div>
           
           {% if unverified_doctor_profiles %}
             <h7 class="font-weight-bold small text-muted text-uppercase d-block mb-2 mt-3">Doctor Profiles</h7>
@@ -698,7 +1050,10 @@
       <!-- Recent Activities Timeline -->
       <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
         <div class="dash-panel" style="max-height: 500px; overflow-y: auto;">
-          <h6 class="font-weight-bold mb-4"><i class="fa fa-history text-primary mr-2"></i> Recent Activities</h6>
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h6 class="font-weight-bold mb-0"><i class="fa fa-history text-primary mr-2"></i> Recent Activities</h6>
+            <span class="section-chip chip-blue"><i class="fa fa-clock-o"></i> Live</span>
+          </div>
           <div class="timeline">
             {% for activity in recent_activities %}
             <div class="timeline-item">
@@ -716,43 +1071,55 @@
       </div>
       
       <!-- Appointment & Revenue Analytics Box -->
-      <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+      <div class="col-lg-4 mb-4" data-aos="fade-up" id="payments-section">
         <div class="dash-panel" style="max-height: 500px; overflow-y: auto;">
-          <h6 class="font-weight-bold mb-3"><i class="fa fa-line-chart text-primary mr-2"></i> Deep Analytics</h6>
-          
-          <div class="bg-light p-3 rounded mb-3">
-            <h7 class="font-weight-bold small text-muted text-uppercase d-block mb-2">Appointments</h7>
-            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Today's Bookings:</span> <strong>{{ appt_analytics.today }}</strong></div>
-            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Weekly Bookings:</span> <strong>{{ appt_analytics.weekly }}</strong></div>
-            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Monthly Bookings:</span> <strong>{{ appt_analytics.monthly }}</strong></div>
-            <hr class="my-2">
-            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Completed:</span> <strong class="text-success">{{ appt_analytics.completed_pct }}%</strong></div>
-            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Cancelled:</span> <strong class="text-danger">{{ appt_analytics.cancelled_pct }}%</strong></div>
-            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Rescheduled:</span> <strong class="text-warning">{{ appt_analytics.rescheduled_pct }}%</strong></div>
-            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Avg Consult Time:</span> <strong>{{ appt_analytics.avg_time }} min</strong></div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="font-weight-bold mb-0"><i class="fa fa-credit-card mr-2" style="color:#f59e0b;"></i> Financial Analytics</h6>
+            <span class="section-chip chip-green"><i class="fa fa-money"></i> INR</span>
           </div>
           
-          <div class="bg-light p-3 rounded">
-            <h7 class="font-weight-bold small text-muted text-uppercase d-block mb-2">Revenue</h7>
-            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Today's Revenue:</span> <strong>₹{{ rev_analytics.today }}</strong></div>
-            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Weekly Revenue:</span> <strong>₹{{ rev_analytics.weekly }}</strong></div>
-            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Yearly Revenue:</span> <strong>₹{{ rev_analytics.yearly }}</strong></div>
-            <hr class="my-2">
-            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Pending Payments:</span> <strong class="text-warning">₹{{ rev_analytics.pending }}</strong></div>
-            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Refunds:</span> <strong class="text-danger">₹{{ rev_analytics.refunds }}</strong></div>
-            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Avg Transaction:</span> <strong>₹{{ rev_analytics.avg_txn }}</strong></div>
-            <hr class="my-2">
-            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Top Dept:</span> <strong class="text-primary text-truncate" style="max-width:120px;">{{ rev_analytics.top_dept }}</strong></div>
-            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span>Top Doctor:</span> <strong class="text-primary text-truncate" style="max-width:120px;">{{ rev_analytics.top_doc }}</strong></div>
+          <!-- Appointments sub-panel -->
+          <div style="background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px; padding: 14px; margin-bottom: 12px;">
+            <div class="d-flex align-items-center mb-2" style="gap:6px;">
+              <i class="fa fa-calendar" style="color:#3b82f6;font-size:11px;"></i>
+              <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:#94a3b8;">Appointments</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span class="text-muted">Today</span> <strong>{{ appt_analytics.today }}</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span class="text-muted">Weekly</span> <strong>{{ appt_analytics.weekly }}</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span class="text-muted">Monthly</span> <strong>{{ appt_analytics.monthly }}</strong></div>
+            <div style="height:1px;background:#f1f5f9;margin:10px 0;"></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span class="text-muted">Completed</span> <strong style="color:#10b981;">{{ appt_analytics.completed_pct }}%</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span class="text-muted">Cancelled</span> <strong style="color:#ec4899;">{{ appt_analytics.cancelled_pct }}%</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span class="text-muted">Rescheduled</span> <strong style="color:#f59e0b;">{{ appt_analytics.rescheduled_pct }}%</strong></div>
+            <div class="d-flex justify-content-between" style="font-size: 13px;"><span class="text-muted">Avg Consult</span> <strong>{{ appt_analytics.avg_time }} min</strong></div>
+          </div>
+          <!-- Revenue sub-panel -->
+          <div style="background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px; padding: 14px;">
+            <div class="d-flex align-items-center mb-2" style="gap:6px;">
+              <i class="fa fa-money" style="color:#10b981;font-size:11px;"></i>
+              <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:#94a3b8;">Revenue</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span class="text-muted">Today</span> <strong>₹{{ rev_analytics.today }}</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span class="text-muted">Weekly</span> <strong>₹{{ rev_analytics.weekly }}</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span class="text-muted">Yearly</span> <strong>₹{{ rev_analytics.yearly }}</strong></div>
+            <div style="height:1px;background:#f1f5f9;margin:10px 0;"></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span class="text-muted">Pending</span> <strong style="color:#f59e0b;">₹{{ rev_analytics.pending }}</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span class="text-muted">Refunds</span> <strong style="color:#ec4899;">₹{{ rev_analytics.refunds }}</strong></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span class="text-muted">Avg Transaction</span> <strong>₹{{ rev_analytics.avg_txn }}</strong></div>
+            <div style="height:1px;background:#f1f5f9;margin:10px 0;"></div>
+            <div class="d-flex justify-content-between mb-1" style="font-size: 13px;"><span class="text-muted">Top Dept</span> <strong style="color:#3b82f6;" class="text-truncate">{{ rev_analytics.top_dept }}</strong></div>
+            <div class="d-flex justify-content-between" style="font-size: 13px;"><span class="text-muted">Top Doctor</span> <strong style="color:#3b82f6;" class="text-truncate">{{ rev_analytics.top_doc }}</strong></div>
           </div>
         </div>
       </div>
-    <!-- Google Calendar & Google Meet Synchronization Monitoring Row -->
-    <div class="row mt-4" data-aos="fade-up">
+    </div>
+
+    <!-- Appointments & Google Calendar / Meet Synchronization Row -->
+    <div class="row mt-4" id="appointments-section" data-aos="fade-up">
       <div class="col-12 mb-4">
         <div class="dash-panel" style="overflow-x: auto;">
           <div class="d-flex justify-content-between align-items-center mb-4">
-            <h5 class="font-weight-bold mb-0"><i class="fa fa-google text-danger mr-2"></i> Google Calendar & Meet Sync Status</h5>
+            <h5 class="font-weight-bold mb-0"><i class="fa fa-calendar text-success mr-2"></i> Appointments & Google Sync Status</h5>
             <span class="badge badge-info px-3 py-2" style="border-radius: var(--radius-pill); font-size: 12px;">Real-Time Monitoring</span>
           </div>
 
@@ -788,18 +1155,18 @@
                 </td>
                 <td>
                   {% if booking.is_paid %}
-                    <span class="badge badge-success px-2 py-1" style="border-radius: 4px;">Paid</span>
+                    <span class="badge-pill-soft success">✓ Paid</span>
                   {% else %}
-                    <span class="badge badge-warning px-2 py-1" style="border-radius: 4px;">Unpaid</span>
+                    <span class="badge-pill-soft warning">⏳ Unpaid</span>
                   {% endif %}
                 </td>
                 <td>
                   {% if booking.calendar_sync_status == 'synced' %}
-                    <span class="badge badge-success px-2 py-1" style="border-radius: 4px;"><i class="fa fa-check-circle mr-1"></i> Synced</span>
+                    <span class="badge-pill-soft success"><i class="fa fa-check-circle"></i> Synced</span>
                   {% elif booking.calendar_sync_status == 'failed' %}
-                    <span class="badge badge-danger px-2 py-1" style="border-radius: 4px;"><i class="fa fa-exclamation-triangle mr-1"></i> Failed</span>
+                    <span class="badge-pill-soft danger"><i class="fa fa-times"></i> Failed</span>
                   {% else %}
-                    <span class="badge badge-secondary px-2 py-1" style="border-radius: 4px;">{{ booking.calendar_sync_status|default:"Pending"|title }}</span>
+                    <span class="badge-pill-soft default">{{ booking.calendar_sync_status|default:"Pending"|title }}</span>
                   {% endif %}
                 </td>
                 <td>
@@ -827,6 +1194,25 @@
               {% endfor %}
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Settings & Quick Configuration Section -->
+    <div class="row mt-3 mb-4" id="settings-section" data-aos="fade-up">
+      <div class="col-12">
+        <div class="dash-panel p-4" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98)) !important; color: white;">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+              <h5 class="m-0 font-weight-bold text-white"><i class="fa fa-cogs text-warning mr-2"></i> System Configuration & Settings</h5>
+              <p class="m-0 small text-muted" style="color: #cbd5e1 !important;">Manage DocMed platform settings, user permissions, and database models.</p>
+            </div>
+            <div class="d-flex align-items-center" style="gap: 10px;">
+              <a href="/admin/" target="_blank" class="btn btn-warning text-dark font-weight-bold px-3 py-2" style="border-radius: 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fa fa-external-link"></i> Open Django Admin Console
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -949,19 +1335,55 @@
     }
   }
 
-  // Chart Configuration
-  Chart.defaults.font.family = "'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+  // Chart Configuration — Professional DocMed Design System
+  Chart.defaults.font.family = "'Inter', 'Segoe UI', system-ui, sans-serif";
+  Chart.defaults.font.size = 12;
   Chart.defaults.color = '#64748b';
-  
+
+  // Shared tooltip style
+  const sharedTooltip = {
+    backgroundColor: 'rgba(15, 23, 42, 0.92)',
+    titleColor: '#f1f5f9',
+    bodyColor: '#cbd5e1',
+    padding: { x: 14, y: 10 },
+    cornerRadius: 10,
+    titleFont: { weight: '700', size: 13 },
+    bodyFont: { size: 12 },
+    borderColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    displayColors: true
+  };
+
   const commonOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
+    animation: { duration: 900, easing: 'easeOutQuart' },
+    plugins: {
+      legend: { display: false },
+      tooltip: sharedTooltip
+    },
     scales: {
-      y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' } },
-      x: { grid: { display: false } }
+      y: {
+        beginAtZero: true,
+        grid: { color: 'rgba(226, 232, 240, 0.6)', borderDash: [4, 4], drawBorder: false },
+        ticks: { font: { size: 11 }, color: '#94a3b8', maxTicksLimit: 6 },
+        border: { display: false }
+      },
+      x: {
+        grid: { display: false, drawBorder: false },
+        ticks: { font: { size: 11 }, color: '#94a3b8', maxRotation: 0, maxTicksLimit: 10 },
+        border: { display: false }
+      }
     }
   };
+
+  // Helper: create canvas gradient fill
+  function makeGradient(ctx, color, alpha = 0.18) {
+    const grad = ctx.createLinearGradient(0, 0, 0, 260);
+    grad.addColorStop(0, color.replace('1)', alpha + ')').replace('rgb', 'rgba'));
+    grad.addColorStop(1, color.replace('1)', '0)').replace('rgb', 'rgba'));
+    return grad;
+  }
 
   window.onload = function() {
     // Reset scroll position again on absolute load
@@ -970,22 +1392,33 @@
     }, 50);
 
     // 1. Daily Appointments Line Chart
-    new Chart(document.getElementById('dailyApptChart').getContext('2d'), {
-      type: 'line',
-      data: {
-        labels: {{ chart_daily_appointments_labels|safe }},
-        datasets: [{
-          label: 'Appointments',
-          data: {{ chart_daily_appointments_data|safe }},
-          borderColor: '#3b82f6',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-          borderWidth: 2,
-          tension: 0.4,
-          fill: true
-        }]
-      },
-      options: commonOptions
-    });
+    (function() {
+      const ctx = document.getElementById('dailyApptChart').getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 240);
+      grad.addColorStop(0, 'rgba(59,130,246,0.22)');
+      grad.addColorStop(1, 'rgba(59,130,246,0)');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: {{ chart_daily_appointments_labels|safe }},
+          datasets: [{
+            label: 'Appointments',
+            data: {{ chart_daily_appointments_data|safe }},
+            borderColor: '#3b82f6',
+            backgroundColor: grad,
+            borderWidth: 2.5,
+            tension: 0.42,
+            fill: true,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            pointBackgroundColor: '#3b82f6',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2
+          }]
+        },
+        options: commonOptions
+      });
+    })();
 
     // 2. Monthly Appointments Bar Chart
     new Chart(document.getElementById('monthlyApptChart').getContext('2d'), {
@@ -995,30 +1428,43 @@
         datasets: [{
           label: 'Appointments',
           data: {{ chart_monthly_appointments_data|safe }},
-          backgroundColor: '#8b5cf6',
-          borderRadius: 4
+          backgroundColor: 'rgba(139,92,246,0.85)',
+          borderRadius: 8,
+          borderSkipped: false,
+          hoverBackgroundColor: 'rgba(139,92,246,1)'
         }]
       },
       options: commonOptions
     });
 
     // 3. Revenue Trend Line
-    new Chart(document.getElementById('dailyRevChart').getContext('2d'), {
-      type: 'line',
-      data: {
-        labels: {{ chart_revenue_trend_labels|safe }},
-        datasets: [{
-          label: 'Revenue',
-          data: {{ chart_revenue_trend_data|safe }},
-          borderColor: '#10b981',
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
-          borderWidth: 2,
-          tension: 0.4,
-          fill: true
-        }]
-      },
-      options: commonOptions
-    });
+    (function() {
+      const ctx = document.getElementById('dailyRevChart').getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 240);
+      grad.addColorStop(0, 'rgba(16,185,129,0.22)');
+      grad.addColorStop(1, 'rgba(16,185,129,0)');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: {{ chart_revenue_trend_labels|safe }},
+          datasets: [{
+            label: 'Revenue (₹)',
+            data: {{ chart_revenue_trend_data|safe }},
+            borderColor: '#10b981',
+            backgroundColor: grad,
+            borderWidth: 2.5,
+            tension: 0.42,
+            fill: true,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            pointBackgroundColor: '#10b981',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2
+          }]
+        },
+        options: commonOptions
+      });
+    })();
 
     // 4. Monthly Revenue Bar
     new Chart(document.getElementById('monthlyRevChart').getContext('2d'), {
@@ -1026,10 +1472,12 @@
       data: {
         labels: {{ chart_revenue_month_labels|safe }},
         datasets: [{
-          label: 'Revenue',
+          label: 'Revenue (₹)',
           data: {{ chart_revenue_month_data|safe }},
-          backgroundColor: '#14b8a6',
-          borderRadius: 4
+          backgroundColor: 'rgba(20,184,166,0.85)',
+          borderRadius: 8,
+          borderSkipped: false,
+          hoverBackgroundColor: 'rgba(20,184,166,1)'
         }]
       },
       options: commonOptions
@@ -1042,23 +1490,46 @@
         labels: {{ chart_pop_dept_labels|safe }},
         datasets: [{
           data: {{ chart_pop_dept_data|safe }},
-          backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#64748b']
+          backgroundColor: ['#3b82f6','#8b5cf6','#ec4899','#10b981','#f59e0b','#64748b'],
+          borderWidth: 2,
+          borderColor: '#fff',
+          hoverOffset: 8
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 900, easing: 'easeOutQuart' },
+        plugins: {
+          legend: { position: 'right', labels: { boxWidth: 12, padding: 14, font: { size: 11 } } },
+          tooltip: sharedTooltip
+        }
+      }
     });
 
-    // 6. Doctor Specialization Pie Chart
+    // 6. Doctor Specialization Doughnut
     new Chart(document.getElementById('docSpecChart').getContext('2d'), {
       type: 'doughnut',
       data: {
         labels: {{ chart_doc_spec_labels|safe }},
         datasets: [{
           data: {{ chart_doc_spec_data|safe }},
-          backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ec4899', '#8b5cf6', '#64748b']
+          backgroundColor: ['#f59e0b','#3b82f6','#10b981','#ec4899','#8b5cf6','#64748b'],
+          borderWidth: 2,
+          borderColor: '#fff',
+          hoverOffset: 8
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } }, cutout: '60%' }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 900, easing: 'easeOutQuart' },
+        cutout: '65%',
+        plugins: {
+          legend: { position: 'right', labels: { boxWidth: 12, padding: 14, font: { size: 11 } } },
+          tooltip: sharedTooltip
+        }
+      }
     });
 
     // 7. Status Doughnut Chart
@@ -1068,10 +1539,22 @@
         labels: {{ chart_status_labels|safe }},
         datasets: [{
           data: {{ chart_status_data|safe }},
-          backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#64748b', '#3b82f6']
+          backgroundColor: ['#10b981','#f59e0b','#ec4899','#64748b','#3b82f6'],
+          borderWidth: 2,
+          borderColor: '#fff',
+          hoverOffset: 8
         }]
       },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '70%' }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 900, easing: 'easeOutQuart' },
+        cutout: '68%',
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 11 } } },
+          tooltip: sharedTooltip
+        }
+      }
     });
 
     // 8. Top Doctors Bar Chart
@@ -1080,55 +1563,168 @@
       data: {
         labels: {{ chart_top_docs_labels|safe }},
         datasets: [{
-          label: 'Revenue',
+          label: 'Revenue (₹)',
           data: {{ chart_top_docs_data|safe }},
-          backgroundColor: '#3b82f6',
-          borderRadius: 4
+          backgroundColor: 'rgba(59,130,246,0.85)',
+          borderRadius: 8,
+          borderSkipped: false,
+          hoverBackgroundColor: '#2563eb'
         }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
-        plugins: { legend: { display: false } },
-        scales: { x: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' } }, y: { grid: { display: false } } }
-      }
-    });
-
-    // 9. Patient Registration Trend & Doctor Registration Trend Overlaid
-    new Chart(document.getElementById('patientRegChart').getContext('2d'), {
-      type: 'line',
-      data: {
-        labels: {{ chart_patient_reg_labels|safe }},
-        datasets: [
-          {
-            label: 'Patients Registered',
-            data: {{ chart_patient_reg_data|safe }},
-            borderColor: '#ec4899',
-            backgroundColor: 'rgba(236, 72, 153, 0.05)',
-            borderWidth: 2,
-            tension: 0.3,
-            fill: true
-          },
-          {
-            label: 'Doctors Registered',
-            data: {{ chart_doctor_reg_data|safe }},
-            borderColor: '#f59e0b',
-            backgroundColor: 'rgba(245, 158, 11, 0.05)',
-            borderWidth: 2,
-            tension: 0.3,
-            fill: true
-          }
-        ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: true, position: 'top' } },
+        animation: { duration: 900, easing: 'easeOutQuart' },
+        indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          tooltip: sharedTooltip
+        },
         scales: {
-          y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' } },
-          x: { grid: { display: false } }
+          x: { beginAtZero: true, grid: { color: 'rgba(226,232,240,0.6)', borderDash: [4,4], drawBorder: false }, border: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+          y: { grid: { display: false, drawBorder: false }, border: { display: false }, ticks: { color: '#334155', font: { size: 11, weight: '600' } } }
         }
       }
     });
+
+    // 9. Patient & Doctor Registration Trend
+    (function() {
+      const ctx = document.getElementById('patientRegChart').getContext('2d');
+      const gradP = ctx.createLinearGradient(0, 0, 0, 240);
+      gradP.addColorStop(0, 'rgba(236,72,153,0.18)');
+      gradP.addColorStop(1, 'rgba(236,72,153,0)');
+      const gradD = ctx.createLinearGradient(0, 0, 0, 240);
+      gradD.addColorStop(0, 'rgba(245,158,11,0.18)');
+      gradD.addColorStop(1, 'rgba(245,158,11,0)');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: {{ chart_patient_reg_labels|safe }},
+          datasets: [
+            {
+              label: 'Patients Registered',
+              data: {{ chart_patient_reg_data|safe }},
+              borderColor: '#ec4899',
+              backgroundColor: gradP,
+              borderWidth: 2.5,
+              tension: 0.42,
+              fill: true,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+              pointBackgroundColor: '#ec4899',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2
+            },
+            {
+              label: 'Doctors Registered',
+              data: {{ chart_doctor_reg_data|safe }},
+              borderColor: '#f59e0b',
+              backgroundColor: gradD,
+              borderWidth: 2.5,
+              tension: 0.42,
+              fill: true,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+              pointBackgroundColor: '#f59e0b',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 900, easing: 'easeOutQuart' },
+          plugins: {
+            legend: { display: true, position: 'top', labels: { boxWidth: 12, padding: 14, font: { size: 11 } } },
+            tooltip: sharedTooltip
+          },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(226,232,240,0.6)', borderDash: [4,4], drawBorder: false }, border: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 }, maxTicksLimit: 6 } },
+            x: { grid: { display: false, drawBorder: false }, border: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 }, maxTicksLimit: 10 } }
+          }
+        }
+      });
+    })();
   };
+
+  // ---------------------------------------------------------------------------
+  // Admin Welcome Voice Playback (Plays once per session on Admin Dashboard open)
+  // ---------------------------------------------------------------------------
+  (function initAdminWelcomeVoice() {
+    var welcomeText = "Welcome back, Admin. Welcome to DocMed, your smart healthcare management platform.";
+    var voiceBtn = document.getElementById('btnPlayAdminWelcomeVoice');
+    var voiceIcon = document.getElementById('adminVoiceIcon');
+    var voiceLabel = document.getElementById('adminVoiceLabel');
+    var audioObj = null;
+
+    function playAudioText(text) {
+      if (audioObj) { try { audioObj.pause(); } catch(e){} audioObj = null; }
+      if ('speechSynthesis' in window) { try { window.speechSynthesis.cancel(); } catch(e){} }
+
+      if (voiceLabel) voiceLabel.textContent = "Playing...";
+      if (voiceIcon) voiceIcon.className = "fa fa-spinner fa-spin";
+
+      // Try ElevenLabs API via backend TTS endpoint (/api/ai/tts/)
+      fetch('/api/ai/tts/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify({ text: text, language_code: 'en' })
+      })
+      .then(function(res) {
+        if (res.ok) { return res.blob(); }
+        throw new Error('ElevenLabs TTS fallback');
+      })
+      .then(function(blob) {
+        var audioUrl = URL.createObjectURL(blob);
+        audioObj = new Audio(audioUrl);
+        audioObj.onended = function() { resetVoiceUI(); };
+        audioObj.onerror = function() { fallbackWebSpeech(text); };
+        audioObj.play().catch(function() { fallbackWebSpeech(text); });
+      })
+      .catch(function() {
+        fallbackWebSpeech(text);
+      });
+    }
+
+    function fallbackWebSpeech(text) {
+      if (!('speechSynthesis' in window)) { resetVoiceUI(); return; }
+      try {
+        var utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.95;
+        utterance.onend = function() { resetVoiceUI(); };
+        utterance.onerror = function() { resetVoiceUI(); };
+        window.speechSynthesis.speak(utterance);
+      } catch(e) { resetVoiceUI(); }
+    }
+
+    function resetVoiceUI() {
+      if (voiceLabel) voiceLabel.textContent = "Welcome Voice";
+      if (voiceIcon) voiceIcon.className = "fa fa-volume-up";
+    }
+
+    function getCsrfToken() {
+      var cookie = document.cookie.split(';').find(function(c) { return c.trim().startsWith('csrftoken='); });
+      return cookie ? cookie.split('=')[1].trim() : '';
+    }
+
+    // Auto-play welcome voice once per session when dashboard opens
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!sessionStorage.getItem('hasPlayedAdminWelcome')) {
+        sessionStorage.setItem('hasPlayedAdminWelcome', 'true');
+        setTimeout(function() { playAudioText(welcomeText); }, 750);
+      }
+    });
+
+    if (voiceBtn) {
+      voiceBtn.addEventListener('click', function() {
+        playAudioText(welcomeText);
+      });
+    }
+  })();
 </script>
 {% endblock %}
