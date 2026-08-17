@@ -52,17 +52,14 @@ class User(AbstractUser):
         unique=True,
         blank=False,
         error_messages={
-            'unique': 'A user with that email already exists.',
+            'unique': 'An account with this email already exists. Please login or use another email address.',
         },
     )
     phone_number = models.CharField(
-        unique=True,
+        unique=False,
         blank=True,
         null=True,
         max_length=20,
-        error_messages={
-            'unique': 'A user with that phone number already exists.',
-        },
     )
     # Firebase Cloud Messaging device token for push notifications
     # Updated via /api/save-fcm-token/ on each page load
@@ -82,6 +79,16 @@ class User(AbstractUser):
         verbose_name = 'User'
         verbose_name_plural = 'Users'
         ordering = ['-date_joined']
+
+    def clean(self):
+        super().clean()
+        if self.email:
+            self.email = self.email.strip().lower()
+
+    def save(self, *args, **kwargs):
+        if self.email:
+            self.email = self.email.strip().lower()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.email

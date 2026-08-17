@@ -28,7 +28,7 @@ DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
-csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://127.0.0.1,http://localhost,https://*.render.com,https://*.railway.app')
+csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://127.0.0.1,http://localhost,https://docmed-fx0m.onrender.com,https://*.render.com,https://*.railway.app')
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(',') if origin.strip()]
 
 # ---------------------------------------------------------------------------

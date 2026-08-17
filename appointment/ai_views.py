@@ -12,6 +12,25 @@ logger = logging.getLogger(__name__)
 MAX_MESSAGE_LENGTH = 2000  # Step 8 Security rule: reject messages over 2000 chars
 
 
+def authenticate_user(request):
+    """
+    Authenticates user via standard Django Session cookies or JWT Bearer header.
+    Guarantees seamless authentication for both web sessions and JWT API clients.
+    """
+    if getattr(request, 'user', None) and request.user.is_authenticated:
+        return request.user
+    try:
+        from rest_framework_simplejwt.authentication import JWTAuthentication
+        jwt_auth = JWTAuthentication()
+        auth_result = jwt_auth.authenticate(request)
+        if auth_result is not None:
+            request.user, _ = auth_result
+            return request.user
+    except Exception as exc:
+        logger.debug(f"[ai_views] JWT bearer token authentication check: {exc}")
+    return request.user
+
+
 class AIChatView(View):
     """
     AI Chat endpoint — processes user messages safely,
@@ -20,7 +39,8 @@ class AIChatView(View):
     """
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
+        user = authenticate_user(request)
+        if not user.is_authenticated:
             return JsonResponse(
                 {'error': 'Authentication required. Please log in to access the AI assistant.'},
                 status=401
@@ -105,11 +125,12 @@ class AIChatView(View):
 
 
 class AIRiskAssessmentView(View):
-    """Risk assessment endpoint — session authenticated."""
+    """Risk assessment endpoint — session & JWT authenticated."""
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return JsonResponse({'error': 'Authentication required.'}, status=401)
+        user = authenticate_user(request)
+        if not user.is_authenticated:
+            return JsonResponse({'error': 'Authentication required. Please log in.'}, status=401)
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):

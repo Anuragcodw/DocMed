@@ -1,0 +1,174 @@
+{% load static %}
+
+<!-- ***** Dedicated Admin Header Area Start ***** -->
+<header class="header-area glass-nav sticky-top admin-header-nav">
+    <div class="main-header-area glass-panel border-0 rounded-0 shadow-lg" style="backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); background: rgba(15, 23, 42, 0.92); border-bottom: 2px solid rgba(245, 158, 11, 0.4);">
+        <div class="container-fluid px-lg-5">
+            <nav class="navbar navbar-expand-lg navbar-dark px-0 py-2" id="adminNav">
+                
+                <!-- Admin Brand Logo -->
+                <a class="navbar-brand d-flex align-items-center" href="{% url 'appointment:admin-dashboard' %}">
+                    <h3 class="m-0 font-weight-bold" style="color: #ffffff; letter-spacing: -0.5px; font-size: 22px;">
+                        <i class="fa fa-heartbeat text-danger mr-2"></i><span style="background: linear-gradient(90deg, #f59e0b, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">DocMed</span>
+                    </h3>
+                    <span class="badge badge-warning ml-2 px-2 py-1 text-uppercase" style="font-size: 10px; font-weight: 800; letter-spacing: 1px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; border-radius: 6px;">ADMIN PORTAL</span>
+                </a>
+
+                <!-- Mobile Toggler -->
+                <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#adminNavContent" aria-controls="adminNavContent" aria-expanded="false" aria-label="Toggle admin navigation">
+                    <span class="navbar-toggler-icon" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22 fill=%22%23ffffff%22><line x1=%223%22 y1=%226%22 x2=%2221%22 y2=%226%22 stroke=%22%23ffffff%22 stroke-width=%222%22/><line x1=%223%22 y1=%2212%22 x2=%2221%22 y2=%2212%22 stroke=%22%23ffffff%22 stroke-width=%222%22/><line x1=%223%22 y1=%2218%22 x2=%2221%22 y2=%2218%22 stroke=%22%23ffffff%22 stroke-width=%222%22/></svg>');"></span>
+                </button>
+
+                <!-- Admin Nav Links -->
+                <div class="collapse navbar-collapse" id="adminNavContent">
+                    <ul class="navbar-nav mx-auto" style="gap: 15px;">
+                        
+                        <!-- Dashboard -->
+                        <li class="nav-item {% if request.resolver_match.url_name == 'admin-dashboard' %}active{% endif %}">
+                            <a class="nav-link font-weight-bold admin-nav-link" href="{% url 'appointment:admin-dashboard' %}">
+                                <i class="fa fa-dashboard text-warning mr-1"></i> Dashboard
+                            </a>
+                        </li>
+
+                        <!-- Doctors Dropdown -->
+                        <li class="nav-item dropdown {% if 'doctor' in request.resolver_match.url_name %}active{% endif %}">
+                            <a class="nav-link dropdown-toggle font-weight-bold admin-nav-link" href="#" id="adminDoctorsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-user-md text-info mr-1"></i> Doctors
+                            </a>
+                            <div class="dropdown-menu admin-dropdown-menu p-2" aria-labelledby="adminDoctorsDropdown" style="min-width: 270px; background: rgba(30, 41, 59, 0.98); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+                                <a class="dropdown-item admin-drop-item font-weight-bold text-white py-2" href="{% url 'appointment:admin-dashboard' %}#doctors-section">
+                                    <i class="fa fa-check-square-o text-warning mr-2"></i> Verification & Approvals
+                                </a>
+                                <a class="dropdown-item admin-drop-item font-weight-bold text-white py-2" href="{% url 'appointment:doctor-list' %}">
+                                    <i class="ri-stethoscope-line text-info mr-2"></i> Doctor Directory
+                                </a>
+                                <div class="dropdown-divider" style="border-color: rgba(255,255,255,0.1);"></div>
+                                <a class="dropdown-item admin-drop-item font-weight-bold text-warning py-2" href="/admin/appointment/doctorprofile/?verification_status__exact=pending">
+                                    <i class="fa fa-clock-o text-warning mr-2"></i> Pending Registrations
+                                </a>
+                                <a class="dropdown-item admin-drop-item font-weight-bold text-success py-2" href="/admin/appointment/doctorprofile/?verification_status__exact=verified">
+                                    <i class="fa fa-check-circle text-success mr-2"></i> Approved Doctors
+                                </a>
+                                <a class="dropdown-item admin-drop-item font-weight-bold text-danger py-2" href="/admin/appointment/doctorprofile/?verification_status__exact=rejected">
+                                    <i class="fa fa-times-circle text-danger mr-2"></i> Rejected Doctors
+                                </a>
+                            </div>
+                        </li>
+
+                        <!-- Patients -->
+                        <li class="nav-item {% if request.resolver_match.url_name == 'patient-list' %}active{% endif %}">
+                            <a class="nav-link font-weight-bold admin-nav-link" href="{% url 'appointment:patient-list' %}">
+                                <i class="fa fa-users text-primary mr-1"></i> Patients
+                            </a>
+                        </li>
+
+                        <!-- Appointments -->
+                        <li class="nav-item">
+                            <a class="nav-link font-weight-bold admin-nav-link" href="{% url 'appointment:admin-dashboard' %}#appointments-section">
+                                <i class="fa fa-calendar text-success mr-1"></i> Appointments
+                            </a>
+                        </li>
+
+                        <!-- Payments -->
+                        <li class="nav-item {% if request.resolver_match.url_name == 'payment-history' %}active{% endif %}">
+                            <a class="nav-link font-weight-bold admin-nav-link" href="{% url 'appointment:payment-history' %}">
+                                <i class="fa fa-credit-card text-warning mr-1"></i> Payments
+                            </a>
+                        </li>
+
+                        <!-- Reports & Analytics -->
+                        <li class="nav-item {% if request.resolver_match.url_name == 'report-center' %}active{% endif %}">
+                            <a class="nav-link font-weight-bold admin-nav-link" href="{% url 'appointment:report-center' %}">
+                                <i class="fa fa-bar-chart text-cyan mr-1" style="color:#06b6d4;"></i> Reports
+                            </a>
+                        </li>
+
+                        <!-- System Settings (Django Admin) -->
+                        <li class="nav-item">
+                            <a class="nav-link font-weight-bold admin-nav-link" href="/admin/" target="_blank">
+                                <i class="fa fa-cogs text-secondary mr-1" style="color:#94a3b8 !important;"></i> System Settings
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Right Side Action Area -->
+                    <div class="d-flex align-items-center ml-lg-3" style="gap: 12px;">
+                        
+                        <!-- Notifications Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn btn-notification rounded-circle shadow-lg position-relative dropdown-toggle border-0" id="adminNotifDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; padding: 0; background: rgba(255, 255, 255, 0.1) !important; border: 1px solid rgba(255,255,255,0.2) !important;">
+                                <i class="fa fa-bell-o" style="font-size: 16px; color: #f59e0b;"></i>
+                                {% if user_unread_notifications_count > 0 %}
+                                <span class="position-absolute top-0 right-0 badge badge-danger badge-pill" style="transform: translate(35%, -35%); font-size: 10px; padding: 3px 6px;">{{ user_unread_notifications_count }}</span>
+                                {% endif %}
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right p-3" aria-labelledby="adminNotifDropdown" style="min-width: 320px; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.6);">
+                                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-secondary">
+                                    <h6 class="font-weight-bold text-white mb-0" style="font-size: 14px;"><i class="fa fa-bell text-warning mr-2"></i> System Notifications</h6>
+                                </div>
+                                <div class="d-flex flex-column" style="gap: 8px; max-height: 280px; overflow-y: auto;">
+                                    {% if user_recent_notifications %}
+                                        {% for notif in user_recent_notifications %}
+                                        <div class="p-2 rounded" style="font-size: 12px; background: rgba(255,255,255,0.05); color: #cbd5e1; border-left: 3px solid #f59e0b;">
+                                            <div class="font-weight-bold text-white">{{ notif.title }}</div>
+                                            <div class="small text-muted">{{ notif.message }}</div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="p-3 text-center text-muted small">No new notifications.</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Admin Profile Badge -->
+                        <div class="dropdown">
+                            <button class="btn border-0 p-0 d-flex align-items-center dropdown-toggle" type="button" id="adminProfileDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background: none;">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; font-weight: bold; border: 2px solid rgba(255,255,255,0.4);">
+                                    <i class="fa fa-user-secret"></i>
+                                </div>
+                                <span class="ml-2 font-weight-bold text-white d-none d-md-inline" style="font-size: 14px;">Admin</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right p-2" aria-labelledby="adminProfileDropdown" style="min-width: 200px; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 14px;">
+                                <a class="dropdown-item admin-drop-item font-weight-bold text-white py-2" href="/admin/"><i class="fa fa-dashboard text-warning mr-2"></i> Django Admin</a>
+                                <a class="dropdown-item admin-drop-item font-weight-bold text-white py-2" href="{% url 'appointment:home' %}"><i class="fa fa-globe text-info mr-2"></i> View Public Portal</a>
+                                <div class="dropdown-divider" style="border-color: rgba(255,255,255,0.1);"></div>
+                                <a class="dropdown-item admin-drop-item font-weight-bold text-danger py-2" href="{% url 'accounts:logout' %}"><i class="fa fa-sign-out text-danger mr-2"></i> Logout</a>
+                            </div>
+                        </div>
+
+                        <!-- Direct Logout Button -->
+                        <a href="{% url 'accounts:logout' %}" class="btn btn-outline-danger btn-sm d-flex align-items-center px-3 py-2" style="border-radius: 50px; font-weight: 700; font-size: 13px; border-color: rgba(239, 68, 68, 0.6); color: #f87171; text-decoration: none;">
+                            <i class="fa fa-sign-out mr-1"></i> Logout
+                        </a>
+
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<style>
+.admin-nav-link {
+    color: #e2e8f0 !important;
+    font-size: 14px;
+    padding: 8px 14px !important;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+}
+.admin-nav-link:hover, .nav-item.active .admin-nav-link {
+    color: #ffffff !important;
+    background: rgba(245, 158, 11, 0.18) !important;
+    transform: translateY(-1px);
+}
+.admin-drop-item {
+    font-size: 13px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+.admin-drop-item:hover {
+    background: rgba(245, 158, 11, 0.2) !important;
+    color: #ffffff !important;
+}
+</style>

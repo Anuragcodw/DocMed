@@ -127,21 +127,19 @@ class UnifiedRegistrationForm(UserCreationForm):
         return username
 
     def clean_email(self):
-        email = self.cleaned_data.get('email', '').strip()
+        email = self.cleaned_data.get('email', '').strip().lower()
         if not email:
-            raise forms.ValidationError('Email is required.')
+            raise forms.ValidationError('Please enter a valid email address.')
         if User.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError('A user with that email already exists.')
+            raise forms.ValidationError('An account with this email already exists. Please login or use another email address.')
         return email
 
     def clean_phone_number(self):
         phone_number = self.cleaned_data.get('phone_number', '').strip()
         if not phone_number:
-            raise forms.ValidationError('Phone number is required.')
-        if User.objects.filter(phone_number=phone_number).exists():
-            raise forms.ValidationError('A user with that phone number already exists.')
+            raise forms.ValidationError('Please enter a valid phone number.')
         if not re.match(r'^\+?[1-9]\d{1,14}$', phone_number):
-            raise forms.ValidationError('Enter a valid phone number (e.g. +1234567890).')
+            raise forms.ValidationError('Please enter a valid phone number (e.g. +1234567890).')
         return phone_number
 
     def clean_gender(self):
@@ -230,21 +228,19 @@ class PatientRegistrationForm(UserCreationForm):
         return username
 
     def clean_email(self):
-        email = self.cleaned_data.get('email', '').strip()
+        email = self.cleaned_data.get('email', '').strip().lower()
         if not email:
-            raise forms.ValidationError('Email is required.')
+            raise forms.ValidationError('Please enter a valid email address.')
         if User.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError('A user with that email already exists.')
+            raise forms.ValidationError('An account with this email already exists. Please login or use another email address.')
         return email
 
     def clean_phone_number(self):
         phone_number = self.cleaned_data.get('phone_number', '').strip()
         if not phone_number:
-            raise forms.ValidationError('Phone number is required.')
-        if User.objects.filter(phone_number=phone_number).exists():
-            raise forms.ValidationError('A user with that phone number already exists.')
+            raise forms.ValidationError('Please enter a valid phone number.')
         if not re.match(r'^\+?[1-9]\d{1,14}$', phone_number):
-            raise forms.ValidationError('Enter a valid phone number (e.g. +1234567890).')
+            raise forms.ValidationError('Please enter a valid phone number (e.g. +1234567890).')
         return phone_number
 
     def clean_gender(self):
@@ -339,21 +335,19 @@ class DoctorRegistrationForm(UserCreationForm):
         return username
 
     def clean_email(self):
-        email = self.cleaned_data.get('email', '').strip()
+        email = self.cleaned_data.get('email', '').strip().lower()
         if not email:
-            raise forms.ValidationError('Email is required.')
+            raise forms.ValidationError('Please enter a valid email address.')
         if User.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError('A user with that email already exists.')
+            raise forms.ValidationError('An account with this email already exists. Please login or use another email address.')
         return email
 
     def clean_phone_number(self):
         phone_number = self.cleaned_data.get('phone_number', '').strip()
         if not phone_number:
-            raise forms.ValidationError('Phone number is required.')
-        if User.objects.filter(phone_number=phone_number).exists():
-            raise forms.ValidationError('A user with that phone number already exists.')
+            raise forms.ValidationError('Please enter a valid phone number.')
         if not re.match(r'^\+?[1-9]\d{1,14}$', phone_number):
-            raise forms.ValidationError('Enter a valid phone number (e.g. +1234567890).')
+            raise forms.ValidationError('Please enter a valid phone number (e.g. +1234567890).')
         return phone_number
 
     def clean_gender(self):

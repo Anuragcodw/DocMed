@@ -242,6 +242,16 @@
       return "I understand you have a question. 🏥\n\nHindi / English supported:\n• 📅 Appointment booking (अपॉइंटमेंट)\n• 👨‍⚕️ Finding doctors (डॉक्टर)\n• 💊 Symptom & Medicine guidance (दवा एवं लक्षण)\n• 🕐 Working hours & contact (समय व संपर्क)\n\nFor personalized medical advice, please log in or consult a certified doctor on DocMed.\n\nDisclaimer: This information is for educational purposes and does not replace professional medical advice.";
     }
 
+    function checkAuthStatus() {
+      var metaAuth = document.querySelector('meta[name="user-authenticated"]');
+      var metaIsAuth = metaAuth ? metaAuth.getAttribute('content') === 'true' : false;
+      var jwtToken = localStorage.getItem('access_token') || localStorage.getItem('token') || sessionStorage.getItem('access_token') || sessionStorage.getItem('token');
+      return {
+        authenticated: metaIsAuth || !!jwtToken,
+        token: jwtToken
+      };
+    }
+
     /* ── Send Message ── */
     function sendMessage(customMsg) {
       var rawMsg = customMsg || (inputField ? inputField.value : '');
@@ -258,26 +268,31 @@
       isWaiting = true;
 
       var typingDiv = showTyping();
+      var authInfo = checkAuthStatus();
 
-      if (!isAuthenticated) {
+      if (!authInfo.authenticated) {
         setTimeout(function () {
           hideTyping();
           isWaiting = false;
-          appendBubble(clientFallbackReply(msg), true);
-        }, 500 + Math.random() * 300);
+          appendBubble("🔒 Authentication required. Please log in to access the AI health assistant.\n\n" + clientFallbackReply(msg), true);
+        }, 400);
         return;
       }
 
       var csrftoken = getCookie('csrftoken');
+      var headers = {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken || ''
+      };
+      if (authInfo.token) {
+        headers['Authorization'] = 'Bearer ' + authInfo.token;
+      }
 
       function makeApiCall(url) {
         return fetch(url, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken || ''
-          },
-          credentials: 'same-origin',
+          headers: headers,
+          credentials: 'include',
           body: JSON.stringify({ message: msg })
         });
       }
@@ -290,13 +305,18 @@
           return response;
         })
         .then(function (response) {
-          return response.json().then(function (data) {
+          var status = response.status;
+          return response.json().catch(function () { return {}; }).then(function (data) {
             if (!response.ok) {
-              if (response.status === 401) {
-                isAuthenticated = false;
-                return { reply: clientFallbackReply(msg) };
+              if (status === 401) {
+                throw new Error(data.error || '🔒 Authentication required. Please log in to access the AI assistant.');
+              } else if (status === 403) {
+                throw new Error(data.error || '⛔ Access denied. You do not have permission to access the AI assistant.');
+              } else if (status === 429) {
+                throw new Error(data.error || '⏳ Rate limit exceeded. Please wait a moment before sending another message.');
+              } else {
+                throw new Error(data.error || '⚠️ AI service is temporarily unavailable. Please try again later.');
               }
-              throw new Error(data.error || 'AI service is temporarily unavailable. Please try again later.');
             }
             return data;
           });
@@ -304,16 +324,13 @@
         .then(function (data) {
           hideTyping();
           isWaiting = false;
-          appendBubble(data.reply || clientFallbackReply(msg), true);
+          appendBubble(data.reply || data.response || clientFallbackReply(msg), true);
         })
         .catch(function (error) {
           hideTyping();
           isWaiting = false;
-          console.warn('[DocMed Chatbot] API error — using fallback:', error.message);
-          appendBubble(
-            'AI service is temporarily unavailable. Please try again later.\n\n' + clientFallbackReply(msg),
-            true
-          );
+          console.warn('[DocMed Chatbot] Request handled with status message:', error.message);
+          appendBubble(error.message, true);
         });
     }
 

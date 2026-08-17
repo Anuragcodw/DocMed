@@ -23,29 +23,20 @@ class MultiFieldBackend(ModelBackend):
         if not username or not password:
             return None
 
-        try:
-            # Match against email, username (case-insensitive), or phone_number
-            user = UserModel.objects.get(
-                Q(email__iexact=username) |
-                Q(username__iexact=username) |
-                Q(phone_number=username)
-            )
-        except UserModel.DoesNotExist:
+        clean_credential = username.strip()
+        matching_users = UserModel.objects.filter(
+            Q(email__iexact=clean_credential) |
+            Q(username__iexact=clean_credential) |
+            Q(phone_number=clean_credential)
+        ).filter(is_active=True)
+
+        if not matching_users.exists():
             # Run the default password hasher once to reduce timing attack surface
             UserModel().set_password(password)
             return None
-        except UserModel.MultipleObjectsReturned:
-            # If multiple accounts match, prefer the active one
-            user = UserModel.objects.filter(
-                Q(email__iexact=username) |
-                Q(username__iexact=username) |
-                Q(phone_number=username)
-            ).filter(is_active=True).first()
-            if not user:
-                return None
 
-        # check_password + user_can_authenticate (checks is_active) — same as ModelBackend
-        if user.check_password(password) and self.user_can_authenticate(user):
-            return user
+        for user in matching_users:
+            if user.check_password(password) and self.user_can_authenticate(user):
+                return user
 
         return None
