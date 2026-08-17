@@ -47,7 +47,7 @@ class GeminiClient:
     """Singleton-friendly wrapper around Google Gemini API with robust fallbacks."""
 
     def __init__(self, model_name: str | None = None):
-        self.model_name = model_name or getattr(settings, 'GEMINI_MODEL', 'gemini-1.5-flash')
+        self.model_name = model_name or getattr(settings, 'GEMINI_MODEL', os.environ.get('GEMINI_MODEL', 'gemini-1.5-flash'))
         self._client = None
 
     def get_client(self):
@@ -140,12 +140,6 @@ class GeminiClient:
         if not prompt or not prompt.strip():
             return "Please provide a valid query."
 
-        full_prompt = prompt.strip()
-        if system_instruction:
-            full_prompt = f'{system_instruction.strip()}\n\n{full_prompt}'
-        if context:
-            full_prompt += f'\n\nContext:\n{context.strip()}'
-
         client = self.get_client()
         if client is None:
             return self._fallback_generate_content(prompt, context)
@@ -154,13 +148,31 @@ class GeminiClient:
             genai_mod = _get_genai()
             if hasattr(genai_mod, 'Client'):
                 # Modern google-genai SDK
+                config = None
+                if system_instruction:
+                    try:
+                        from google.genai import types
+                        config = types.GenerateContentConfig(
+                            system_instruction=system_instruction
+                        )
+                    except Exception as cfg_err:
+                        logger.debug(f"GenerateContentConfig note: {cfg_err}")
+
+                prompt_content = f"{prompt.strip()}\n\nContext:\n{context.strip()}" if context else prompt.strip()
+
                 response = client.models.generate_content(
                     model=self.model_name,
-                    contents=full_prompt,
+                    contents=prompt_content,
+                    config=config,
                 )
                 return response.text or self._fallback_generate_content(prompt, context)
             else:
-                # Legacy google-generativeai SDK
+                # Legacy google-generativeai SDK fallback
+                full_prompt = prompt.strip()
+                if system_instruction:
+                    full_prompt = f'{system_instruction.strip()}\n\n{full_prompt}'
+                if context:
+                    full_prompt += f'\n\nContext:\n{context.strip()}'
                 response = client.generate_content(full_prompt)
                 return response.text or self._fallback_generate_content(prompt, context)
         except Exception as e:
