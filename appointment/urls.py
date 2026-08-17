@@ -38,7 +38,7 @@ from appointment.google_views import (
 from appointment.payment_api_views import (
     RazorpayCreateOrderAPIView, RazorpayVerifyPaymentAPIView,
     PatientPaymentHistoryAPIView, InAppNotificationListView,
-    MarkNotificationReadAPIView
+    MarkNotificationReadAPIView, SaveFCMTokenAPIView, DeactivateFCMTokenAPIView
 )
 from appointment.prescription_views import (
     CreatePrescriptionView, PrescriptionDetailView, PrescriptionPDFView,
@@ -64,8 +64,7 @@ from appointment.booking_views import (
     LikeReviewView, DoctorReplyReviewView, UpdateReviewView, DeleteReviewView
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from appointment.ai_views import AIChatView, AIRiskAssessmentView
-from appointment.tts_views import TextToSpeechView
+from appointment.ai_views import AIChatView, AIRiskAssessmentView, TextToSpeechView
 from appointment.translate_views import TranslateTextView, LanguageListView
 
 app_name = 'appointment'
@@ -203,6 +202,9 @@ urlpatterns = [
     path('booking/<int:pk>/meeting/chat/', MeetingChatAPIView.as_view(), name='meeting-chat'),
     path('booking/<int:pk>/meeting/files/', MeetingFileAPIView.as_view(), name='meeting-files'),
     path('booking/<int:pk>/meeting/status/', UpdateMeetingStatusView.as_view(), name='meeting-status'),
-    path('booking/<int:pk>/meeting/notes/', SaveMeetingNotesView.as_view(), name='meeting-notes'),
+    # ── FCM Push Token Registration APIs ──────────────────────────────────────
+    path('api/save-fcm-token/', SaveFCMTokenAPIView.as_view(), name='save-fcm-token'),
+    path('api/fcm/token/', SaveFCMTokenAPIView.as_view(), name='fcm-token-register'),
+    path('api/fcm/token/deactivate/', DeactivateFCMTokenAPIView.as_view(), name='fcm-token-deactivate'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

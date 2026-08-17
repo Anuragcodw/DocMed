@@ -89,6 +89,56 @@
       });
     })();
 
+    var autoVoiceEnabled = true;
+    var currentAudio = null;
+
+    var LANG_LOCALE_MAP = {
+      'en': 'en-US',
+      'hi': 'hi-IN',
+      'pa': 'pa-IN',
+      'ur': 'ur-PK',
+      'bn': 'bn-IN',
+      'gu': 'gu-IN',
+      'mr': 'mr-IN',
+      'ta': 'ta-IN',
+      'te': 'te-IN',
+      'kn': 'kn-IN',
+      'ml': 'ml-IN',
+      'fr': 'fr-FR',
+      'es': 'es-ES',
+      'de': 'de-DE',
+      'ar': 'ar-SA',
+      'pt': 'pt-PT',
+      'ja': 'ja-JP',
+      'zh': 'zh-CN'
+    };
+
+    /* ── Auto Voice Toggle Handler ── */
+    var autoVoiceBtn = document.getElementById('aiChatAutoVoice');
+    var autoVoiceState = document.getElementById('aiChatVoiceState');
+    var autoVoiceIcon = document.getElementById('aiChatVoiceIcon');
+
+    if (autoVoiceBtn) {
+      autoVoiceBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        autoVoiceEnabled = !autoVoiceEnabled;
+        if (autoVoiceState) autoVoiceState.textContent = autoVoiceEnabled ? 'Voice: ON' : 'Voice: OFF';
+        if (autoVoiceIcon) autoVoiceIcon.className = autoVoiceEnabled ? 'fa fa-volume-up' : 'fa fa-volume-off';
+        autoVoiceBtn.style.opacity = autoVoiceEnabled ? '1' : '0.6';
+        if (!autoVoiceEnabled) stopAllAudio();
+      });
+    }
+
+    function stopAllAudio() {
+      if (currentAudio) {
+        try { currentAudio.pause(); } catch (e) {}
+        currentAudio = null;
+      }
+      if ('speechSynthesis' in window) {
+        try { window.speechSynthesis.cancel(); } catch (e) {}
+      }
+    }
+
     /* ── Markdown Renderer ── */
     function renderMarkdown(text) {
       if (!text) return '';
@@ -102,8 +152,51 @@
       return formatted.replace(/\n/g, '<br>');
     }
 
-    /* ── Message Bubble ── */
-    function appendBubble(text, fromBot, persist) {
+    /* ── Audio Synthesis & Playback (ElevenLabs + Web Speech Fallback) ── */
+    function playResponseAudio(textToSpeak, langCode, audioBase64) {
+      stopAllAudio();
+      if (!autoVoiceEnabled || !textToSpeak) return;
+
+      var cleanText = textToSpeak
+        .replace(/Disclaimer:[\s\S]*$/i, '')
+        .replace(/[*#_`]/g, '')
+        .trim();
+
+      if (!cleanText) return;
+
+      // 1. Try ElevenLabs Audio first if available
+      if (audioBase64 && audioBase64.length > 50) {
+        try {
+          currentAudio = new Audio(audioBase64);
+          currentAudio.play().catch(function (err) {
+            console.warn('[DocMed Chatbot] Autoplay blocked by browser policy:', err);
+            // Fallback to browser speech if audio element fails
+            speakWithWebSpeech(cleanText, langCode);
+          });
+          return;
+        } catch (err) {
+          console.warn('[DocMed Chatbot] ElevenLabs Audio playback error:', err);
+        }
+      }
+
+      // 2. Web Speech API Fallback
+      speakWithWebSpeech(cleanText, langCode);
+    }
+
+    function speakWithWebSpeech(cleanText, langCode) {
+      if (!('speechSynthesis' in window)) return;
+      try {
+        var utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.lang = LANG_LOCALE_MAP[langCode] || 'en-US';
+        utterance.rate = 0.95;
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.warn('[DocMed Chatbot] SpeechSynthesis error:', err);
+      }
+    }
+
+    /* ── Structured Message Bubble ── */
+    function appendBubble(dataOrText, fromBot, persist) {
       if (!fromBot) {
         var suggest = messagesContainer.querySelector('.suggested-questions');
         if (suggest) suggest.remove();
@@ -112,29 +205,70 @@
       var msgDiv = document.createElement('div');
       msgDiv.className = fromBot ? 'chat-msg bot' : 'chat-msg user';
 
-      if (fromBot) {
-        msgDiv.innerHTML = renderMarkdown(text);
+      if (!fromBot) {
+        msgDiv.textContent = typeof dataOrText === 'string' ? dataOrText : dataOrText.text;
       } else {
-        msgDiv.textContent = text;
+        var englishText = '';
+        var translatedText = '';
+        var langName = '';
+        var langCode = 'en';
+        var audioBase64 = '';
+
+        if (typeof dataOrText === 'object' && dataOrText !== null) {
+          englishText = dataOrText.english_response || dataOrText.reply || dataOrText.text || '';
+          translatedText = dataOrText.translated_response || '';
+          langName = dataOrText.language || '';
+          langCode = dataOrText.language_code || 'en';
+          audioBase64 = dataOrText.audio_base64 || '';
+        } else {
+          englishText = String(dataOrText);
+        }
+
+        // Render HTML content: English ALWAYS at top
+        var innerHTML = '';
+        if (langCode !== 'en' && translatedText) {
+          innerHTML =
+            '<div class="ai-lang-section english-section" style="margin-bottom:8px;">' +
+              '<div style="font-size:10px; font-weight:700; text-transform:uppercase; color:#4f46e5; margin-bottom:2px; display:flex; align-items:center; gap:4px;">🇬🇧 English</div>' +
+              '<div>' + renderMarkdown(englishText) + '</div>' +
+            '</div>' +
+            '<div class="ai-lang-section translated-section" style="border-top:1px dashed rgba(0,0,0,0.12); padding-top:8px; margin-top:8px;">' +
+              '<div style="font-size:10px; font-weight:700; text-transform:uppercase; color:#059669; margin-bottom:2px; display:flex; align-items:center; gap:4px;">🌐 ' + (langName || langCode) + '</div>' +
+              '<div>' + renderMarkdown(translatedText) + '</div>' +
+            '</div>';
+        } else {
+          innerHTML = renderMarkdown(englishText);
+        }
+
+        // Speaker Play Button
+        var textToSpeak = (langCode !== 'en' && translatedText) ? translatedText : englishText;
+        innerHTML +=
+          '<div style="margin-top:6px; text-align:right;">' +
+            '<button class="ai-speaker-play-btn" style="background:none; border:none; color:var(--color-primary, #4f46e5); font-size:12px; cursor:pointer; padding:2px 6px; border-radius:4px;" title="Play voice response">' +
+              '<i class="fa fa-volume-up"></i> Listen' +
+            '</button>' +
+          '</div>';
+
+        msgDiv.innerHTML = innerHTML;
+
+        // Add event listener to speaker play button
+        var speakerBtn = msgDiv.querySelector('.ai-speaker-play-btn');
+        if (speakerBtn) {
+          speakerBtn.addEventListener('click', function () {
+            playResponseAudio(textToSpeak, langCode, audioBase64);
+          });
+        }
+
+        // Automatic voice playback for selected language
+        playResponseAudio(textToSpeak, langCode, audioBase64);
       }
 
       messagesContainer.appendChild(msgDiv);
       scrollToBottom();
 
-      /* TTS for bot replies */
-      if (fromBot && 'speechSynthesis' in window) {
-        var cleanText = text.replace(/Disclaimer:[\s\S]*$/i, '').replace(/[*#_]/g, '').trim();
-        if (cleanText) {
-          var utterance = new SpeechSynthesisUtterance(cleanText);
-          utterance.lang = /[\u0900-\u097F]/.test(text) ? 'hi-IN' : 'en-US';
-          utterance.rate = 0.95;
-          window.speechSynthesis.speak(utterance);
-        }
-      }
-
       if (persist !== false) {
         var history = loadHistory();
-        history.push({ text: text, fromBot: fromBot });
+        history.push({ data: dataOrText, fromBot: fromBot });
         saveHistory(history);
       }
     }
@@ -263,7 +397,10 @@
         msg = msg.substring(0, MAX_INPUT_LEN);
       }
 
-      appendBubble(msg, false);
+      var langSelect = document.getElementById('aiChatLanguage');
+      var selectedLangCode = langSelect ? langSelect.value : 'en';
+
+      appendBubble({ text: msg }, false);
       if (inputField) inputField.value = '';
       isWaiting = true;
 
@@ -274,7 +411,7 @@
         setTimeout(function () {
           hideTyping();
           isWaiting = false;
-          appendBubble("🔒 Authentication required. Please log in to access the AI health assistant.\n\n" + clientFallbackReply(msg), true);
+          appendBubble({ reply: "🔒 Authentication required. Please log in to access the AI health assistant.\n\n" + clientFallbackReply(msg) }, true);
         }, 400);
         return;
       }
@@ -293,7 +430,10 @@
           method: 'POST',
           headers: headers,
           credentials: 'include',
-          body: JSON.stringify({ message: msg })
+          body: JSON.stringify({
+            message: msg,
+            language_code: selectedLangCode
+          })
         });
       }
 
@@ -324,13 +464,13 @@
         .then(function (data) {
           hideTyping();
           isWaiting = false;
-          appendBubble(data.reply || data.response || clientFallbackReply(msg), true);
+          appendBubble(data, true);
         })
         .catch(function (error) {
           hideTyping();
           isWaiting = false;
           console.warn('[DocMed Chatbot] Request handled with status message:', error.message);
-          appendBubble(error.message, true);
+          appendBubble({ reply: error.message }, true);
         });
     }
 

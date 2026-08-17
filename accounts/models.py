@@ -94,6 +94,27 @@ class User(AbstractUser):
         return self.email
 
 
+class FCMDeviceToken(models.Model):
+    """
+    Stores FCM registration tokens for user devices and web browsers.
+    Allows a single user to have multiple active devices/tokens.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fcm_device_tokens')
+    token = models.CharField(max_length=512, db_index=True)
+    device_info = models.CharField(max_length=255, blank=True, null=True, default='Web Browser')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'FCM Device Token'
+        verbose_name_plural = 'FCM Device Tokens'
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"{self.user.email} - {self.device_info} ({'Active' if self.is_active else 'Inactive'})"
+
+
 class OTPCode(models.Model):
     """
     Temporary table to store OTP codes sent for passwordless email login.

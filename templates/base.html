@@ -250,9 +250,40 @@
     
     <div class="glass-panel ai-chat-window" id="aiChatWindow">
       <!-- Header -->
-      <div class="ai-chat-header">
-        <h5><i class="fa fa-heartbeat"></i> DocMed AI</h5>
-        <button id="aiChatClose" class="ai-chat-close-btn" aria-label="Close chat"><i class="fa fa-times"></i></button>
+      <div class="ai-chat-header" style="flex-direction:column; align-items:stretch; gap:6px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+          <h5 style="margin:0;"><i class="fa fa-heartbeat"></i> DocMed AI</h5>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button id="aiChatAutoVoice" class="ai-chat-voice-toggle-btn" title="Toggle Auto Voice Playback" style="background:rgba(255,255,255,0.25);border:none;color:#fff;border-radius:12px;padding:3px 8px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
+              <i class="fa fa-volume-up" id="aiChatVoiceIcon"></i> <span id="aiChatVoiceState">Voice: ON</span>
+            </button>
+            <button id="aiChatClose" class="ai-chat-close-btn" aria-label="Close chat"><i class="fa fa-times"></i></button>
+          </div>
+        </div>
+        <!-- Multilingual Selector -->
+        <div class="ai-chat-lang-bar" style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.18); padding:4px 8px; border-radius:6px; font-size:12px; color:#fff;">
+          <span style="font-weight:500;">🌐 Language:</span>
+          <select id="aiChatLanguage" style="background:#ffffff; color:#0f172a; border:none; border-radius:4px; padding:2px 6px; font-size:11px; font-weight:600; cursor:pointer; outline:none;">
+            <option value="en" selected>English</option>
+            <option value="hi">Hindi (हिंदी)</option>
+            <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
+            <option value="ur">Urdu (اردو)</option>
+            <option value="bn">Bengali (বাংলা)</option>
+            <option value="gu">Gujarati (ગુજરાતી)</option>
+            <option value="mr">Marathi (मराठी)</option>
+            <option value="ta">Tamil (தமிழ்)</option>
+            <option value="te">Telugu (తెలుగు)</option>
+            <option value="kn">Kannada (ಕನ್ನಡ)</option>
+            <option value="ml">Malayalam (മലയാളം)</option>
+            <option value="fr">French (Français)</option>
+            <option value="es">Spanish (Español)</option>
+            <option value="de">German (Deutsch)</option>
+            <option value="ar">Arabic (العربية)</option>
+            <option value="pt">Portuguese (Português)</option>
+            <option value="ja">Japanese (日本語)</option>
+            <option value="zh">Chinese (中文)</option>
+          </select>
+        </div>
       </div>
       
       <!-- Messages Area -->
@@ -405,7 +436,21 @@
     var cookie = document.cookie.split(';').find(function(c){ return c.trim().startsWith('csrftoken='); });
     return cookie ? cookie.split('=')[1].trim() : '';
   }
+  <!-- Firebase JS SDK (compat version for web push) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+  <script>
+    window.FIREBASE_CONFIG = {
+      apiKey: "{{ FIREBASE_API_KEY|default:'' }}",
+      authDomain: "{{ FIREBASE_AUTH_DOMAIN|default:'' }}",
+      projectId: "{{ FIREBASE_PROJECT_ID|default:'' }}",
+      storageBucket: "{{ FIREBASE_STORAGE_BUCKET|default:'' }}",
+      messagingSenderId: "{{ FIREBASE_MESSAGING_SENDER_ID|default:'' }}",
+      appId: "{{ FIREBASE_APP_ID|default:'' }}",
+      vapidKey: "{{ FIREBASE_VAPID_PUBLIC_KEY|default:'' }}"
+    };
   </script>
+  <script src="{% static 'js/fcm.js' %}"></script>
 
 </body>
 

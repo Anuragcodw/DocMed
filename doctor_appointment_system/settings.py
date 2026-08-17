@@ -469,6 +469,12 @@ FCM_ENABLED = os.environ.get('FCM_ENABLED', 'False').lower() in ('true', '1', 'y
 FIREBASE_VAPID_PUBLIC_KEY = os.environ.get('FIREBASE_VAPID_PUBLIC_KEY', '')
 
 # ---------------------------------------------------------------------------
+# ElevenLabs Text-to-Speech (TTS) Configuration
+# ---------------------------------------------------------------------------
+ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY', '')
+ELEVENLABS_VOICE_ID = os.environ.get('ELEVENLABS_VOICE_ID', '21m00Tcm4TlvDq8ikWAM')
+
+# ---------------------------------------------------------------------------
 # Google Calendar + Google Meet Integration
 # ---------------------------------------------------------------------------
 # ⚠️  Enable the Google Calendar API in Google Cloud Console.

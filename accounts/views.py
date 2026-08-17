@@ -1146,20 +1146,42 @@ class DoctorDocumentDownloadView(View):
 class SaveFCMTokenView(View):
     """
     POST /api/save-fcm-token/
-    Stores the user's FCM device token in their profile for push notifications.
+    Stores the user's FCM device token in FCMDeviceToken model and user profile.
     """
     def post(self, request, *args, **kwargs):
         import json
+        from .models import FCMDeviceToken
+        token = None
+        device_info = request.META.get('HTTP_USER_AGENT', 'Web Browser')[:250]
         try:
-            body = json.loads(request.body)
-            token = body.get('token') or request.POST.get('token')
+            body = json.loads(request.body.decode('utf-8'))
+            token = body.get('fcm_token') or body.get('token')
+            if body.get('device_info'):
+                device_info = body.get('device_info')[:250]
         except Exception:
-            token = request.POST.get('token')
+            token = request.POST.get('fcm_token') or request.POST.get('token')
+            if request.POST.get('device_info'):
+                device_info = request.POST.get('device_info')[:250]
 
-        if token:
-            request.user.fcm_token = token
-            request.user.save(update_fields=['fcm_token'])
-            return JsonResponse({'status': 'success', 'message': 'FCM token saved.'})
+        if token and str(token).strip():
+            token = str(token).strip()
+            device_obj, created = FCMDeviceToken.objects.get_or_create(
+                user=request.user,
+                token=token,
+                defaults={
+                    'device_info': device_info,
+                    'is_active': True,
+                }
+            )
+            if not created and not device_obj.is_active:
+                device_obj.is_active = True
+                device_obj.save(update_fields=['is_active'])
+
+            if request.user.fcm_token != token:
+                request.user.fcm_token = token
+                request.user.save(update_fields=['fcm_token'])
+
+            return JsonResponse({'status': 'success', 'success': True, 'message': 'FCM token saved.', 'device_id': device_obj.id})
         return JsonResponse({'status': 'error', 'message': 'Token missing.'}, status=400)
 
 

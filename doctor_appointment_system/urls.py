@@ -10,9 +10,23 @@ from django.views.generic import TemplateView
 
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
+import os
+from django.http import HttpResponse
+
+def firebase_messaging_sw(request):
+    sw_path = os.path.join(settings.BASE_DIR, 'public', 'firebase-messaging-sw.js')
+    if os.path.exists(sw_path):
+        with open(sw_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+    else:
+        content = "// Firebase Messaging Service Worker\n"
+    return HttpResponse(content, content_type='application/javascript')
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
+    path('firebase-messaging-sw.js', firebase_messaging_sw, name='firebase-sw'),
     path('', include('accounts.urls')),
     path('', include('appointment.urls')),
 

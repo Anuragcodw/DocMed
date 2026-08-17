@@ -224,3 +224,71 @@ class MarkNotificationReadAPIView(APIView):
         notification.is_read = True
         notification.save(update_fields=['is_read'])
         return Response({'success': True, 'id': notification.id}, status=status.HTTP_200_OK)
+
+
+from accounts.models import FCMDeviceToken
+
+
+class SaveFCMTokenAPIView(APIView):
+    """
+    API endpoint to register/save an FCM token for the authenticated user.
+    Supports single user having multiple active device tokens (FCMDeviceToken model)
+    while maintaining user.fcm_token for backward compatibility.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        fcm_token = request.data.get('fcm_token') or request.data.get('token')
+        device_info = request.data.get('device_info') or request.META.get('HTTP_USER_AGENT', 'Web Browser')[:250]
+
+        if not fcm_token or not str(fcm_token).strip():
+            return Response({'error': 'fcm_token is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        fcm_token = str(fcm_token).strip()
+
+        # 1. Update/Create FCMDeviceToken for multiple devices support
+        device_obj, created = FCMDeviceToken.objects.get_or_create(
+            user=request.user,
+            token=fcm_token,
+            defaults={
+                'device_info': device_info,
+                'is_active': True,
+            }
+        )
+        if not created and not device_obj.is_active:
+            device_obj.is_active = True
+            device_obj.save(update_fields=['is_active'])
+
+        # 2. Update user.fcm_token for backward compatibility
+        if request.user.fcm_token != fcm_token:
+            request.user.fcm_token = fcm_token
+            request.user.save(update_fields=['fcm_token'])
+
+        logger.info(f"[FCM API] Token saved for user {request.user.email} (Device: {device_info})")
+        return Response({
+            'success': True,
+            'message': 'FCM token registered successfully.',
+            'device_id': device_obj.id,
+        }, status=status.HTTP_200_OK)
+
+
+class DeactivateFCMTokenAPIView(APIView):
+    """
+    API endpoint to deactivate an FCM token for the authenticated user (e.g. on logout).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        fcm_token = request.data.get('fcm_token') or request.data.get('token')
+        if fcm_token:
+            fcm_token = str(fcm_token).strip()
+            FCMDeviceToken.objects.filter(user=request.user, token=fcm_token).update(is_active=False)
+            if request.user.fcm_token == fcm_token:
+                request.user.fcm_token = None
+                request.user.save(update_fields=['fcm_token'])
+        else:
+            FCMDeviceToken.objects.filter(user=request.user).update(is_active=False)
+            request.user.fcm_token = None
+            request.user.save(update_fields=['fcm_token'])
+
+        return Response({'success': True, 'message': 'FCM token deactivated.'}, status=status.HTTP_200_OK)

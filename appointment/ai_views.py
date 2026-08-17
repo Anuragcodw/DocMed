@@ -1,15 +1,39 @@
+import base64
 import json
 import logging
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views import View
 
 from appointment.models import AIChatSession, AIChatMessage
 from ai.chatbot.conversation import MedicalChatbot
+from ai.services.gemini import GeminiClient
+from ai.services.elevenlabs import ElevenLabsService
 from ai.ml.risk_evaluator import RiskEvaluator
 
 logger = logging.getLogger(__name__)
 
 MAX_MESSAGE_LENGTH = 2000  # Step 8 Security rule: reject messages over 2000 chars
+
+LANGUAGE_MAP = {
+    'en': 'English',
+    'hi': 'Hindi',
+    'pa': 'Punjabi',
+    'ur': 'Urdu',
+    'bn': 'Bengali',
+    'gu': 'Gujarati',
+    'mr': 'Marathi',
+    'ta': 'Tamil',
+    'te': 'Telugu',
+    'kn': 'Kannada',
+    'ml': 'Malayalam',
+    'fr': 'French',
+    'es': 'Spanish',
+    'de': 'German',
+    'ar': 'Arabic',
+    'pt': 'Portuguese',
+    'ja': 'Japanese',
+    'zh': 'Chinese',
+}
 
 
 def authenticate_user(request):
@@ -34,8 +58,8 @@ def authenticate_user(request):
 class AIChatView(View):
     """
     AI Chat endpoint — processes user messages safely,
-    validates input, enforces a 2000-character ceiling, logs API failures,
-    and guarantees a valid JSON response without server crashes.
+    generates primary English response via Gemini, performs translation if requested,
+    synthesizes speech via ElevenLabs TTS, and returns structured response.
     """
 
     def dispatch(self, request, *args, **kwargs):
@@ -58,8 +82,10 @@ class AIChatView(View):
             logger.warning(f"[AIChatView] Invalid JSON format received: {e}")
             return JsonResponse({'error': 'Invalid JSON request format.'}, status=400)
 
-        # 2. Extract & validate message text
+        # 2. Extract & validate message text and requested language code
         message_text = (data.get('message') or '').strip()
+        language_code = (data.get('language_code') or data.get('language') or 'en').strip().lower()
+        target_language = LANGUAGE_MAP.get(language_code, 'English')
 
         if not message_text:
             logger.warning("[AIChatView] Empty message rejected.")
@@ -99,29 +125,94 @@ class AIChatView(View):
         except Exception as e:
             logger.error(f"[AIChatView] Database session save error: {e}")
 
-        # 4. Generate AI response with comprehensive exception handling
+        # 4. Generate PRIMARY English AI response with Gemini
+        english_response = ""
         try:
             chatbot = MedicalChatbot()
-            ai_response = chatbot.chat(message_text, chat_history_list=chat_history_list)
+            english_response = chatbot.chat(message_text, chat_history_list=chat_history_list)
         except Exception as e:
             logger.error(f"[AIChatView] Gemini API failure or timeout: {e}")
-            ai_response = (
+            english_response = (
                 "AI service is temporarily unavailable. Please try again later.\n\n"
                 "Disclaimer: This information is for educational purposes and does not replace professional medical advice."
             )
 
-        # 5. Persist AI response
+        # 5. Multilingual Translation (if non-English language selected)
+        translated_response = ""
+        if language_code != 'en':
+            try:
+                gemini_client = GeminiClient()
+                translated_response = gemini_client.translate_text(english_response, target_language)
+            except Exception as e:
+                logger.error(f"[AIChatView] Translation to {target_language} failed: {e}")
+                translated_response = english_response
+
+        # 6. ElevenLabs Text-to-Speech Synthesis
+        audio_base64 = ""
+        try:
+            tts_text = translated_response if (language_code != 'en' and translated_response) else english_response
+            elevenlabs_service = ElevenLabsService()
+            audio_bytes = elevenlabs_service.generate_speech(tts_text, language_code=language_code)
+            if audio_bytes:
+                audio_base64 = "data:audio/mpeg;base64," + base64.b64encode(audio_bytes).decode('utf-8')
+        except Exception as e:
+            logger.error(f"[AIChatView] ElevenLabs TTS error: {e}")
+
+        # 7. Persist AI response
         if session:
             try:
+                saved_text = f"English:\n{english_response}\n\n{target_language}:\n{translated_response}" if (language_code != 'en' and translated_response) else english_response
                 AIChatMessage.objects.create(
                     session=session,
                     sender='ai',
-                    message_text=ai_response
+                    message_text=saved_text
                 )
             except Exception as e:
                 logger.error(f"[AIChatView] Failed to save AI response message: {e}")
 
-        return JsonResponse({'reply': ai_response})
+        return JsonResponse({
+            'reply': translated_response if (language_code != 'en' and translated_response) else english_response,
+            'english_response': english_response,
+            'translated_response': translated_response if language_code != 'en' else '',
+            'language': target_language,
+            'language_code': language_code,
+            'audio_base64': audio_base64,
+            'audio_url': ''
+        })
+
+
+class TextToSpeechView(View):
+    """
+    Standalone API endpoint for Text-to-Speech synthesis (POST /api/ai/tts/).
+    Generates ElevenLabs audio for the specified text and language code.
+    """
+    def dispatch(self, request, *args, **kwargs):
+        user = authenticate_user(request)
+        if not user.is_authenticated:
+            return JsonResponse({'error': 'Authentication required.'}, status=401)
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            if request.body:
+                data = json.loads(request.body.decode('utf-8'))
+            else:
+                data = request.POST
+        except Exception:
+            data = {}
+
+        text = (data.get('text') or data.get('message') or '').strip()
+        language_code = (data.get('language_code') or 'en').strip().lower()
+
+        if not text:
+            return JsonResponse({'error': 'Text parameter is required.'}, status=400)
+
+        elevenlabs_service = ElevenLabsService()
+        audio_bytes = elevenlabs_service.generate_speech(text, language_code=language_code)
+        if audio_bytes:
+            return HttpResponse(audio_bytes, content_type='audio/mpeg')
+        return JsonResponse({'error': 'ElevenLabs TTS unavailable.', 'fallback': True}, status=404)
+
 
 
 class AIRiskAssessmentView(View):

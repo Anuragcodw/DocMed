@@ -179,6 +179,45 @@ class GeminiClient:
             logger.error(f'Gemini generate_content API error: {e}')
             return self._fallback_generate_content(prompt, context)
 
+    def translate_text(self, english_text: str, target_language_name: str) -> str:
+        """
+        Translates an already-generated English AI response into the specified target language using Gemini API.
+
+        Args:
+            english_text: The primary English AI response text.
+            target_language_name: Full name of the target language (e.g., 'Hindi', 'Punjabi', 'French').
+
+        Returns:
+            The translated text string preserving medical disclaimers and safety warnings.
+        """
+        if not english_text or not english_text.strip():
+            return ""
+
+        if target_language_name.lower() in ('english', 'en'):
+            return english_text
+
+        translation_system_prompt = (
+            f"You are a professional medical translator. Translate the following English medical response into {target_language_name}.\n"
+            "STRICT RULES:\n"
+            "1. Preserve the exact meaning of the original English text without adding, altering, or omitting details.\n"
+            "2. Translate all medical disclaimers, emergency care warnings, and advice accurately into natural, clear "
+            f"{target_language_name}.\n"
+            "3. Do NOT claim to be a licensed doctor.\n"
+            "4. Return ONLY the translated response text without extra conversational commentary."
+        )
+
+        try:
+            translation = self.generate_content(
+                prompt=f"Translate this text to {target_language_name}:\n\n{english_text}",
+                system_instruction=translation_system_prompt
+            )
+            if translation and translation.strip():
+                return translation.strip()
+        except Exception as exc:
+            logger.error(f"[GeminiClient] Translation error to {target_language_name}: {exc}")
+
+        return english_text
+
     def get_embeddings(self, text: str, model: str = 'models/text-embedding-004') -> list:
         """Return embedding vector. Returns empty list if AI is unavailable."""
         genai_mod = _get_genai()
@@ -211,3 +250,4 @@ _gemini_instance = GeminiClient()
 def generate_response(message: str) -> str:
     """Reusable top-level helper function to generate AI responses."""
     return _gemini_instance.generate_content(prompt=message)
+
