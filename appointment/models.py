@@ -164,7 +164,11 @@ class TakeAppointment(models.Model):
 
     # Reminder Tracking
     reminder_24h_sent = models.BooleanField(default=False, help_text="24-hour reminder sent flag")
+    reminder_16h_sent = models.BooleanField(default=False, help_text="16-hour reminder sent flag")
+    reminder_8h_sent = models.BooleanField(default=False, help_text="8-hour reminder sent flag")
+    reminder_4h_sent = models.BooleanField(default=False, help_text="4-hour reminder sent flag")
     reminder_2h_sent = models.BooleanField(default=False, help_text="2-hour reminder sent flag")
+    reminder_30m_sent = models.BooleanField(default=False, help_text="30-minute reminder sent flag")
 
     # Payment tracking
     is_paid = models.BooleanField(default=False)

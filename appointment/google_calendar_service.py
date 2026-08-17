@@ -182,8 +182,10 @@ def create_google_calendar_event(booking):
                 'useDefault': False,
                 'overrides': [
                     {'method': 'email', 'minutes': 24 * 60},
-                    {'method': 'popup', 'minutes': 120},
-                    {'method': 'popup', 'minutes': 15},
+                    {'method': 'popup', 'minutes': 16 * 60},
+                    {'method': 'popup', 'minutes': 8 * 60},
+                    {'method': 'popup', 'minutes': 2 * 60},
+                    {'method': 'popup', 'minutes': 30},
                 ]
             }
         }

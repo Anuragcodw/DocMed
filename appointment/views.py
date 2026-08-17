@@ -746,7 +746,11 @@ class PatientRescheduleBookingView(LoginRequiredMixin, View):
                 booking.date = parse_datetime(new_date_str)
                 booking.status = 'rescheduled'
                 booking.reminder_24h_sent = False
+                booking.reminder_16h_sent = False
+                booking.reminder_8h_sent = False
+                booking.reminder_4h_sent = False
                 booking.reminder_2h_sent = False
+                booking.reminder_30m_sent = False
                 booking.save()
 
                 # Update existing Google Calendar event
