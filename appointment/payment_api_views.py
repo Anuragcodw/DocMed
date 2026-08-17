@@ -154,6 +154,13 @@ class RazorpayVerifyPaymentAPIView(APIView):
             payment.booking.status = 'approved'
             payment.booking.save(update_fields=['is_paid', 'status'])
 
+            # Create Google Calendar Event & Google Meet Link
+            try:
+                from .google_calendar_service import create_google_calendar_event
+                create_google_calendar_event(payment.booking)
+            except Exception as g_err:
+                logger.warning(f'[API] Google Calendar event creation warning: {g_err}')
+
             # Send Email, SMS, In-App Notifications
             try:
                 send_payment_confirmation_email(payment)

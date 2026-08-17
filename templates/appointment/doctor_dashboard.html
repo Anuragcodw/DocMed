@@ -15,7 +15,23 @@
         </h2>
         <p class="text-muted mb-0">Manage your consultation slots, review booking requests, and record medical notes.</p>
       </div>
-      <div class="col-md-4 text-md-right mt-3 mt-md-0 d-flex justify-content-md-end align-items-center" style="gap: 12px;">
+      <div class="col-md-4 text-md-right mt-3 mt-md-0 d-flex justify-content-md-end align-items-center" style="gap: 10px; flex-wrap: wrap;">
+        <!-- Google Calendar Connection Button -->
+        {% if request.user.doctor_profile.google_calendar_connected %}
+        <div class="d-inline-flex align-items-center bg-white border border-success rounded-pill px-3 py-1 shadow-sm" style="gap: 6px;">
+          <i class="fa fa-calendar-check-o text-success"></i>
+          <span class="small font-weight-bold text-success">Calendar Connected</span>
+          <form action="{% url 'appointment:google-calendar-disconnect' %}" method="post" class="m-0 d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-link p-0 text-muted ml-1" title="Disconnect Google Calendar"><i class="fa fa-times-circle"></i></button>
+          </form>
+        </div>
+        {% else %}
+        <a href="{% url 'appointment:google-calendar-connect' %}" class="btn btn-outline-primary btn-sm font-weight-bold shadow-sm" style="border-radius: var(--radius-pill); padding: 6px 14px;">
+          <i class="fa fa-google mr-1"></i> Connect Calendar
+        </a>
+        {% endif %}
+
         <!-- Online/Offline Status Indicator -->
         <form action="{% url 'appointment:doctor-toggle-availability' %}" method="post" class="m-0">
           {% csrf_token %}
@@ -24,7 +40,7 @@
             {% if stats.is_online %}Online{% else %}Offline{% endif %}
           </button>
         </form>
-        <a href="{% url 'appointment:doctor-appointment-create' %}" class="btn-premium btn-primary-gradient px-4 py-2 hover-scale shadow-glow" style="display: inline-flex; align-items: center; gap: 8px;">
+        <a href="{% url 'appointment:doctor-appointment-create' %}" class="btn-premium btn-primary-gradient px-3 py-2 hover-scale shadow-glow" style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px;">
           <i class="fa fa-plus-circle"></i> Create Slot
         </a>
       </div>
@@ -221,10 +237,14 @@
                           </td>
                           <td>
                             <div class="d-flex align-items-center" style="gap: 8px;">
-                              <!-- Jitsi Meeting controls -->
-                              {% if booking.meeting_url %}
+                              <!-- Meeting Controls: Google Meet (Preferred) or Jitsi -->
+                              {% if booking.status == 'approved' and booking.is_paid and booking.google_meet_link %}
+                                <a href="{{ booking.google_meet_link }}" target="_blank" class="btn btn-sm btn-success text-white py-1 px-2 font-weight-bold shadow-sm" style="border-radius: var(--radius-sm); font-size: 11px;">
+                                  <i class="fa fa-video-camera mr-1"></i> Join Google Meet
+                                </a>
+                              {% elif booking.meeting_url %}
                                 <a href="{% url 'appointment:join-meeting' booking.id %}" class="btn btn-sm btn-info text-white py-1 px-2 font-weight-bold" style="border-radius: var(--radius-sm); font-size: 11px;">
-                                  <i class="fa fa-video-camera"></i> Join Call
+                                  <i class="fa fa-video-camera mr-1"></i> Join Call
                                 </a>
                               {% else %}
                                 <form action="{% url 'appointment:create-meeting' booking.id %}" method="post" class="m-0">

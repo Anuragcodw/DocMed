@@ -223,6 +223,13 @@ class RazorpayCallbackView(LoginRequiredMixin, View):
             payment.booking.status = 'approved'
             payment.booking.save(update_fields=['is_paid', 'status'])
 
+            # Create Google Calendar Event & Google Meet Link
+            try:
+                from .google_calendar_service import create_google_calendar_event
+                create_google_calendar_event(payment.booking)
+            except Exception as g_err:
+                logger.warning(f'Google Calendar event creation warning for Booking #{payment.booking.id}: {g_err}')
+
             # Send multi-channel notifications (HTML Email, SMS, In-App Notifications)
             try:
                 from .emails import send_payment_confirmation_email

@@ -50,6 +50,8 @@ stripe==8.9.0
 geocoder==1.38.1
 geopy==2.4.1
 googlemaps==4.10.0
+google-api-python-client==2.118.0
+google-auth-oauthlib==1.2.0
 
 # Forms & UI Helpers
 crispy-bootstrap5==2024.2

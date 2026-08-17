@@ -1,0 +1,343 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}| Terms of Service{% endblock %}
+{% block meta_description %}DocMed Terms of Service — appointment booking, doctor and patient responsibilities, consultation payments, Razorpay processing, and Google Meet tele-consultations.{% endblock %}
+
+{% block content %}
+<section class="section-padding-100" style="padding-top: 130px; min-height: 90vh; background: var(--color-bg);">
+  <div class="container">
+    
+    <!-- Hero Header -->
+    <div class="text-center mb-5" data-aos="fade-up">
+      <div class="d-inline-flex align-items-center bg-white border rounded-pill px-4 py-2 mb-3 shadow-sm" style="gap: 8px;">
+        <i class="fa fa-gavel text-primary"></i>
+        <span class="small font-weight-bold text-primary">Terms & Conditions</span>
+      </div>
+      <h1 class="display-4 font-weight-bold" style="color: #0f172a; letter-spacing: -0.5px;">
+        Terms of Service
+      </h1>
+      <p class="text-muted mx-auto" style="max-width: 680px; font-size: 16px;">
+        Please review the terms and conditions governing the use of DocMed's doctor appointment scheduling, tele-consultation, and payment services.
+      </p>
+      <span class="badge badge-light px-3 py-2 text-muted" style="border-radius: 20px; font-size: 12px;">Last Updated: August 18, 2026</span>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        
+        <div class="glass-panel p-4 p-md-5 mb-5 shadow-soft border-0" style="border-radius: 24px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px);">
+          
+          <!-- Medical Emergency Alert Banner -->
+          <div class="alert alert-danger p-4 mb-5 shadow-sm border-0" style="border-radius: 16px; border-left: 6px solid #ef4444 !important;" data-aos="fade-up">
+            <div class="d-flex align-items-top">
+              <i class="fa fa-ambulance text-danger fa-2x mr-3 mt-1"></i>
+              <div>
+                <h5 class="font-weight-bold text-danger mb-1">CRITICAL MEDICAL DISCLAIMER</h5>
+                <p class="mb-0 small text-dark" style="line-height: 1.6;">
+                  DocMed is an appointment scheduling and tele-consultation software platform. <strong>DocMed does NOT replace emergency medical services or professional in-person medical judgment.</strong> If you are experiencing a medical emergency, severe chest pain, breathing difficulties, or acute distress, call your local emergency services (e.g. 112 / 911 / 108) or go to the nearest emergency room immediately.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 1. Acceptance of Terms -->
+          <div class="mb-5" id="acceptance-of-terms" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-check-square-o text-primary mr-2"></i>1. Acceptance of Terms
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              By accessing or creating an account on DocMed ("the Platform"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to all terms, you may not access or use the services.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 2. Account Registration -->
+          <div class="mb-5" id="account-registration" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-user-plus text-primary mr-2"></i>2. Account Registration
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Users register as either `patient` or `doctor`. You agree to provide accurate, current, and complete registration data. You are responsible for maintaining the confidentiality of your account credentials.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 3. Patient Responsibilities -->
+          <div class="mb-5" id="patient-responsibilities" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-user text-primary mr-2"></i>3. Patient Responsibilities
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Patients must provide accurate contact and health details when booking appointments, arrive on time for scheduled consultations (online or offline), and pay applicable consultation fees.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 4. Doctor Responsibilities -->
+          <div class="mb-5" id="doctor-responsibilities" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-user-md text-primary mr-2"></i>4. Doctor Responsibilities
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Doctors are responsible for maintaining valid medical licenses, State Medical Council / NMC registrations, setting accurate availability slots, conducting consultations in a professional manner, and issuing medical records or prescriptions responsibly.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 5. Appointment Booking -->
+          <div class="mb-5" id="appointment-booking" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-calendar-check-o text-primary mr-2"></i>5. Appointment Booking
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Appointments are booked date-wise based on available time slots. Slot reservation checks doctor leave, existing bookings, and slot conflicts to prevent double booking.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 6. Appointment Cancellation -->
+          <div class="mb-5" id="appointment-cancellation" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-times-circle text-primary mr-2"></i>6. Appointment Cancellation
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Patients and doctors can cancel eligible pending or confirmed appointments. Upon cancellation, associated Google Calendar events are deleted, and Google Meet links are disabled.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 7. Appointment Rescheduling -->
+          <div class="mb-5" id="appointment-rescheduling" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-clock-o text-primary mr-2"></i>7. Appointment Rescheduling
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Appointments can be rescheduled to a new valid date and time slot. Rescheduling updates the existing Google Calendar event and recalculates automated 24h and 2h reminders.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 8. Consultation Fees -->
+          <div class="mb-5" id="consultation-fees" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-money text-primary mr-2"></i>8. Consultation Fees
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Consultation fees are set by the attending doctor or clinic. Prices are displayed prior to booking confirmation and checkout.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 9. Online Payments & Razorpay -->
+          <div class="mb-5" id="online-payments" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-credit-card text-primary mr-2"></i>9. Online Payments & Razorpay Processing
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Online payments are processed through integrated payment gateways (such as Razorpay). Test Mode transactions generate simulated payment verifications for testing purposes. Real-money transactions are subject to payment gateway verification algorithms and signature checks.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 10. Refund Policy Placeholder -->
+          <div class="mb-5" id="refund-policy" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-undo text-primary mr-2"></i>10. Refund Policy Placeholder
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Refund requests for cancelled consultations or unfulfilled appointments are submitted through the platform refund workflow. Approved refunds are processed back to the original payment method according to payment gateway timelines.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 11. Google Calendar Integration -->
+          <div class="mb-5" id="google-calendar-integration" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-google text-primary mr-2"></i>11. Google Calendar Integration
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Doctors may optionally connect their Google Calendar via OAuth 2.0. Upon payment confirmation, DocMed creates calendar events on the doctor's calendar. If Google Calendar sync fails, the paid appointment remains valid and sync can be retried.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 12. Google Meet Integration -->
+          <div class="mb-5" id="google-meet-integration" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-video-camera text-primary mr-2"></i>12. Google Meet Integration
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Online consultations generate Google Meet conference links via Google Calendar API. "Join Google Meet" buttons are visible only to the assigned patient and doctor after successful payment confirmation.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 13. Online Consultation -->
+          <div class="mb-5" id="online-consultation" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-stethoscope text-primary mr-2"></i>13. Online Consultation
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Tele-consultations depend on user internet connectivity, browser compatibility, and working camera/microphone equipment. DocMed is not responsible for local technical disruptions or ISP outages.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 14. Prescription Information -->
+          <div class="mb-5" id="prescription-information" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-file-text-o text-primary mr-2"></i>14. Prescription Information
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Digital prescriptions issued by doctors are provided for informational and treatment fulfillment purposes. Doctors are solely responsible for medical accuracy and dosage instructions.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 15. Medical Disclaimer -->
+          <div class="mb-5" id="medical-disclaimer" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-user-md text-primary mr-2"></i>15. Medical Disclaimer
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              DocMed operates as a technology platform for medical appointment coordination. DocMed does not practice medicine or make clinical decisions. Individual doctors remain independent healthcare providers.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 16. Platform Availability -->
+          <div class="mb-5" id="platform-availability" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-server text-primary mr-2"></i>16. Platform Availability
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              While we aim for high uptime, platform availability may be interrupted for scheduled maintenance, server updates, or hosting provider downtime (e.g. Render infrastructure maintenance).
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 17. User Conduct -->
+          <div class="mb-5" id="user-conduct" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-shield text-primary mr-2"></i>17. User Conduct
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Users agree not to misuse the platform, submit false booking details, attempt unauthorized access, or engage in abusive behavior towards healthcare providers or support personnel.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 18. Account Suspension -->
+          <div class="mb-5" id="account-suspension" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-ban text-primary mr-2"></i>18. Account Suspension
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              DocMed administrators reserve the right to suspend or terminate accounts that violate platform policies, submit fraudulent medical credentials, or engage in unlawful conduct.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 19. Intellectual Property -->
+          <div class="mb-5" id="intellectual-property" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-copyright text-primary mr-2"></i>19. Intellectual Property
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              All software, UI designs, brand assets, logos, and code powering DocMed are the intellectual property of DocMed and its licensors.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 20. Third-Party Services -->
+          <div class="mb-5" id="third-party-services" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-puzzle-piece text-primary mr-2"></i>20. Third-Party Services
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Third-party services integrated into DocMed (including Google Calendar, Google Meet, Razorpay, Firebase, and Twilio) are subject to their respective terms of service.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 21. Limitation of Liability -->
+          <div class="mb-5" id="limitation-of-liability" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-balance-scale text-primary mr-2"></i>21. Limitation of Liability
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              To the maximum extent permitted by law, DocMed shall not be liable for indirect, incidental, or consequential damages arising from appointment cancellations, third-party API outages, or medical treatment outcomes.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 22. Privacy Reference -->
+          <div class="mb-5" id="privacy-reference" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-shield text-primary mr-2"></i>22. Privacy Reference
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              Your use of DocMed is also governed by our <a href="{% url 'appointment:privacy-policy' %}" class="text-primary font-weight-bold">Privacy Policy</a>, which describes our data collection and handling practices.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 23. Changes to Terms -->
+          <div class="mb-5" id="changes-to-terms" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-pencil-square-o text-primary mr-2"></i>23. Changes to Terms
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              DocMed reserves the right to update these Terms of Service at any time. Continued use of the platform following updates constitutes acceptance of the revised terms.
+            </p>
+          </div>
+
+          <hr style="border-color: rgba(0, 0, 0, 0.06); margin: 32px 0;">
+
+          <!-- 24. Contact Information -->
+          <div id="contact-info" data-aos="fade-up">
+            <h4 class="font-weight-bold mb-3" style="color: #0f172a;">
+              <i class="fa fa-envelope-o text-primary mr-2"></i>24. Contact Information
+            </h4>
+            <p style="color: #475569; line-height: 1.8;">
+              For legal inquiries or questions regarding these Terms of Service, please contact:
+            </p>
+            <div class="bg-light p-4 rounded-lg mt-3" style="border-left: 4px solid var(--color-primary); border-radius: 16px;">
+              <div class="font-weight-bold text-dark mb-1">DocMed Legal & Governance</div>
+              <div class="text-muted small mb-1"><i class="fa fa-envelope text-primary mr-2"></i>Email: info.docmed@gmail.com</div>
+              <div class="text-muted small"><i class="fa fa-globe text-primary mr-2"></i>Website: <a href="https://docmed-fx0m.onrender.com" target="_blank" class="text-primary font-weight-bold">https://docmed-fx0m.onrender.com</a></div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

@@ -4,7 +4,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="description" content="DocMed - Premium Healthcare Appointment Portal">
+  <meta name="description" content="{% block meta_description %}DocMed - Premium Healthcare Appointment Portal{% endblock %}">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -230,8 +230,8 @@
           </p>
         </div>
         <div class="col-md-6 text-center text-md-right mt-2 mt-md-0">
-          <a href="#" class="small mr-3" style="color: #475569;">Privacy Policy</a>
-          <a href="#" class="small" style="color: #475569;">Terms of Service</a>
+          <a href="{% url 'appointment:privacy-policy' %}" class="small mr-3" style="color: #475569;">Privacy Policy</a>
+          <a href="{% url 'appointment:terms-of-service' %}" class="small" style="color: #475569;">Terms of Service</a>
         </div>
       </div>
     </div>

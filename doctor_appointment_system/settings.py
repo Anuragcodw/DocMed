@@ -429,6 +429,21 @@ MEDICAL_REPORT_ALLOWED_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'i
 GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', '')
 
 # ---------------------------------------------------------------------------
+# Google Calendar & Google Meet OAuth 2.0 Integration
+# ---------------------------------------------------------------------------
+# ⚠️  Configure in Google Cloud Console: https://console.cloud.google.com/
+#     Enable: Google Calendar API
+#     Authorized Redirect URI: https://docmed-fx0m.onrender.com/api/google/calendar/callback/
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
+GOOGLE_REDIRECT_URI = os.environ.get(
+    'GOOGLE_REDIRECT_URI',
+    'https://docmed-fx0m.onrender.com/api/google/calendar/callback/'
+)
+GOOGLE_CALENDAR_ID = os.environ.get('GOOGLE_CALENDAR_ID', 'primary')
+
+
+# ---------------------------------------------------------------------------
 # OCR & Poppler Configuration
 # ---------------------------------------------------------------------------
 POPPLER_PATH = os.environ.get('POPPLER_PATH', r"C:\Users\user\Downloads\Release-26.02.0-0\poppler-26.02.0\Library\bin" if os.name == 'nt' else None)

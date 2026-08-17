@@ -747,7 +747,88 @@
           </div>
         </div>
       </div>
-      
+    <!-- Google Calendar & Google Meet Synchronization Monitoring Row -->
+    <div class="row mt-4" data-aos="fade-up">
+      <div class="col-12 mb-4">
+        <div class="dash-panel" style="overflow-x: auto;">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="font-weight-bold mb-0"><i class="fa fa-google text-danger mr-2"></i> Google Calendar & Meet Sync Status</h5>
+            <span class="badge badge-info px-3 py-2" style="border-radius: var(--radius-pill); font-size: 12px;">Real-Time Monitoring</span>
+          </div>
+
+          <table class="table table-hover align-middle mb-0" style="min-width: 800px;">
+            <thead class="text-muted" style="font-size: 12px; text-transform: uppercase;">
+              <tr>
+                <th>Booking ID</th>
+                <th>Doctor</th>
+                <th>Patient</th>
+                <th>Date & Time</th>
+                <th>Payment</th>
+                <th>Calendar Sync</th>
+                <th>Google Meet</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for appt in recent_activities_bookings|default:top_doctors|slice:":10" %}
+              {% with booking=appt %}
+              {% if booking.id %}
+              <tr>
+                <td><strong class="text-dark">#{{ booking.id }}</strong></td>
+                <td>
+                  <div class="font-weight-bold text-dark">Dr. {{ booking.appointment.full_name }}</div>
+                  <span class="small text-muted">{% if booking.appointment.user.doctor_profile.google_calendar_connected %}<i class="fa fa-check-circle text-success mr-1"></i>Connected{% else %}<i class="fa fa-times-circle text-danger mr-1"></i>Not Connected{% endif %}</span>
+                </td>
+                <td>
+                  <div class="font-weight-bold text-dark">{{ booking.full_name }}</div>
+                  <span class="small text-muted">{{ booking.phone_number }}</span>
+                </td>
+                <td style="font-size: 12px;">
+                  {{ booking.date|date:"d M Y, h:i A" }}
+                </td>
+                <td>
+                  {% if booking.is_paid %}
+                    <span class="badge badge-success px-2 py-1" style="border-radius: 4px;">Paid</span>
+                  {% else %}
+                    <span class="badge badge-warning px-2 py-1" style="border-radius: 4px;">Unpaid</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if booking.calendar_sync_status == 'synced' %}
+                    <span class="badge badge-success px-2 py-1" style="border-radius: 4px;"><i class="fa fa-check-circle mr-1"></i> Synced</span>
+                  {% elif booking.calendar_sync_status == 'failed' %}
+                    <span class="badge badge-danger px-2 py-1" style="border-radius: 4px;"><i class="fa fa-exclamation-triangle mr-1"></i> Failed</span>
+                  {% else %}
+                    <span class="badge badge-secondary px-2 py-1" style="border-radius: 4px;">{{ booking.calendar_sync_status|default:"Pending"|title }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if booking.google_meet_link %}
+                    <a href="{{ booking.google_meet_link }}" target="_blank" class="btn btn-sm btn-outline-success font-weight-bold py-1 px-2" style="font-size: 11px; border-radius: 4px;">
+                      <i class="fa fa-video-camera mr-1"></i> Open Meet
+                    </a>
+                  {% else %}
+                    <span class="text-muted small">N/A</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <form action="{% url 'appointment:google-calendar-sync-retry' booking.id %}" method="post" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-primary font-weight-bold py-1 px-2" style="font-size: 11px; border-radius: 4px;" title="Retry Calendar Event & Meet Creation">
+                      <i class="fa fa-refresh mr-1"></i> Sync Retry
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% endif %}
+              {% endwith %}
+              {% empty %}
+              <tr><td colspan="8" class="text-center py-4 text-muted">No booking synchronization records available.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
   </div>

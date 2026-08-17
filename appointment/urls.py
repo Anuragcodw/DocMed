@@ -9,13 +9,15 @@ from django.conf.urls.static import static
 from django.urls import path
 
 from appointment.views import (
-    AppointmentCreateView, AppointmentDeleteView, DoctorDashboardView,
-    HomePageView, PatientDeleteView, PatientListView, SearchView, ServiceView,
-    AboutView, ContactView,
-    TakeAppointmentView, ApproveBookingView, CancelBookingView,
-    RescheduleBookingView, PatientBookingsListView, PatientCancelBookingView,
-    PatientRescheduleBookingView, CompleteBookingView, RejectBookingView,
-    MarkMissedBookingView, ToggleAvailabilityView, AdminDashboardView, AdminDashboardStatsAPIView,
+    AppointmentListView, TakeAppointmentView,
+    HomePageView, DoctorDashboardView, AdminDashboardView,
+    ApproveBookingView, CancelBookingView, RescheduleBookingView,
+    PatientBookingsListView, PatientCancelBookingView, PatientRescheduleBookingView,
+    PrivacyPolicyView, TermsOfServiceView,
+    AppointmentCreateView, AppointmentDeleteView, PatientDeleteView, PatientListView, 
+    SearchView, ServiceView, AboutView, ContactView,
+    CompleteBookingView, RejectBookingView,
+    MarkMissedBookingView, ToggleAvailabilityView, AdminDashboardStatsAPIView,
     VerifyDoctorView, ApproveReviewView, RejectReviewView,
     CreateMeetingView, JoinMeetingView, AdminExportCSVView,
     MeetingChatAPIView, MeetingFileAPIView, UpdateMeetingStatusView, SaveMeetingNotesView,
@@ -28,6 +30,10 @@ from appointment.payment_views import (
     UPIPaymentConfirmView, PaymentSuccessView, PaymentFailedView,
     PaymentPendingView, PaymentHistoryView, InvoicePDFView,
     PaymentReceiptView, RequestRefundView, AdminRefundActionView
+)
+from appointment.google_views import (
+    GoogleCalendarConnectView, GoogleCalendarCallbackView,
+    GoogleCalendarDisconnectView, GoogleCalendarSyncRetryView
 )
 from appointment.payment_api_views import (
     RazorpayCreateOrderAPIView, RazorpayVerifyPaymentAPIView,
@@ -68,6 +74,8 @@ urlpatterns = [
     # ── Public Pages ──────────────────────────────────────────────────────────
     path('', HomePageView.as_view(), name='home'),
     path('service', ServiceView.as_view(), name='service'),
+    path('privacy-policy/', PrivacyPolicyView.as_view(), name='privacy-policy'),
+    path('terms/', TermsOfServiceView.as_view(), name='terms-of-service'),
     path('about/', AboutView.as_view(), name='about'),
     path('contact/', ContactView.as_view(), name='contact'),
     path('search/', SearchView.as_view(), name='search'),
@@ -88,6 +96,12 @@ urlpatterns = [
     path('api/payment/history/', PatientPaymentHistoryAPIView.as_view(), name='api-payment-history'),
     path('api/notifications/', InAppNotificationListView.as_view(), name='api-notifications-list'),
     path('api/notifications/<int:pk>/read/', MarkNotificationReadAPIView.as_view(), name='api-notification-read'),
+
+    # ── Google Calendar & Meet OAuth & Sync APIs ──────────────────────────────
+    path('api/google/calendar/connect/', GoogleCalendarConnectView.as_view(), name='google-calendar-connect'),
+    path('api/google/calendar/callback/', GoogleCalendarCallbackView.as_view(), name='google-calendar-callback'),
+    path('api/google/calendar/disconnect/', GoogleCalendarDisconnectView.as_view(), name='google-calendar-disconnect'),
+    path('api/google/calendar/sync-retry/<int:booking_id>/', GoogleCalendarSyncRetryView.as_view(), name='google-calendar-sync-retry'),
 
     # ── Doctor Directory & Public Profile ─────────────────────────────────────
     path('doctors/', DoctorListView.as_view(), name='doctor-list'),

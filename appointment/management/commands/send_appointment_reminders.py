@@ -44,12 +44,19 @@ class Command(BaseCommand):
 
     def process_reminders(self, time_start, time_end, time_window="24 Hours"):
         event_key = f"reminder_{time_window.lower().replace(' ', '_')}"
+        is_24h = (time_window == "24 Hours")
 
         # Fetch approved bookings within time window
-        bookings = TakeAppointment.objects.filter(
-            status='approved',
-            date__range=(time_start, time_end)
-        ).select_related('user', 'appointment', 'appointment__user')
+        filter_kwargs = {
+            'status': 'approved',
+            'date__range': (time_start, time_end),
+        }
+        if is_24h:
+            filter_kwargs['reminder_24h_sent'] = False
+        else:
+            filter_kwargs['reminder_2h_sent'] = False
+
+        bookings = TakeAppointment.objects.filter(**filter_kwargs).select_related('user', 'appointment', 'appointment__user')
 
         for booking in bookings:
             patient_email = booking.user.email
@@ -63,6 +70,11 @@ class Command(BaseCommand):
             ).exists()
 
             if already_sent:
+                if is_24h:
+                    booking.reminder_24h_sent = True
+                else:
+                    booking.reminder_2h_sent = True
+                booking.save(update_fields=['reminder_24h_sent', 'reminder_2h_sent'])
                 logger.info(f"Skipping duplicate {time_window} reminder for Booking #{booking.id}")
                 continue
 
@@ -105,5 +117,11 @@ class Command(BaseCommand):
                     )
             except Exception as exc:
                 logger.error(f"Failed to send doctor reminder for Booking #{booking.id}: {exc}")
+
+            if is_24h:
+                booking.reminder_24h_sent = True
+            else:
+                booking.reminder_2h_sent = True
+            booking.save(update_fields=['reminder_24h_sent', 'reminder_2h_sent'])
 
             logger.info(f"Sent {time_window} reminders for Booking #{booking.id}")

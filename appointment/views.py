@@ -584,15 +584,15 @@ class CancelBookingView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         booking = get_object_or_404(TakeAppointment, pk=pk, appointment__user=request.user)
         booking.status = 'cancelled'
-        booking.save()
 
-        # Cancel Google Calendar event if exists
-        if getattr(booking, 'google_calendar_event_id', None):
-            try:
-                from .google_calendar_service import cancel_calendar_event_async
-                cancel_calendar_event_async(booking.google_calendar_event_id)
-            except Exception as exc:
-                logger.warning(f"Google Calendar event cancellation skipped: {exc}")
+        # Cancel Google Calendar event and clear Meet link
+        try:
+            from .google_calendar_service import delete_google_calendar_event
+            delete_google_calendar_event(booking)
+        except Exception as exc:
+            logger.warning(f"Google Calendar event cancellation skipped: {exc}")
+
+        booking.save()
 
         # Send confirmation email
         from .emails import send_appointment_status_update_email
@@ -621,7 +621,17 @@ class RescheduleBookingView(LoginRequiredMixin, View):
             try:
                 booking.date = parse_datetime(new_date_str)
                 booking.status = 'rescheduled'
+                # Reset reminder flags for recalculated schedule
+                booking.reminder_24h_sent = False
+                booking.reminder_2h_sent = False
                 booking.save()
+
+                # Update existing Google Calendar Event
+                try:
+                    from .google_calendar_service import update_google_calendar_event
+                    update_google_calendar_event(booking)
+                except Exception as exc:
+                    logger.warning(f"Google Calendar event update skipped: {exc}")
 
                 # Send confirmation email
                 from .emails import send_appointment_status_update_email
@@ -635,7 +645,8 @@ class RescheduleBookingView(LoginRequiredMixin, View):
                     logger.warning(f"FCM push notification skipped: {exc}")
 
                 messages.success(request, f"Appointment booking for {booking.full_name} has been rescheduled.")
-            except Exception:
+            except Exception as e:
+                logger.error(f"Reschedule error: {e}")
                 messages.error(request, "Failed to reschedule. Invalid date/time format.")
         else:
             messages.error(request, "Please specify a valid date and time to reschedule.")
@@ -706,6 +717,14 @@ class PatientCancelBookingView(LoginRequiredMixin, View):
         booking = get_object_or_404(TakeAppointment, pk=pk, user=request.user)
         if booking.status in ['pending', 'approved', 'rescheduled']:
             booking.status = 'cancelled'
+
+            # Cancel Google Calendar Event
+            try:
+                from .google_calendar_service import delete_google_calendar_event
+                delete_google_calendar_event(booking)
+            except Exception as exc:
+                logger.warning(f"Google Calendar event deletion skipped: {exc}")
+
             booking.save()
             from .emails import send_appointment_status_update_email
             send_appointment_status_update_email(booking, 'Cancelled')
@@ -726,11 +745,22 @@ class PatientRescheduleBookingView(LoginRequiredMixin, View):
             try:
                 booking.date = parse_datetime(new_date_str)
                 booking.status = 'rescheduled'
+                booking.reminder_24h_sent = False
+                booking.reminder_2h_sent = False
                 booking.save()
+
+                # Update existing Google Calendar event
+                try:
+                    from .google_calendar_service import update_google_calendar_event
+                    update_google_calendar_event(booking)
+                except Exception as exc:
+                    logger.warning(f"Google Calendar event update skipped: {exc}")
+
                 from .emails import send_appointment_status_update_email
                 send_appointment_status_update_email(booking, 'Rescheduled')
                 messages.success(request, "Your appointment was successfully rescheduled.")
-            except Exception:
+            except Exception as e:
+                logger.error(f"Patient reschedule error: {e}")
                 messages.error(request, "Failed to reschedule. Invalid date/time format.")
         else:
             messages.error(request, "Please specify a valid date and time to reschedule.")
@@ -1568,3 +1598,24 @@ class SaveMeetingNotesView(LoginRequiredMixin, View):
         booking.save(update_fields=['meeting_notes'])
         
         return JsonResponse({'status': 'success', 'message': 'Notes saved successfully'})
+
+
+# ============================================================================
+# Public Legal Pages (Privacy Policy & Terms of Service)
+# ============================================================================
+
+class PrivacyPolicyView(TemplateView):
+    """
+    Public Privacy Policy page accessible without authentication.
+    Required for Google OAuth verification and platform transparency.
+    """
+    template_name = 'appointment/privacy_policy.html'
+
+
+class TermsOfServiceView(TemplateView):
+    """
+    Public Terms of Service page accessible without authentication.
+    Required for Google OAuth verification and platform terms agreement.
+    """
+    template_name = 'appointment/terms_of_service.html'
+

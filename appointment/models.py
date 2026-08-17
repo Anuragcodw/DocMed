@@ -125,17 +125,51 @@ class TakeAppointment(models.Model):
     )
     meeting_notes = models.TextField(blank=True, null=True, help_text="Doctor notes logged during meeting")
 
-    # Google Calendar Integration
+    # Google Calendar & Google Meet Integration
     google_calendar_event_id = models.CharField(
         max_length=255,
         blank=True,
         null=True,
-        help_text="Google Calendar event ID for this appointment (used to cancel on appointment cancellation).",
+        help_text="Google Calendar event ID for this appointment (used to update/cancel event).",
     )
+    google_event_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Alias for Google Calendar event ID",
+    )
+    google_meet_link = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="Generated Google Meet conference URL from Google Calendar API",
+    )
+    calendar_sync_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending', 'Pending'),
+            ('synced', 'Synced'),
+            ('failed', 'Failed'),
+            ('not_connected', 'Calendar Not Connected')
+        ],
+        default='pending',
+        help_text="Google Calendar synchronization status"
+    )
+
+    # Date-wise Scheduling & Timezone
+    appointment_date = models.DateField(null=True, blank=True, help_text="Date of appointment")
+    appointment_start_time = models.TimeField(null=True, blank=True, help_text="Start time of appointment")
+    appointment_end_time = models.TimeField(null=True, blank=True, help_text="End time of appointment")
+    timezone = models.CharField(max_length=50, default='Asia/Kolkata', help_text="Timezone for appointment calculation")
+
+    # Reminder Tracking
+    reminder_24h_sent = models.BooleanField(default=False, help_text="24-hour reminder sent flag")
+    reminder_2h_sent = models.BooleanField(default=False, help_text="2-hour reminder sent flag")
 
     # Payment tracking
     is_paid = models.BooleanField(default=False)
     payment_required = models.BooleanField(default=False)
+
 
     class Meta:
         ordering = ['-date']
@@ -144,6 +178,35 @@ class TakeAppointment(models.Model):
 
     def __str__(self):
         return f'{self.full_name} → {self.appointment.full_name}'
+
+    def save(self, *args, **kwargs):
+        # Sync google_event_id and google_calendar_event_id
+        if self.google_event_id and not self.google_calendar_event_id:
+            self.google_calendar_event_id = self.google_event_id
+        elif self.google_calendar_event_id and not self.google_event_id:
+            self.google_event_id = self.google_calendar_event_id
+
+        # Sync google_meet_link and meeting_url
+        if self.google_meet_link and not self.meeting_url:
+            self.meeting_url = self.google_meet_link
+            self.meeting_provider = 'meet'
+        elif self.meeting_url and not self.google_meet_link and self.meeting_provider == 'meet':
+            self.google_meet_link = self.meeting_url
+
+        # Auto populate appointment_date and start/end times if missing
+        if self.date:
+            if not self.appointment_date:
+                self.appointment_date = self.date.date()
+            if not self.appointment_start_time:
+                self.appointment_start_time = self.date.time()
+            if not self.appointment_end_time and self.appointment_start_time:
+                # Add 30 minutes duration by default
+                from datetime import datetime, timedelta
+                dummy_dt = datetime.combine(self.appointment_date or self.date.date(), self.appointment_start_time)
+                self.appointment_end_time = (dummy_dt + timedelta(minutes=30)).time()
+
+        super().save(*args, **kwargs)
+
 
     @property
     def patient_name(self):
@@ -311,6 +374,24 @@ class DoctorProfile(models.Model):
     offline_consultation = models.BooleanField(default=True)
     emergency = models.BooleanField(default=False)
     emergency_consultation = models.BooleanField(default=False)
+
+    # Google Calendar & Google Meet OAuth Credentials
+    google_calendar_credentials = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Encrypted Google OAuth 2.0 refresh & access tokens for Google Calendar API"
+    )
+    google_calendar_connected = models.BooleanField(
+        default=False,
+        help_text="True if doctor has connected Google Calendar via OAuth"
+    )
+    google_calendar_email = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Email address of the connected Google Calendar"
+    )
+
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
