@@ -593,7 +593,7 @@
 {% endblock %}
 
 {% block content %}
-<section style="padding-top: 130px; min-height: 90vh; background: transparent; position: relative;">
+<section id="welcome-banner-section" style="padding-top: 130px; min-height: 90vh; background: transparent; position: relative;">
   
   <!-- Floating Background Blobs -->
   <div class="floating-blobs">
@@ -603,29 +603,16 @@
   </div>
 
   <div class="container-fluid px-4 px-lg-5" style="position: relative; z-index: 2;">
-    
-    <!-- Professional Admin Welcome Banner -->
-    <div class="dash-panel welcome-banner mb-4" id="welcome-banner-section" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.98)) !important; border: 1px solid rgba(245, 158, 11, 0.35) !important; color: white; padding: 20px 28px; box-shadow: 0 12px 35px rgba(0,0,0,0.3) !important;">
-      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center" style="gap: 15px;">
-        <div>
-          <div class="d-flex align-items-center mb-1" style="gap: 10px;">
-            <h4 class="m-0 font-weight-bold" style="color: #ffffff; font-size: 22px;">Welcome Back, Admin 👋</h4>
-            <span class="badge badge-warning text-uppercase px-2 py-1" style="font-size: 10px; font-weight: 800; border-radius: 6px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;">System Admin</span>
-          </div>
-          <p class="m-0 text-muted small" style="color: #cbd5e1 !important; font-size: 13px;">DocMed — Smart Healthcare Management Platform</p>
-        </div>
-        <div class="d-flex align-items-center" style="gap: 10px;">
-          <button id="btnPlayAdminWelcomeVoice" class="btn btn-sm text-dark font-weight-bold px-3 py-2" style="background: linear-gradient(135deg, #f59e0b, #fbbf24); border-radius: 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); border: none; cursor: pointer;">
-            <i class="fa fa-volume-up" id="adminVoiceIcon"></i> <span id="adminVoiceLabel">Welcome Voice</span>
-          </button>
-        </div>
-      </div>
-    </div>
 
     <!-- Floating Header & Filters -->
     <div class="floating-header" data-aos="fade-down">
       <div>
-        <h4 style="font-weight: 800; margin: 0; color: var(--color-text-main);">Analytics Dashboard</h4>
+        <h4 style="font-weight: 800; margin: 0; color: var(--color-text-main); display: flex; align-items: center; gap: 8px;">
+          Analytics Dashboard
+          <button id="btnPlayAdminWelcomeVoice" class="btn btn-link p-0" style="color: var(--c-orange); font-size: 16px; display: none; line-height: 1; border: none; background: transparent; cursor: pointer; text-decoration: none;" title="Play Welcome Voice">
+            <span id="adminVoiceIcon">🔊</span>
+          </button>
+        </h4>
         <small class="text-muted">Real-time system insights & performance</small>
       </div>
       
@@ -1649,21 +1636,18 @@
   };
 
   // ---------------------------------------------------------------------------
-  // Admin Welcome Voice Playback (Plays once per session on Admin Dashboard open)
+  // Admin Welcome Voice Playback (Plays once per successful Admin login session)
   // ---------------------------------------------------------------------------
   (function initAdminWelcomeVoice() {
-    var welcomeText = "Welcome back, Admin. Welcome to DocMed, your smart healthcare management platform.";
+    var welcomeText = "Welcome back, Admin. Welcome to DocMed.";
     var voiceBtn = document.getElementById('btnPlayAdminWelcomeVoice');
     var voiceIcon = document.getElementById('adminVoiceIcon');
-    var voiceLabel = document.getElementById('adminVoiceLabel');
     var audioObj = null;
+    var loginToken = "{{ request.user.last_login.timestamp }}";
+    var storageKey = "welcomeVoicePlayed_" + loginToken;
 
-    function playAudioText(text) {
-      if (audioObj) { try { audioObj.pause(); } catch(e){} audioObj = null; }
-      if ('speechSynthesis' in window) { try { window.speechSynthesis.cancel(); } catch(e){} }
-
-      if (voiceLabel) voiceLabel.textContent = "Playing...";
-      if (voiceIcon) voiceIcon.className = "fa fa-spinner fa-spin";
+    function playAudioText(text, isAuto) {
+      stopAllAudio();
 
       // Try ElevenLabs API via backend TTS endpoint (/api/ai/tts/)
       fetch('/api/ai/tts/', {
@@ -1681,30 +1665,88 @@
       .then(function(blob) {
         var audioUrl = URL.createObjectURL(blob);
         audioObj = new Audio(audioUrl);
-        audioObj.onended = function() { resetVoiceUI(); };
-        audioObj.onerror = function() { fallbackWebSpeech(text); };
-        audioObj.play().catch(function() { fallbackWebSpeech(text); });
+        audioObj.play()
+        .then(function() {
+          // Playback succeeded automatically
+          sessionStorage.setItem(storageKey, 'true');
+          if (voiceBtn) voiceBtn.style.display = 'none';
+        })
+        .catch(function(err) {
+          console.warn('[DocMed] Autoplay blocked, showing speaker control:', err);
+          fallbackWebSpeech(text, isAuto);
+        });
       })
       .catch(function() {
-        fallbackWebSpeech(text);
+        fallbackWebSpeech(text, isAuto);
       });
     }
 
-    function fallbackWebSpeech(text) {
-      if (!('speechSynthesis' in window)) { resetVoiceUI(); return; }
-      try {
-        var utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.95;
-        utterance.onend = function() { resetVoiceUI(); };
-        utterance.onerror = function() { resetVoiceUI(); };
-        window.speechSynthesis.speak(utterance);
-      } catch(e) { resetVoiceUI(); }
+    function fallbackWebSpeech(text, isAuto) {
+      if (!('speechSynthesis' in window)) {
+        if (isAuto && voiceBtn) voiceBtn.style.display = 'inline-block';
+        return;
+      }
+      
+      try { window.speechSynthesis.cancel(); } catch(e){}
+
+      var speak = function() {
+        var voices = window.speechSynthesis.getVoices();
+        var voice = null;
+        
+        // Find a high-quality female English voice
+        var femaleKeywords = ['female', 'zira', 'samantha', 'karen', 'tessa', 'moira', 'hazel', 'google us english', 'en-us'];
+        for (var i = 0; i < femaleKeywords.length; i++) {
+          var keyword = femaleKeywords[i];
+          voice = voices.find(function(v) {
+            return v.lang.toLowerCase().startsWith('en') && v.name.toLowerCase().indexOf(keyword) !== -1;
+          });
+          if (voice) break;
+        }
+
+        // If browser TTS cannot provide a suitable female voice, don't play the fallback rather than showing error
+        if (!voice) {
+          console.log("[DocMed] No suitable female English voice found for Web Speech fallback.");
+          if (isAuto && voiceBtn) {
+            voiceBtn.style.display = 'inline-block';
+          }
+          return;
+        }
+
+        try {
+          var utterance = new SpeechSynthesisUtterance(text);
+          utterance.voice = voice;
+          utterance.lang = 'en-US';
+          utterance.rate = 0.95;
+          utterance.onstart = function() {
+            if (isAuto) {
+              sessionStorage.setItem(storageKey, 'true');
+              if (voiceBtn) voiceBtn.style.display = 'none';
+            }
+          };
+          window.speechSynthesis.speak(utterance);
+        } catch(e) {
+          console.warn("[DocMed] Web Speech playback failed:", e);
+          if (isAuto && voiceBtn) {
+            voiceBtn.style.display = 'inline-block';
+          }
+        }
+      };
+
+      if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.onvoiceschanged = speak;
+      } else {
+        speak();
+      }
     }
 
-    function resetVoiceUI() {
-      if (voiceLabel) voiceLabel.textContent = "Welcome Voice";
-      if (voiceIcon) voiceIcon.className = "fa fa-volume-up";
+    function stopAllAudio() {
+      if (audioObj) {
+        try { audioObj.pause(); } catch(e){}
+        audioObj = null;
+      }
+      if ('speechSynthesis' in window) {
+        try { window.speechSynthesis.cancel(); } catch(e){}
+      }
     }
 
     function getCsrfToken() {
@@ -1712,17 +1754,22 @@
       return cookie ? cookie.split('=')[1].trim() : '';
     }
 
-    // Auto-play welcome voice once per session when dashboard opens
+    // Auto-play welcome voice once per login session
     document.addEventListener('DOMContentLoaded', function() {
-      if (!sessionStorage.getItem('hasPlayedAdminWelcome')) {
-        sessionStorage.setItem('hasPlayedAdminWelcome', 'true');
-        setTimeout(function() { playAudioText(welcomeText); }, 750);
+      if (!sessionStorage.getItem(storageKey)) {
+        setTimeout(function() {
+          playAudioText(welcomeText, true);
+        }, 750);
       }
     });
 
     if (voiceBtn) {
-      voiceBtn.addEventListener('click', function() {
-        playAudioText(welcomeText);
+      voiceBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        playAudioText(welcomeText, false);
+        // Mark as played and hide once manually triggered
+        sessionStorage.setItem(storageKey, 'true');
+        voiceBtn.style.display = 'none';
       });
     }
   })();
