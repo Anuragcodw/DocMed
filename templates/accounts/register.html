@@ -704,7 +704,7 @@ select.form-control-reg:focus {
     <span class="reg-logo-text">DocMed</span>
   </a>
 
-  <form method="POST" enctype="multipart/form-data" id="registerForm">
+  <form method="POST" enctype="multipart/form-data" id="registerForm" novalidate>
     {% csrf_token %}
     <input type="hidden" name="role" id="selectedRoleInput" value="{% if submitted_role %}{{ submitted_role }}{% endif %}">
 
@@ -1483,7 +1483,7 @@ select.form-control-reg:focus {
             <button type="button" class="btn-reg-secondary" onclick="backToDocStep1()">
               <i class="fa fa-arrow-left"></i> Previous
             </button>
-            <button type="submit" class="btn-reg-primary" id="docSubmitBtn">
+            <button type="submit" class="btn-reg-primary" id="docSubmitBtn" onclick="return validateDocStep2Form()">
               <span class="btn-text"><i class="ri-shield-check-line"></i> Submit for Verification</span>
               <span class="btn-spinner"></span>
             </button>
@@ -1603,6 +1603,58 @@ function validatePatientForm() {
   // Loading state
   var btn = document.getElementById('patSubmitBtn');
   btn.classList.add('btn-submitting');
+  return true;
+}
+
+// ─── Doctor Form Step 2 Validation ───────────────────────────
+function validateDocStep2Form() {
+  var ok = true;
+  var firstErr = null;
+
+  // Check required Step 2 fields
+  var nmc = document.getElementById('nmc_num');
+  var council = document.querySelector('[name="state_medical_council"]');
+  var year = document.querySelector('[name="medical_council_registration_year"]');
+  var qual = document.querySelector('[name="qualification"]');
+  var spec = document.querySelector('[name="specialization"]');
+  var terms = document.getElementById('docTerms');
+
+  [nmc, council, year, qual, spec].forEach(function(el) {
+    if (!el || !el.value || !el.value.trim()) {
+      if (el) el.classList.add('has-error');
+      ok = false;
+      if (!firstErr) firstErr = el;
+    } else {
+      if (el) el.classList.remove('has-error');
+    }
+  });
+
+  if (!terms || !terms.checked) {
+    ok = false;
+    if (!firstErr && terms) firstErr = terms;
+  }
+
+  if (!ok) {
+    if (firstErr && typeof firstErr.scrollIntoView === 'function') {
+      firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      firstErr.focus();
+    }
+    showToast('Please fill in all required fields marked with * and accept terms.', 'error');
+    return false;
+  }
+
+  // Disable patient form fields so only doctor fields are submitted
+  var patScreen = document.getElementById('patientFormScreen');
+  if (patScreen) {
+    var patInputs = patScreen.querySelectorAll('input, select, textarea');
+    patInputs.forEach(function(inp) { inp.disabled = true; });
+  }
+
+  // Submit button loading state
+  var btn = document.getElementById('docSubmitBtn');
+  if (btn) {
+    btn.classList.add('btn-submitting');
+  }
   return true;
 }
 
