@@ -98,7 +98,7 @@ class UnifiedRegistrationForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['gender'].required = True
+        self.fields['gender'].required = False
         self.fields['username'].label = 'Username'
         self.fields['first_name'].label = 'First Name'
         self.fields['last_name'].label = 'Last Name'
@@ -143,14 +143,15 @@ class UnifiedRegistrationForm(UserCreationForm):
         return phone_number
 
     def clean_gender(self):
-        gender = self.cleaned_data.get('gender')
-        if not gender:
-            raise forms.ValidationError('Gender is required.')
-        return gender
+        # Gender is optional — empty string is acceptable
+        return self.cleaned_data.get('gender', '')
 
     def clean_password1(self):
         password = self.cleaned_data.get('password1')
-        validate_strong_password(password)
+        if not password:
+            raise forms.ValidationError('Password is required.')
+        if len(password) < 8:
+            raise forms.ValidationError('Password must be at least 8 characters long.')
         return password
 
     def save(self, commit=True):

@@ -209,8 +209,36 @@ class RegisterView(CreateView):
             initial['role'] = role
         return initial
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Pass form errors as a flat dict so the template can display them
+        form = context.get('form')
+        if form and form.errors:
+            context['form_errors'] = form.errors
+            # Detect which role was submitted to re-open the right screen
+            role = self.request.POST.get('role', '')
+            context['submitted_role'] = role
+        return context
+
+    def form_invalid(self, form):
+        """
+        Override form_invalid to surface all Django validation errors as
+        user-visible Django messages. This prevents silent failures where
+        the form just re-renders at step 0 with no indication of what went wrong.
+        """
+        role = self.request.POST.get('role', '')
+        for field, error_list in form.errors.items():
+            for error in error_list:
+                if field == '__all__':
+                    messages.error(self.request, error)
+                else:
+                    field_label = form.fields[field].label if field in form.fields else field.replace('_', ' ').title()
+                    messages.error(self.request, f"{field_label}: {error}")
+        return super().form_invalid(form)
+
     def form_valid(self, form):
         role = form.cleaned_data.get('role', 'patient')
+
 
         # Check if Doctor registration with wizard data
         if role == 'doctor':

@@ -706,7 +706,49 @@ select.form-control-reg:focus {
 
   <form method="POST" enctype="multipart/form-data" id="registerForm">
     {% csrf_token %}
-    <input type="hidden" name="role" id="selectedRoleInput" value="">
+    <input type="hidden" name="role" id="selectedRoleInput" value="{% if submitted_role %}{{ submitted_role }}{% endif %}">
+
+    {% comment %}After form_invalid, auto-reopen the correct registration step{% endcomment %}
+    {% if submitted_role %}
+    <script>
+    // Restore the correct screen after a failed server-side validation
+    (function() {
+      var role = "{{ submitted_role }}";
+      var roleInput = document.getElementById('selectedRoleInput');
+      if (roleInput) roleInput.value = role;
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('roleSelectorScreen').style.display = 'none';
+        if (role === 'patient') {
+          document.getElementById('patientFormScreen').style.display = 'block';
+        } else if (role === 'doctor') {
+          document.getElementById('doctorFormScreen').style.display = 'block';
+          // Also jump to step 2 if the personal info was already correct
+          // (errors on step-2 fields). If step 1 fields have errors, stay on step 1.
+          var step2Fields = ['nmc_registration_number','state_medical_council',
+            'medical_council_registration_year','qualification','specialization'];
+          var step1Fields = ['first_name','last_name','username','email',
+            'phone_number','password1','password2'];
+          {% if form_errors %}
+          var errKeys = {{ form_errors.as_json|safe }};
+          var hasStep1Err = step1Fields.some(function(f){ return errKeys[f]; });
+          if (!hasStep1Err) {
+            // Step 1 OK — show step 2
+            document.getElementById('docStep1').style.display = 'none';
+            document.getElementById('docStep2').style.display = 'block';
+            document.getElementById('sn1').classList.remove('active');
+            document.getElementById('sn1').classList.add('completed');
+            document.getElementById('sn1').querySelector('.step-node-circle').innerHTML = '<i class="fa fa-check"></i>';
+            document.getElementById('sn2').classList.add('active');
+            document.getElementById('stepFill').style.width = '100%';
+          }
+          {% endif %}
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+    })();
+    </script>
+    {% endif %}
+
 
     <!-- ═══════════════════════════════════════════
          SCREEN 0 — Choose Account Type
@@ -1058,9 +1100,10 @@ select.form-control-reg:focus {
               <label class="form-label">Password <span class="req">*</span></label>
               <div class="input-wrap">
                 <i class="inp-icon fa fa-lock"></i>
-                <input type="password" name="password1" id="doc_pwd1" class="form-control-reg has-eye" placeholder="Create password" required autocomplete="new-password">
+                <input type="password" name="password1" id="doc_pwd1" class="form-control-reg has-eye" placeholder="Min. 8 characters" required autocomplete="new-password" oninput="validateDocPwd(this)">
                 <button type="button" class="pwd-eye" onclick="togglePwd('doc_pwd1',this)"><i class="fa fa-eye-slash"></i></button>
               </div>
+              <span class="val-msg" id="err_doc_pwd1" style="display:none;font-size:12px;"></span>
             </div>
           </div>
 
@@ -1580,6 +1623,30 @@ function validateNMC(input) {
     fb.className = 'val-msg error';
     input.classList.add('has-error');
     input.classList.remove('is-valid');
+  }
+}
+
+// ─── Doctor Password Validator (inline) ──────────────────────
+function validateDocPwd(input) {
+  var err = document.getElementById('err_doc_pwd1');
+  if (!err) return;
+  if (input.value.length === 0) {
+    err.style.display = 'none';
+    input.classList.remove('is-valid', 'has-error');
+    return;
+  }
+  if (input.value.length < 8) {
+    err.style.display = 'flex';
+    err.className = 'val-msg error';
+    err.innerHTML = '<i class="fa fa-times-circle"></i> Password must be at least 8 characters';
+    input.classList.add('has-error');
+    input.classList.remove('is-valid');
+  } else {
+    err.style.display = 'flex';
+    err.className = 'val-msg success';
+    err.innerHTML = '<i class="fa fa-check-circle"></i> Password strength OK';
+    input.classList.remove('has-error');
+    input.classList.add('is-valid');
   }
 }
 
