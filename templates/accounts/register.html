@@ -1315,7 +1315,7 @@ select.form-control-reg:focus {
             </div>
           </div>
 
-          <!-- Verification Documents -->
+          <!-- Document verification upload is temporarily disabled for the current project/demo version. Enable when secure production document storage and verification workflow is implemented.
           <div class="section-heading">
             <div class="sh-icon"><i class="fa fa-file-text-o"></i></div>
             <h3>Verification Documents</h3>
@@ -1327,7 +1327,7 @@ select.form-control-reg:focus {
             <div class="form-group">
               <label class="form-label">MBBS Degree Certificate <span class="req">*</span></label>
               <div class="upload-card" id="uploadMBBS">
-                <input type="file" name="mbbs_degree_certificate" accept=".pdf,.jpg,.jpeg,.png" required onchange="handleUpload(this,'uploadMBBS','prevMBBS')">
+                <input type="file" name="mbbs_degree_certificate" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload(this,'uploadMBBS','prevMBBS')">
                 <div class="upload-card-icon">🎓</div>
                 <div class="upload-card-label">Upload MBBS Certificate</div>
                 <div class="upload-card-hint">PDF, JPG, PNG — Max 10MB</div>
@@ -1358,7 +1358,7 @@ select.form-control-reg:focus {
             <div class="form-group">
               <label class="form-label">Medical Registration Certificate <span class="req">*</span></label>
               <div class="upload-card" id="uploadLicense">
-                <input type="file" name="license_document" accept=".pdf,.jpg,.jpeg,.png" required onchange="handleUpload(this,'uploadLicense','prevLicense')">
+                <input type="file" name="license_document" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload(this,'uploadLicense','prevLicense')">
                 <div class="upload-card-icon">⚕️</div>
                 <div class="upload-card-label">Medical Registration Cert</div>
                 <div class="upload-card-hint">NMC / State Council Issued</div>
@@ -1373,7 +1373,7 @@ select.form-control-reg:focus {
               <label class="form-label">Government Photo ID <span class="req">*</span></label>
               <div class="input-wrap" style="margin-bottom:8px;">
                 <i class="inp-icon fa fa-id-card"></i>
-                <select name="govt_photo_id_type" class="form-control-reg" required>
+                <select name="govt_photo_id_type" class="form-control-reg">
                   <option value="">Select ID type…</option>
                   <option value="aadhaar">Aadhaar Card</option>
                   <option value="passport">Passport</option>
@@ -1383,7 +1383,7 @@ select.form-control-reg:focus {
                 </select>
               </div>
               <div class="upload-card" id="uploadGovtID">
-                <input type="file" name="govt_id_document" accept=".pdf,.jpg,.jpeg,.png" required onchange="handleUpload(this,'uploadGovtID','prevGovtID')">
+                <input type="file" name="govt_id_document" accept=".pdf,.jpg,.jpeg,.png" onchange="handleUpload(this,'uploadGovtID','prevGovtID')">
                 <div class="upload-card-icon">🪪</div>
                 <div class="upload-card-label">Upload Government ID</div>
                 <div class="upload-card-hint">PDF, JPG, PNG — Max 10MB</div>
@@ -1414,7 +1414,7 @@ select.form-control-reg:focus {
             <div class="form-group">
               <label class="form-label">Selfie / Profile Photo <span class="req">*</span></label>
               <div class="upload-card" id="uploadSelfie">
-                <input type="file" name="selfie_photo" accept=".jpg,.jpeg,.png" required onchange="handleUpload(this,'uploadSelfie','prevSelfie')">
+                <input type="file" name="selfie_photo" accept=".jpg,.jpeg,.png" onchange="handleUpload(this,'uploadSelfie','prevSelfie')">
                 <div class="upload-card-icon">🤳</div>
                 <div class="upload-card-label">Recent Selfie Photo</div>
                 <div class="upload-card-hint">JPG, PNG — Clear face visible</div>
@@ -1426,6 +1426,7 @@ select.form-control-reg:focus {
               </div>
             </div>
           </div>
+          -->
 
           <!-- Terms -->
           <div style="margin-top:22px;">
